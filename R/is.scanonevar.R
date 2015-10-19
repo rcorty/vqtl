@@ -10,7 +10,7 @@
 #'    Returns FALSE if 'sov' is not a valid scanonevar object with attribute 'why.not' a list of
 #'    error messages for failed tests
 #'
-#'  @seealso \code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.empirical.ps}}
+#'  @seealso \code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
 
 is.scanonevar <- function(sov) {
 
