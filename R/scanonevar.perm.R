@@ -57,10 +57,11 @@ scanonevar.perm <- function(cross,
                                marker.names = marker.names,
                                perm = sample(nrow(genoprobs)))
 
+    max.for.cran <- function(x) { max(x, na.rm = TRUE) }
     this.perm <- perm.scan %>%
       group_by(chrtype) %>%
       select(full.lod, mean.lod, var.lod) %>%
-      summarise_each(funs(max(., na.rm = TRUE)))
+      summarise_each(funs(max.for.cran))
 
     if (is.null(all.perms)) {
       all.perms <- this.perm
