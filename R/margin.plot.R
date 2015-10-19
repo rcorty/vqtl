@@ -12,9 +12,11 @@
 #'  @param marginal.phen.names a list of phenotypes to average over (put on the x-axis).
 #'  @param marginal.marker.names a list of marker names, whose values will be averaged over (put on the x-axis).
 #'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
+#'  @param ... additional graphical parameters
 #'
 #'  @return None.  Only makes plot.
 #'
+#'  @details none
 #'
 #'
 margin.plot <- function(cross,

@@ -21,6 +21,7 @@
 #'    function to many computers in parallel, carefully setting the seed on each computer to insure
 #'    pseudo-randomness.
 #'
+#'  @details none
 #'
 scanonevar.perm <- function(cross,
                             mean.formula,
@@ -28,6 +29,10 @@ scanonevar.perm <- function(cross,
                             n.perms,
                             chrs = unique(names(cross$geno)))
 {
+
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  chrtype <- full.lod <- mean.lod <- var.lod <- 'fake.global'
+
 
   validated.input <- validate.input.scanonevar(cross = cross,
                                                mean.formula = mean.formula,

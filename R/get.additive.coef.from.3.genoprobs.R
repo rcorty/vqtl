@@ -15,7 +15,9 @@
 #'
 #'  @return Additive coefficient vector.
 #'
+#'  @details none
 #'
+
 get.additive.coef.from.3.genoprobs <- function(paa, pab, pbb) {
 
   if (missing(pab) & missing(pbb) & ncol(paa) == 3 & is.list(paa)) {

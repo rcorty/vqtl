@@ -14,9 +14,15 @@
 #'
 #'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
+#'  @details none
+#'
+
 convert.scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
 
-  validate.convert.scanonevar.to.emp.ps(scanonevar, perm.scan.maxes)
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  chrtype <- 'fake.global'
+
+  validate.convert.scanonevar.to.p.values(scanonevar, perm.scan.maxes)
 
   lod.columns <- grep(pattern = 'lod', names(scanonevar), value = TRUE)
   chr.types <- unique(scanonevar$chrtype)

@@ -15,6 +15,8 @@
 #'
 #'  @return Most likely genotype (or NA) for all individuals in the cross at the specified locus.
 #'
+#'  @details none
+#'
 get.genotypes.by.marker.name <- function(cross, marker.name, use.genoprobs = TRUE, as.matrix = FALSE) {
 
   chr.of.interest <- which(sapply(X = cross$geno, FUN = function(chr) { marker.name %in% colnames(chr$data)}))

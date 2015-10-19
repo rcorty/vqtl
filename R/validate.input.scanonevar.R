@@ -10,13 +10,16 @@
 #'
 #'  @return Additive coefficient vector.
 #'
-#'
+#'  @details none
 validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = names(cross$geno))
 {
 
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  matches <- 'fake.global'
+
   # calc genoprobs if needed
   if (!('prob' %in% names(cross$geno[[1]]))) {
-    cross <- calc.genoprob(cross = cross, step = 2)
+    stop('Must run calc.genoprob on the cross before passing it to scanonevar')
   }
 
   # turn genoprobs into one big tbl_df

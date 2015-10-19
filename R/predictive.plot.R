@@ -15,12 +15,21 @@
 #'
 #'  @inheritParams scanonevar
 #'
+#'  @details none
+#'
+#'
 predictive.plot <- function(cross,
                             mean.formula,
                             var.formula,
                             marker.name,
                             phen.name,
                             genotype.plotting.names = c('AA', 'AB', 'BB')) {
+
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  genotype <- plotting.genotype <- 'fake.global'
+  indiv.mean.estim <- indiv.mean.lb <- indiv.mean.ub  <- 'fake.global'
+  indiv.var.estim <- indiv.var.lb <- indiv.var.ub  <- 'fake.global'
+
 
   # store current graphical parameters and customize them for this plot
   start.pars <- par(no.readonly = TRUE)

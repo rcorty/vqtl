@@ -15,6 +15,9 @@
 #'
 #'  @return Dominance Deviation coefficient vector.
 #'
+#'  @details none
+#'
+
 get.dom.coef.from.3.genoprobs <- function(paa, pab, pbb) {
 
   if (missing(pab) & missing(pbb) & ncol(paa) == 3 & is.list(paa)) {

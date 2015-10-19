@@ -9,7 +9,7 @@
 #'    \code{mean.null.formula} and \code{test.mean.effect} are inferred from it.
 #'  @param var.alt.formula The formula for the trait variance in the alternative model.
 #'    \code{var.null.formula} and \code{test.var.effect} are inferred from it.
-#'  @param genoprob The probability of each genotype for each individual.
+#'  @param genoprobs The probability of each genotype for each individual.
 #'  @param mapping.df The tbl_df with the response, all covariates, and space for the focal genotype.
 #'  @param chr.by.marker a vector of the chromosome name of each marker
 #'  @param pos.by.marker a vector of the position of each marker
@@ -22,6 +22,8 @@
 #'  @return Returns a scanonevar object.
 #'
 #'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#'
+#'  @details none
 #'
 
 scan.via.dglm <- function(mean.alt.formula,
@@ -37,6 +39,9 @@ scan.via.dglm <- function(mean.alt.formula,
                           cor.threshold = 0.8,
                           perm = 1:nrow(genoprobs))
 {
+
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  starts_with <- 'fake.global'
 
   # todo: consider tighening up the interface...do we really need 3 vectors '.by.marker'?
 

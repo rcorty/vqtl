@@ -2,7 +2,7 @@
 #'
 #'  @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{validate.convert.scanonevar.to.emp.ps} should not typically be called by a user.
+#'  @description \code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
 #'  This function is used by \code{convert.scanonevar.to.emp.ps}
 #'
 #'  @param scan the scanonevar to be converted
@@ -10,10 +10,11 @@
 #'
 #'  @return Returns TRUE if the two arguments are compatible and FALSE otherwise.
 #'
-#'  @seealso  \link{\code{convert.scanonevar.to.emp.ps}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#'  @seealso  \code{\link{convert.scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
-#'
-validate.convert.scanonevar.to.emp.ps <- function(scan, null.scan.maxes) {
+#'  @details none
+
+validate.convert.scanonevar.to.p.values <- function(scan, null.scan.maxes) {
 
   if (!identical(unique(scan$chrtype), unique(null.scan.maxes$chrtype))) {
     stop('chrtypes of scan and null.scan.maxes dont match')

@@ -23,6 +23,7 @@
 #'
 #'  @return A scanonevar object.
 #'
+#'  @details none
 #'
 #'
 scanonevar <- function(cross,

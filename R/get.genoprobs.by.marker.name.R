@@ -10,7 +10,9 @@
 #'
 #'  @return Probability of each genotype at the given locus for each individual.
 #'
+#'  @details none
 #'
+
 get.genoprobs.by.marker.name <- function(cross, marker.name) {
 
   idx.of.chr.with.marker <- which(sapply(X = cross$geno,
