@@ -33,7 +33,7 @@
 
 plot.scanonevar <- function(x,
                             y = NULL,
-                            chrs = unique(scanonevar$chr),
+                            chrs = unique(x$chr),
                             col = c("black", "blue", "red", "darkgreen"),
                             bandcol = 'lightgray',
                             legends = c('mean or var', 'mean', 'var', 'scanone for comparison'),
@@ -42,7 +42,7 @@ plot.scanonevar <- function(x,
                             incl.markers = TRUE,
                             main = attr(x, 'pheno'),
                             ylim = c(0, 1.05*max(coords.y.locus, na.rm = TRUE)),
-                            show.equations = length(chrs) != 1,
+                            show.equations = (length(chrs) != 1),
                             ...)
 {
 

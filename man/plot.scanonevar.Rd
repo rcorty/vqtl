@@ -4,12 +4,12 @@
 \alias{plot.scanonevar}
 \title{plot.scanonevar}
 \usage{
-\method{plot}{scanonevar}(x, y = NULL, chrs = unique(scanonevar$chr),
+\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr),
   col = c("black", "blue", "red", "darkgreen"), bandcol = "lightgray",
   legends = c("mean or var", "mean", "var", "scanone for comparison"),
   legend.pos = "top", gap = 25, incl.markers = TRUE, main = attr(x,
   "pheno"), ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
-  show.equations = length(chrs) != 1, ...)
+  show.equations = (length(chrs) != 1), ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}

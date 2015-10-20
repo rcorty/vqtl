@@ -5,12 +5,13 @@
 #'  @description \code{validate.input.scanonevar} should not typically be called by
 #'    a user.  It validates the input to the \code{scanonevar} function.
 #'
-#'  @param cross The cross from which the genetic information will be extracted.
+#'  @param cross The cross on which scanonevar will be performed, to be validated
 #'  @inheritParams scanonevar
 #'
-#'  @return Additive coefficient vector.
+#'  @return Validated and organized inputs for scanonevar
 #'
 #'  @details none
+#'
 validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = names(cross$geno))
 {
 

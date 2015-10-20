@@ -8,7 +8,7 @@ validate.input.scanonevar(cross, mean.formula, var.formula,
   chrs = names(cross$geno))
 }
 \arguments{
-\item{cross}{The cross from which the genetic information will be extracted.}
+\item{cross}{The cross on which scanonevar will be performed, to be validated}
 
 \item{mean.formula}{The formula that describes the response, and the covariates and genetic effects that influence it.
   The left hand side of the ~ must be a single phenotype that is in the cross.
@@ -23,7 +23,7 @@ validate.input.scanonevar(cross, mean.formula, var.formula,
 \item{chrs}{The subset of chromosomes to scan (defaults to all chromosomes).}
 }
 \value{
-Additive coefficient vector.
+Validated and organized inputs for scanonevar
 }
 \description{
 \code{validate.input.scanonevar} should not typically be called by
