@@ -4,7 +4,7 @@
 \alias{plot.scanonevar}
 \title{plot.scanonevar}
 \usage{
-\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr),
+\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr), units.to.plot,
   col = c("black", "blue", "red", "darkgreen"), bandcol = "lightgray",
   legends = c("mean or var", "mean", "var", "scanone for comparison"),
   legend.pos = "top", gap = 25, incl.markers = TRUE, main = attr(x,
@@ -17,6 +17,8 @@
 \item{y}{Optionally, a \code{scanone} object to be plotting for comparison to the \code{scanonevar} object.}
 
 \item{chrs}{Optionally, the subset of the chromosomes to plot}
+
+\item{units.to.plot}{Optionally, whether to plot 'lods' or 'emp.ps'.}
 
 \item{col}{Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.}
 

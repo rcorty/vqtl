@@ -9,6 +9,7 @@
 #'  @param x the \code{scanonevar} object to be plotted
 #'  @param y Optionally, a \code{scanone} object to be plotting for comparison to the \code{scanonevar} object.
 #'  @param chrs Optionally, the subset of the chromosomes to plot
+#'  @param units.to.plot Optionally, whether to plot 'lods' or 'emp.ps'.
 #'  @param col Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.
 #'  @param bandcol Optionally, a background color for the even-index chromosomes in this scan.
 #'  @param legends Optionally, the name to put for each scan in the legend.  Defaults to \code{c('mean or var', 'mean', 'var', 'scanone for comparison')}.
@@ -34,6 +35,7 @@
 plot.scanonevar <- function(x,
                             y = NULL,
                             chrs = unique(x$chr),
+                            units.to.plot,
                             col = c("black", "blue", "red", "darkgreen"),
                             bandcol = 'lightgray',
                             legends = c('mean or var', 'mean', 'var', 'scanone for comparison'),
@@ -103,15 +105,27 @@ plot.scanonevar <- function(x,
   coords.x.locus <- left_join(coords.x.chr, x, by = 'chr') %>%
     mutate(coord.x = start + pos)
 
+  # set up units if missing
+  if (missing(units.to.plot)) {
+    if (attr(x, 'units') == 'lods') {
+      units.to.plot <- 'lods'
+    }
+    if (attr(x, 'units') == 'emp.ps') {
+      units.to.plot <- 'emp.ps'
+    }
+  }
+
   # y coordinates for plotting
-  if (attr(x, 'units') == 'lods') {
-    coords.y.locus <- x %>% select(matches('lod'))
+  if (units.to.plot == 'lods') {
+    coords.y.locus <- x %>% select(full.lod, mean.lod, var.lod)
     ylab <- 'LOD'
-  }
-  if (attr(x, 'units') == 'emp.ps') {
-    coords.y.locus <- -log10(select(x, matches('emp.p')))
+  } else if (units.to.plot == 'emp.ps') {
+    coords.y.locus <- -log10(x %>% select(emp.p.full.lod, emp.p.mean.lod, emp.p.var.lod))
     ylab = '-log10(empirical p)'
+  } else {
+    stop("units.to.plot must be 'lods' or 'emp.ps'")
   }
+
 
   # make plotting area
   xlim <- c(-gap/2, max(coords.x.chr$end) + gap/2)
