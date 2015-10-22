@@ -28,6 +28,14 @@ convert.scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
   chr.types <- unique(scanonevar$chrtype)
   scan.as.emp.ps <- scanonevar
 
+  # make new columns to hold empirical ps
+  for (lod.column in lod.columns) {
+    new.name <- paste0('emp.p.', lod.column)
+    scan.as.emp.ps[[new.name]] <- NA
+  }
+
+
+
   # do each chromosome type and lod column separately
   # currently: empirical p values are put in place of the LOD scores
   # todo: put empirical p values in a new column and keep the LOD scores
@@ -47,16 +55,10 @@ convert.scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
                      shape = fitted(evd)[3],
                      lower.tail = FALSE)
 
-      scan.as.emp.ps[scanonevar$chrtype == chr.type, lod.column] <- emp.ps
+      scan.as.emp.ps[scanonevar$chrtype == chr.type, paste0('emp.p.', lod.column)] <- emp.ps
     }
   }
 
-  # change names to reflect that we now have empirical p values, not LOD scores
-  for (lod.column in lod.columns) {
-    col.idx <- which(names(scan.as.emp.ps) == lod.column)
-    new.name <- paste0('emp.p.', lod.column)
-    names(scan.as.emp.ps)[col.idx] <- new.name
-  }
   attr(scan.as.emp.ps, 'units') <- 'emp.ps'
 
   return(scan.as.emp.ps)
