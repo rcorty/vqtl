@@ -6,7 +6,7 @@
 \usage{
 margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
   marginal.marker.names = NULL, genotype.plotting.names = c("A", "H", "B"),
-  ...)
+  subset = 1:nind(cross), col, ...)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
@@ -18,6 +18,8 @@ margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
 \item{marginal.marker.names}{a list of marker names, whose values will be averaged over (put on the x-axis).}
 
 \item{genotype.plotting.names}{Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.}
+
+\item{subset}{the subset of individuals to use}
 
 \item{...}{additional graphical parameters}
 }

@@ -12,6 +12,7 @@
 #'  @param marginal.phen.names a list of phenotypes to average over (put on the x-axis).
 #'  @param marginal.marker.names a list of marker names, whose values will be averaged over (put on the x-axis).
 #'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
+#'  @param subset the subset of individuals to use
 #'  @param ... additional graphical parameters
 #'
 #'  @return None.  Only makes plot.
@@ -24,6 +25,8 @@ margin.plot <- function(cross,
                         marginal.phen.names = NULL,
                         marginal.marker.names = NULL,
                         genotype.plotting.names = c('A', 'H', 'B'),
+                        subset = 1:nind(cross),
+                        col,
                         ...) {
 
   if (any(missing(cross), missing(focal.phenotype.name), !(focal.phenotype.name %in% names(cross$pheno)))) {
@@ -38,11 +41,14 @@ margin.plot <- function(cross,
 
   par(mfrow = c(1, num.plots))
 
-  focal.phen <- cross$pheno[[focal.phenotype.name]]
+  focal.phen <- cross$pheno[[focal.phenotype.name]][subset]
+  if (!missing(col) & length(col) == nind(cross)) {
+    col <- col[subset]
+  }
 
   for (marginal.phen.name in marginal.phen.names) {
 
-    marginal.phen <- cross$pheno[[marginal.phen.name]]
+    marginal.phen <- cross$pheno[[marginal.phen.name]][subset]
     if (is.factor(marginal.phen)) {
       lev.names <- levels(marginal.phen)
       plotting.phen <- as.numeric(marginal.phen)
@@ -55,6 +61,7 @@ margin.plot <- function(cross,
          xlab = marginal.phen.name,
          xaxt = 'n',
          main = paste(focal.phenotype.name, 'by', marginal.phen.name),
+         col = col,
          ...)
 
     if (is.factor(marginal.phen)) {
@@ -67,12 +74,13 @@ margin.plot <- function(cross,
 
     chr.of.interest <- which(sapply(X = cross$geno, FUN = function(chr) { marginal.marker.name %in% colnames(chr$data)}))
 
-    genotypes <- cross$geno[[chr.of.interest]]$data[,marginal.marker.name]
+    genotypes <- cross$geno[[chr.of.interest]]$data[subset,marginal.marker.name]
     plot(x = jitter(genotypes),
          y = focal.phen,
          xaxt = 'n',
          xlab = marginal.marker.name,
          main = paste(focal.phenotype.name, 'by', marginal.marker.name),
+         col = col,
          ...)
     axis(side = 1, at = 1:3, labels = genotype.plotting.names, tick = TRUE)
 

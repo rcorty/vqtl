@@ -1,5 +1,4 @@
 ######### Simulate mQTL and vQTL modeled with scanonevar
-
 library(qtl)
 library(vqtl)
 
@@ -12,6 +11,10 @@ N = nind(fake.f2)
 fake.f2$pheno$sex <- rbinom(n = N, size = 1, prob = 0.5)
 fake.f2$pheno$age <- rnorm(n = N, mean = 10, sd = 1)
 
+col.sex <- rep('', nind(fake.f2))
+col.sex[fake.f2$pheno$sex == 0] <- 'red'
+col.sex[fake.f2$pheno$sex == 1] <- 'blue'
+
 
 # NULL PHENOTYPE
 fake.f2$pheno$phen1 <- rnorm(n = N, mean = 20, sd = 2)
@@ -19,7 +22,9 @@ fake.f2$pheno$phen1 <- rnorm(n = N, mean = 20, sd = 2)
 margin.plot(cross = fake.f2,
             focal.phenotype.name = 'phenotype',
             marginal.phen.names = list('sex', 'age'),
-            marginal.marker.names = 'D17M88')
+            marginal.marker.names = 'D17M88',
+            pch = 19, col = col.sex,
+            subset = (col.sex == 'blue'))
 
 
 # scanone
@@ -33,9 +38,17 @@ varscan1 <- scanonevar(cross = fake.f2,
                        chrs = c(15:19, 'X'))
 plot(x = varscan1, y = scan1)
 
+# do permutations and convert to empirical p values
+varscan1.perms <- scanonevar.perm(cross = fake.f2,
+                                  mean.formula = formula('phen1 ~ sex + age + mean.QTL.add + mean.QTL.dom'),
+                                  var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
+                                  chrs = c(15:19, 'X'),
+                                  n.perms = 10)
 
+varscan1b <- convert.scanonevar.to.p.values(scanonevar = varscan1, perm.scan.maxes = varscan1.perms)
 
-
+attr(varscan1b, 'units') <- 'lods'
+plot(x = varscan1b, y = scan1)
 
 # MQTL ON CHROMOSOME 19
 marker2.name <- colnames(fake.f2$geno$`19`$data)[2]
