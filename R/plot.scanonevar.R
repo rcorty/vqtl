@@ -70,6 +70,7 @@ plot.scanonevar <- function(x,
   }
 
   # subset scanonevar to necessary chrs only
+  # needs to be triggered in another way...consider that x and y may have diff chrs?
   if (!identical(chrs, unique(x$chr))) {
 
     temp <- dplyr::filter(x, chr %in% chrs)
@@ -194,7 +195,7 @@ plot.scanonevar <- function(x,
   # add thresholds on p-value scale
   if (attr(x, 'units') == 'emp.ps') {
     abline(h = -log10(c(0.05, 0.01)), lty = c(1, 2))
-    text(x = coords.x.locus$coord.x[1], y = -log10(0.05), labels = 'alpha=0.05', adj = c(0.5, -0.2))
+    text(x = coords.x.locus$coord.x[1], y = -log10(0.05), labels = 'alpha=0.05', adj = c(0, -0.2))
   }
 
   # plot lines at marker positions (rug plot)

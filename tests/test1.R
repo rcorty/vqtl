@@ -28,24 +28,26 @@ margin.plot(cross = fake.f2,
 
 
 # scanone
-scan1 <- scanone(cross = fake.f2, chr = c(15:19, 'X'), pheno.col = 'phen1')
+scan1 <- scanone(cross = fake.f2, chr = c(17:19, 'X'), pheno.col = 'phen1')
 plot(x = scan1, bandcol = 'gray')
 
 # scanonevar
 varscan1 <- scanonevar(cross = fake.f2,
                        mean.formula = formula('phen1 ~ sex + age + mean.QTL.add + mean.QTL.dom'),
                        var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
-                       chrs = c(15:19, 'X'))
+                       chrs = c(17:19, 'X'))
 plot(x = varscan1, y = scan1)
 
 # do permutations and convert to empirical p values
 varscan1.perms <- scanonevar.perm(cross = fake.f2,
                                   mean.formula = formula('phen1 ~ sex + age + mean.QTL.add + mean.QTL.dom'),
                                   var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
-                                  chrs = c(15:19, 'X'),
-                                  n.perms = 10)
+                                  chrs = c(17:19, 'X'),
+                                  n.perms = 20)
 
 varscan1b <- convert.scanonevar.to.p.values(scanonevar = varscan1, perm.scan.maxes = varscan1.perms)
+
+plot(varscan1b)
 
 attr(varscan1b, 'units') <- 'lods'
 plot(x = varscan1b, y = scan1)

@@ -115,8 +115,17 @@ scan.via.dglm <- function(mean.alt.formula,
   #### loop through markers (including pseudomarkers) ####
   for (marker.idx in 1:length(marker.names)) {
 
+    marker.test.meanvar.effect <- test.meanvar.effect
+    marker.test.mean.effect <- test.mean.effect
+    marker.test.var.effect <- test.var.effect
+
     # select relevant markers from genoprob df
     marker.name <- marker.names[marker.idx]
+    if (grepl(pattern = 'chr0X', marker.name)) {
+      chrtype[marker.idx] <- 'X'
+    } else {
+      chrtype[marker.idx] <- 'A'
+    }
     marker.genoprobs <- select(genoprobs, starts_with(paste0(marker.name, '_')))
 
     # need to set QTL.dom to something that won't throw a "sd = 0" error from cor()
@@ -131,15 +140,14 @@ scan.via.dglm <- function(mean.alt.formula,
     if (any(cors > cor.threshold)) { next }
 
     # BOTH TESTING
+
     if (ncol(marker.genoprobs) == 3) {
       mapping.df$mean.QTL.add <- mapping.df$var.QTL.add <- get.additive.coef.from.3.genoprobs(marker.genoprobs)[perm]
       mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- get.dom.coef.from.3.genoprobs(marker.genoprobs)[perm]
-      chrtype[marker.idx] <- 'A'
     }
     if (ncol(marker.genoprobs) == 2) {
       mapping.df$mean.QTL.add <- mapping.df$var.QTL.add <- get.additive.coef.from.2.genoprobs(marker.genoprobs)[perm]
       mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- 0
-      chrtype[marker.idx] <- 'X'
     }
 
     both.alt.fit <- dglm(formula = mean.alt.formula,
