@@ -26,7 +26,9 @@ margin.plot <- function(cross,
                         marginal.marker.names = NULL,
                         genotype.plotting.names = c('A', 'H', 'B'),
                         subset = 1:nind(cross),
-                        col,
+                        col = rep(rgb(rep(0.5, 4)), nind(cross)),
+                        pch = 19,
+                        inside = FALSE,
                         ...) {
 
   if (any(missing(cross), missing(focal.phenotype.name), !(focal.phenotype.name %in% names(cross$pheno)))) {
@@ -39,7 +41,8 @@ margin.plot <- function(cross,
   # store current graphical parameters and customize them for this plot
   start.pars <- par(no.readonly = TRUE)
 
-  par(mfrow = c(1, num.plots))
+  # todo: if the user is already doing something with mfrow, dont interfere
+  if (!inside) { par(mfrow = c(1, num.plots)) }
 
   focal.phen <- cross$pheno[[focal.phenotype.name]][subset]
   if (!missing(col) & length(col) == nind(cross)) {
@@ -62,6 +65,7 @@ margin.plot <- function(cross,
          xaxt = 'n',
          main = paste(focal.phenotype.name, 'by', marginal.phen.name),
          col = col,
+         pch = pch,
          ...)
 
     if (is.factor(marginal.phen)) {
@@ -81,6 +85,7 @@ margin.plot <- function(cross,
          xlab = marginal.marker.name,
          main = paste(focal.phenotype.name, 'by', marginal.marker.name),
          col = col,
+         pch = pch,
          ...)
     axis(side = 1, at = 1:3, labels = genotype.plotting.names, tick = TRUE)
 

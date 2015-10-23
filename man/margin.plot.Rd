@@ -6,7 +6,8 @@
 \usage{
 margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
   marginal.marker.names = NULL, genotype.plotting.names = c("A", "H", "B"),
-  subset = 1:nind(cross), col, ...)
+  subset = 1:nind(cross), col = rep(rgb(rep(0.5, 4)), nind(cross)),
+  pch = 19, inside = FALSE, ...)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
