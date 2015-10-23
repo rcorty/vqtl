@@ -139,9 +139,9 @@ scan.via.dglm <- function(mean.alt.formula,
                                   data = mapping.df),
                              error = function(e) NA)
 
-    log10lik.bothalt <- ifelse(test = is.na(both.alt.fit), yes = NA, no = -0.5*both.alt.fit$m2loglik / log(10))
+    log10lik.bothalt <- ifelse(test = identical(both.alt.fit, NA), yes = NA, no = -0.5*both.alt.fit$m2loglik / log(10))
 
-    if (!is.na(both.alt.fit)) {
+    if (!identical(both.alt.fit, NA)) {
 
       if (any(return.effects, return.effect.ses, return.effect.ps)) {
         if (ncol(marker.genoprobs == 3)) {
@@ -202,7 +202,7 @@ scan.via.dglm <- function(mean.alt.formula,
                                              data = mapping.df),
                                  error = function(e) NA)
 
-        log10lik.meanalt <- ifelse(test = is.na(mean.alt.fit), yes = NA, no = -0.5*mean.alt.fit$m2loglik / log(10))
+        log10lik.meanalt <- ifelse(test = identical(mean.alt.fit, NA), yes = NA, no = -0.5*mean.alt.fit$m2loglik / log(10))
       }
 
       mean.null.fit <- tryCatch(expr = dglm(formula = mean.null.formula,
@@ -210,7 +210,7 @@ scan.via.dglm <- function(mean.alt.formula,
                                             data = mapping.df),
                                 error = function(e) NA)
 
-      log10lik.meannull <- ifelse(test = is.na(mean.null.fit), yes = NA, no = -0.5*mean.null.fit$m2loglik / log(10))
+      log10lik.meannull <- ifelse(test = identical(mean.null.fit, NA), yes = NA, no = -0.5*mean.null.fit$m2loglik / log(10))
 
       mean.lod[marker.idx] <- log10lik.meanalt - log10lik.meannull
     }
@@ -242,7 +242,7 @@ scan.via.dglm <- function(mean.alt.formula,
                                             data = mapping.df),
                                 error = function(e) NA)
 
-        log10lik.varalt <-  ifelse(test = is.na(var.alt.fit), yes = NA, no = -0.5*var.alt.fit$m2loglik / log(10))
+        log10lik.varalt <-  ifelse(test = identical(var.alt.fit, NA), yes = NA, no = -0.5*var.alt.fit$m2loglik / log(10))
       }
 
       var.null.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
@@ -250,7 +250,7 @@ scan.via.dglm <- function(mean.alt.formula,
                                            data = mapping.df),
                                error = function(e) NA)
 
-      log10lik.varnull <- ifelse(test = is.na(var.null.fit), yes = NA, no = -0.5*var.null.fit$m2loglik / log(10))
+      log10lik.varnull <- ifelse(test = identical(var.null.fit, NA), yes = NA, no = -0.5*var.null.fit$m2loglik / log(10))
 
       var.lod[marker.idx] <- log10lik.varalt - log10lik.varnull
     }
