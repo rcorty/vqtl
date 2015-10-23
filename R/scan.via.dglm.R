@@ -104,7 +104,7 @@ scan.via.dglm <- function(mean.alt.formula,
                                          'p.var.intercept', paste0('p.var.', all.vars(var.alt.formula)))))
   }
 
-  #### calculate null for double-test ####
+  # calculate null for joint-test
   if (test.meanvar.effect) {
     both.null.fit <- dglm(formula = mean.null.formula,
                           dformula = var.null.formula,
@@ -112,14 +112,10 @@ scan.via.dglm <- function(mean.alt.formula,
     log10lik.bothnull <- -0.5*both.null.fit$m2loglik / log(10)
   }
 
-  #### loop through markers (including pseudomarkers) ####
+  # loop through markers (including pseudomarkers)
   for (marker.idx in 1:length(marker.names)) {
 
-    marker.test.meanvar.effect <- test.meanvar.effect
-    marker.test.mean.effect <- test.mean.effect
-    marker.test.var.effect <- test.var.effect
-
-    # select relevant markers from genoprob df
+    # select focal marker from genoprob df
     marker.name <- marker.names[marker.idx]
     if (grepl(pattern = 'chr0X', marker.name)) {
       chrtype[marker.idx] <- 'X'
@@ -128,19 +124,7 @@ scan.via.dglm <- function(mean.alt.formula,
     }
     marker.genoprobs <- select(genoprobs, starts_with(paste0(marker.name, '_')))
 
-    # need to set QTL.dom to something that won't throw a "sd = 0" error from cor()
-    # just temporarily, it gets set back to 0 in a few lines
-    mapping.df$mean.QTL.add <- mapping.df$mean.QTL.dom <- NA
-    mapping.df$var.QTL.add  <- mapping.df$var.QTL.dom  <- NA
-
-    # skip this locus if it is highly correlated with a marker covariate
-    # todo: could skip only the test that has this marker as a covariate
-    this.marker.vec <- marker.genoprobs[[2]]
-    cors <- sapply(X = mapping.df, FUN = function(v) ifelse(test = is.numeric(v), cor(v, this.marker.vec, use = 'complete.obs'), FALSE))
-    if (any(cors > cor.threshold)) { next }
-
-    # BOTH TESTING
-
+    # JOINT TESTING
     if (ncol(marker.genoprobs) == 3) {
       mapping.df$mean.QTL.add <- mapping.df$var.QTL.add <- get.additive.coef.from.3.genoprobs(marker.genoprobs)[perm]
       mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- get.dom.coef.from.3.genoprobs(marker.genoprobs)[perm]
@@ -150,37 +134,42 @@ scan.via.dglm <- function(mean.alt.formula,
       mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- 0
     }
 
-    both.alt.fit <- dglm(formula = mean.alt.formula,
-                         dformula = var.alt.formula,
-                         data = mapping.df)
-    log10lik.bothalt <- -0.5*both.alt.fit$m2loglik / log(10)
+    both.alt.fit <- tryCatch(dglm(formula = mean.alt.formula,
+                                  dformula = var.alt.formula,
+                                  data = mapping.df),
+                             error = function(e) NA)
 
-    if (any(return.effects, return.effect.ses, return.effect.ps)) {
-      if (ncol(marker.genoprobs == 3)) {
+    log10lik.bothalt <- ifelse(test = is.na(both.alt.fit), yes = NA, no = -0.5*both.alt.fit$m2loglik / log(10))
 
-        mean.indices <- 1:(num.mean.effects)
-        var.indices <- (num.mean.effects + 1):(num.mean.effects + num.var.effects)
+    if (!is.na(both.alt.fit)) {
+
+      if (any(return.effects, return.effect.ses, return.effect.ps)) {
+        if (ncol(marker.genoprobs == 3)) {
+
+          mean.indices <- 1:(num.mean.effects)
+          var.indices <- (num.mean.effects + 1):(num.mean.effects + num.var.effects)
+        }
+        if (ncol(marker.genoprobs) == 2) {
+
+          mean.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,mean.indices]))
+          mean.indices <- mean.indices[-mean.idx.to.rm]
+
+          var.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,var.indices]))
+          var.indices <- var.indices[-var.idx.to.rm]
+        }
       }
-      if (ncol(marker.genoprobs) == 2) {
-
-        mean.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,mean.indices]))
-        mean.indices <- mean.indices[-mean.idx.to.rm]
-
-        var.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,var.indices]))
-        var.indices <- var.indices[-var.idx.to.rm]
+      if (return.effects) {
+        fitted.effects[marker.idx, mean.indices] <- summary(both.alt.fit)$coef[,'Estimate']
+        fitted.effects[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Estimate']
       }
-    }
-    if (return.effects) {
-      fitted.effects[marker.idx, mean.indices] <- summary(both.alt.fit)$coef[,'Estimate']
-      fitted.effects[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Estimate']
-    }
-    if (return.effect.ses) {
-      effect.ses[marker.idx , mean.indices] <- summary(both.alt.fit)$coef[,'Std. Error']
-      effect.ses[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Std. Error']
-    }
-    if (return.effect.ps) {
-      effect.ps[marker.idx, mean.indices] <- summary(both.alt.fit)$coef[,'Pr(>|t|)']
-      effect.ps[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Pr(>|t|)']
+      if (return.effect.ses) {
+        effect.ses[marker.idx , mean.indices] <- summary(both.alt.fit)$coef[,'Std. Error']
+        effect.ses[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Std. Error']
+      }
+      if (return.effect.ps) {
+        effect.ps[marker.idx, mean.indices] <- summary(both.alt.fit)$coef[,'Pr(>|t|)']
+        effect.ps[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Pr(>|t|)']
+      }
     }
 
     # store results
@@ -193,7 +182,7 @@ scan.via.dglm <- function(mean.alt.formula,
       if (identical(perm, 1:nrow(genoprobs))) {
         log10lik.meanalt <- log10lik.bothalt
 
-        # if we are doing a permutation, we calculate a different mean alt
+      # if we are doing a permutation, we calculate a different mean alt
       } else {
 
         if (ncol(marker.genoprobs) == 3) {
@@ -208,18 +197,21 @@ scan.via.dglm <- function(mean.alt.formula,
           mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- 0
         }
 
-        mean.alt.fit <- dglm(formula = mean.alt.formula,
-                             dformula = var.alt.formula,
-                             data = mapping.df)
-        log10lik.meanalt <-  -0.5*mean.alt.fit$m2loglik / log(10)
+        mean.alt.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
+                                             dformula = var.alt.formula,
+                                             data = mapping.df),
+                                 error = function(e) NA)
+
+        log10lik.meanalt <- ifelse(test = is.na(mean.alt.fit), yes = NA, no = -0.5*mean.alt.fit$m2loglik / log(10))
       }
 
-      mean.null.fit <- dglm(formula = mean.null.formula,
-                            dformula = var.alt.formula,
-                            data = mapping.df)
-      log10lik.meannull <- -0.5*mean.null.fit$m2loglik / log(10)
+      mean.null.fit <- tryCatch(expr = dglm(formula = mean.null.formula,
+                                            dformula = var.alt.formula,
+                                            data = mapping.df),
+                                error = function(e) NA)
 
-      # store results
+      log10lik.meannull <- ifelse(test = is.na(mean.null.fit), yes = NA, no = -0.5*mean.null.fit$m2loglik / log(10))
+
       mean.lod[marker.idx] <- log10lik.meanalt - log10lik.meannull
     }
 
@@ -230,7 +222,7 @@ scan.via.dglm <- function(mean.alt.formula,
       if (identical(perm, 1:nrow(genoprobs))) {
         log10lik.varalt <- log10lik.bothalt
 
-        # if we are doing a permutation, we calculate a different mean alt
+      # if we are doing a permutation, we calculate a different mean alt
       } else {
 
         if (ncol(marker.genoprobs) == 3) {
@@ -245,25 +237,27 @@ scan.via.dglm <- function(mean.alt.formula,
           mapping.df$mean.QTL.dom <- mapping.df$var.QTL.dom <- 0
         }
 
-        var.alt.fit <- dglm(formula = mean.alt.formula,
-                            dformula = var.alt.formula,
-                            data = mapping.df)
-        log10lik.varalt <-  -0.5*var.alt.fit$m2loglik / log(10)
+        var.alt.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
+                                            dformula = var.alt.formula,
+                                            data = mapping.df),
+                                error = function(e) NA)
+
+        log10lik.varalt <-  ifelse(test = is.na(var.alt.fit), yes = NA, no = -0.5*var.alt.fit$m2loglik / log(10))
       }
 
-      var.null.fit <- dglm(formula = mean.alt.formula,
-                           dformula = var.null.formula,
-                           data = mapping.df)
+      var.null.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
+                                           dformula = var.null.formula,
+                                           data = mapping.df),
+                               error = function(e) NA)
 
-      log10lik.varnull <- -0.5*var.null.fit$m2loglik / log(10)
+      log10lik.varnull <- ifelse(test = is.na(var.null.fit), yes = NA, no = -0.5*var.null.fit$m2loglik / log(10))
 
-      # store results
       var.lod[marker.idx] <- log10lik.varalt - log10lik.varnull
     }
 
   }
 
-  #### compile data into return format ####
+  # compile data into return format
   varscan <- data_frame(chr = factor(chr.by.marker,
                                      levels = mixedsort(unique(chr.by.marker))),
                         chrtype = chrtype,
