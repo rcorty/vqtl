@@ -6,10 +6,10 @@
 \usage{
 \method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr), units.to.plot,
   col = c("black", "blue", "red", "darkgreen"), bandcol = "lightgray",
-  legends = c("mean or var", "mean", "var", "scanone for comparison"),
+  legends = c("DGLM-joint", "DGLM-mean", "DGLM-var", "LM"),
   legend.pos = "top", gap = 25, incl.markers = TRUE, main = attr(x,
   "pheno"), ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
-  show.equations = (length(chrs) != 1), ...)
+  show.equations = (length(chrs) != 1), alpha.side = "left", ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}

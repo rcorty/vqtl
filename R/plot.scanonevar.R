@@ -38,13 +38,14 @@ plot.scanonevar <- function(x,
                             units.to.plot,
                             col = c("black", "blue", "red", "darkgreen"),
                             bandcol = 'lightgray',
-                            legends = c('mean or var', 'mean', 'var', 'scanone for comparison'),
+                            legends = c('DGLM-joint', 'DGLM-mean', 'DGLM-var', 'LM'),
                             legend.pos = 'top',
                             gap = 25,
                             incl.markers = TRUE,
                             main = attr(x, 'pheno'),
                             ylim = c(0, 1.05*max(coords.y.locus, na.rm = TRUE)),
                             show.equations = (length(chrs) != 1),
+                            alpha.side = 'left',
                             ...)
 {
 
@@ -57,11 +58,11 @@ plot.scanonevar <- function(x,
   }
 
   # store current graphical parameters and customize them for this plot
-  start.pars <- par(no.readonly = TRUE)
+  # start.pars <- par(no.readonly = TRUE)
   if (show.equations) {
     par(mar = c(3,4,5,1))
   } else {
-    par(mar = c(3,4,2,1))
+    par(mar = c(3,4,2.5,1))
   }
 
   # convert scanone.for.comparison to tbl_df if needed
@@ -122,7 +123,7 @@ plot.scanonevar <- function(x,
     ylab <- 'LOD'
   } else if (units.to.plot == 'emp.ps') {
     coords.y.locus <- -log10(x %>% select(emp.p.full.lod, emp.p.mean.lod, emp.p.var.lod))
-    ylab = '-log10(empirical p)'
+    ylab = '-log10(p)'
   } else {
     stop("units.to.plot must be 'lods' or 'emp.ps'")
   }
@@ -159,12 +160,16 @@ plot.scanonevar <- function(x,
   # plot lines
   for (test.idx in 1:ncol(coords.y.locus)) {
     test.name <- names(coords.y.locus)[test.idx]
-    segments(x0 = coords.x.locus$coord.x,
-             x1 = lead(coords.x.locus$coord.x),
-             y0 = coords.y.locus[[test.name]],
-             y1 = lead(coords.y.locus[[test.name]]),
-             lwd = 2*with(coords.x.locus, pos != len),
-             col = col[test.idx])
+
+    for (this.chr in unique(coords.x.locus$chr)) {
+
+      this.chr.loci <- coords.x.locus$chr == this.chr
+      lines(x = coords.x.locus[this.chr.loci, ][['coord.x']],
+            y = coords.y.locus[this.chr.loci,][[test.name]],
+            col = col[test.idx],
+            lwd = 2)
+    }
+
   }
 
   # plot scanone for comparison
@@ -195,7 +200,15 @@ plot.scanonevar <- function(x,
   # add thresholds on p-value scale
   if (attr(x, 'units') == 'emp.ps') {
     abline(h = -log10(c(0.05, 0.01)), lty = c(1, 2))
-    text(x = coords.x.locus$coord.x[1], y = -log10(0.05), labels = 'alpha=0.05', adj = c(0, -0.2))
+    if (alpha.side == 'left') {
+      text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
+           labels = 'alpha=0.05', adj = c(0, -0.2))
+    } else if (alpha.side == 'right') {
+      text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
+           labels = 'alpha=0.05', adj = c(1, -0.2))
+    } else {
+      stop("alpha.side must be 'left' or 'right'.")
+    }
   }
 
   # plot lines at marker positions (rug plot)
@@ -227,11 +240,11 @@ plot.scanonevar <- function(x,
                    paste(as.character(attr(x, 'var.alt.formula')), collapse = ' '))
     mtext(text = title, side = 3, line = 0)
   } else {
-    mtext(text = attr(x, 'pheno'), side = 3, line = 0)
+    mtext(text = attr(x, 'pheno'), side = 3, line = 0, cex = 1.5)
   }
 
-  # reset graphical parameteers to how they were on start
-  par(start.pars)
+  # reset graphical parameters to how they were on start
+  # par(start.pars)
 
   # return nothing
   invisible()
