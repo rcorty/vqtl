@@ -200,14 +200,16 @@ plot.scanonevar <- function(x,
   # add thresholds on p-value scale
   if (attr(x, 'units') == 'emp.ps') {
     abline(h = -log10(c(0.05, 0.01)), lty = c(1, 2))
-    if (alpha.side == 'left') {
-      text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
-           labels = 'alpha=0.05', adj = c(0, -0.2))
-    } else if (alpha.side == 'right') {
-      text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
-           labels = 'alpha=0.05', adj = c(1, -0.2))
-    } else {
-      stop("alpha.side must be 'left' or 'right'.")
+    if (!any(is.null(alpha.side), is.na(alpha.side))) {
+      if (alpha.side == 'left') {
+        text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
+             labels = 'alpha=0.05', adj = c(0, -0.2))
+      } else if (alpha.side == 'right') {
+        text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
+             labels = 'alpha=0.05', adj = c(1, -0.2))
+      } else {
+        stop("alpha.side must be 'left' or 'right'.")
+      }
     }
   }
 
@@ -222,10 +224,12 @@ plot.scanonevar <- function(x,
   }
 
   # draw the legend
-  legend(x = legend.pos,
-         legend = legends,
-         fill = col, cex = 0.8, bty = 'n',
-         x.intersp = 0.3, y.intersp = 1, xjust = 0.5, yjust = 0)
+  if (!any(is.null(legends), is.na(legends))) {
+    legend(x = legend.pos,
+           legend = legends,
+           fill = col, cex = 1, bty = 'n',
+           x.intersp = 0.3, y.intersp = 1, xjust = 0.5, yjust = 0)
+  }
 
   # add the title
   if (show.equations) {
