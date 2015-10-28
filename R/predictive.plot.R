@@ -23,6 +23,7 @@ predictive.plot <- function(cross,
                             var.formula,
                             marker.name,
                             phen.name,
+                            mean.rug = TRUE,
                             genotype.plotting.names = c('AA', 'AB', 'BB')) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
@@ -47,7 +48,6 @@ predictive.plot <- function(cross,
 
   # consider a similar 'plotting' version of phenotype group names?
 
-
   if (dim(genoprobs)[2] == 3) {
     model.df <- data.frame(mean.QTL.add = get.additive.coef.from.3.genoprobs(genoprobs),
                            mean.QTL.dom = get.dom.coef.from.3.genoprobs(genoprobs),
@@ -60,28 +60,57 @@ predictive.plot <- function(cross,
 
   model.df <- cbind(model.df, cross$pheno)
 
-  dglm.fit <- dglm(formula = mean.formula,
-                   dformula = var.formula,
-                   data = model.df)
+  # if no 'var.formula', use lm for modeling
+  if (missing(var.formula) | mean.rug) {
+
+    lm.fit <- lm(formula = mean.formula, data = model.df)
+
+    mean.pred <- predict(object = lm.fit, se.fit = TRUE)
+    mean.estim <- mean.pred$fit
+    mean.se <- mean.pred$se.fit
+
+    if (missing(var.formula)) {
+      var.estim <- mean.pred$residual.scale
+      var.se <- 0
+
+      prediction.tbl <- data_frame(genotype = genotypes,
+                                   plotting.genotype = plotting.genotypes,
+                                   phen = phenotypes,
+                                   indiv.mean.estim = mean.estim,
+                                   indiv.mean.lb = mean.estim - mean.se,
+                                   indiv.mean.ub = mean.estim + mean.se,
+                                   indiv.var.estim = var.estim,
+                                   indiv.var.lb = var.estim - var.se,
+                                   indiv.var.ub = var.estim + var.se)
+    }
+  }
+
+  # if there is a 'var.formula' specified, use it in the DGLM model
+  if (!missing(var.formula)) {
+    dglm.fit <- dglm(formula = mean.formula,
+                     dformula = var.formula,
+                     data = model.df)
+
+    mean.pred <- predict(dglm.fit, se.fit = TRUE)
+    mean.estim <- mean.pred$fit
+    mean.se <- mean.pred$se.fit
+
+    var.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
+    var.estim <- var.pred$fit/var.pred$residual.scale
+    var.se <- var.pred$se.fit/var.pred$residual.scale
+
+    prediction.tbl <- data_frame(genotype = genotypes,
+                                 plotting.genotype = plotting.genotypes,
+                                 phen = phenotypes,
+                                 indiv.mean.estim = mean.estim,
+                                 indiv.mean.lb = mean.estim - mean.se,
+                                 indiv.mean.ub = mean.estim + mean.se,
+                                 indiv.var.estim = exp(var.estim),
+                                 indiv.var.lb = exp(var.estim - var.se),
+                                 indiv.var.ub = exp(var.estim + var.se))
+  }
 
 
-  mean.pred <- predict(dglm.fit, se.fit = TRUE)
-  mean.estim <- mean.pred$fit
-  mean.se <- mean.pred$se.fit
-
-  var.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
-  var.estim <- var.pred$fit/var.pred$residual.scale
-  var.se <- var.pred$se.fit/var.pred$residual.scale
-
-  prediction.tbl <- data_frame(genotype = genotypes,
-                               plotting.genotype = plotting.genotypes,
-                               phen = phenotypes,
-                               indiv.mean.estim = mean.estim,
-                               indiv.mean.lb = mean.estim - mean.se,
-                               indiv.mean.ub = mean.estim + mean.se,
-                               indiv.var.estim = exp(var.estim),
-                               indiv.var.lb = exp(var.estim - var.se),
-                               indiv.var.ub = exp(var.estim + var.se))
 
   plotting.tbl <- prediction.tbl %>%
     group_by(phen, genotype, plotting.genotype) %>%
@@ -114,6 +143,17 @@ predictive.plot <- function(cross,
             main = paste('Predictive of', response.phen, 'from', phen.name, 'and', marker.name)))
   mtext(side = 1, text = paste(response.phen, 'mean'), line = 2)
   mtext(side = 2, text = paste(response.phen, 'SD'), line = 2)
+
+  # mean run plot type thing
+  if (mean.rug) {
+
+    with(plotting.tbl,
+         points(x = group.mean.estim,
+                y = rep(min(c(group.var.lb, group.var.ub)), length(group.mean.estim)),
+                pch = 15, cex = 1.5, col = phen.col))
+  }
+
+
 
   # horizontal lines
   with(plotting.tbl,

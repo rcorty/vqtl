@@ -27,6 +27,11 @@ margin.plot(cross = fake.f2,
             subset = (col.sex == 'blue'))
 
 
+predictive.plot(cross = fake.f2,
+                mean.formula = formula('phen1 ~ sex + age + mean.QTL.add + mean.QTL.dom'),
+                var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
+                marker.name = 'D3M17', phen.name = 'sex')
+
 # scanone
 scan1 <- scanone(cross = fake.f2, chr = c(17:19, 'X'), pheno.col = 'phen1')
 plot(x = scan1, bandcol = 'gray')

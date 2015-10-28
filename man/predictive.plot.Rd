@@ -5,7 +5,7 @@
 \title{Plot Predictive Interval for Categorical Genotype/Phenotype Groups}
 \usage{
 predictive.plot(cross, mean.formula, var.formula, marker.name, phen.name,
-  genotype.plotting.names = c("AA", "AB", "BB"))
+  mean.rug = TRUE, genotype.plotting.names = c("AA", "AB", "BB"))
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
