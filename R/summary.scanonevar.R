@@ -36,29 +36,29 @@ summary.scanonevar <- function(object, thresh, ...) {
     message('Full Model Peaks:')
     print(peaks %>%
             dplyr::filter(full.peak == TRUE, full.lod > thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, full.lod))
     message('Mean Model Peaks:')
     print(peaks %>%
             dplyr::filter(mean.peak == TRUE, mean.lod > thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, mean.lod))
     message('Var Model Peaks:')
     print(peaks %>%
             dplyr::filter(var.peak == TRUE, var.lod > thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, var.lod))
   }
 
   if (units(object) == 'emp.ps') {
     message('Full Model Peaks:')
     print(peaks %>%
             dplyr::filter(full.peak == TRUE, emp.p.full.lod < thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, emp.p.full.lod))
     message('Mean Model Peaks:')
     print(peaks %>%
             dplyr::filter(mean.peak == TRUE, emp.p.mean.lod < thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, emp.p.mean.lod))
     message('Var Model Peaks:')
     print(peaks %>%
             dplyr::filter(var.peak == TRUE, emp.p.var.lod < thresh) %>%
-            select(-matches('chrtype|effect|baseline|peak')))
+            select(chr, pos, marker.name, emp.p.var.lod))
   }
 }
