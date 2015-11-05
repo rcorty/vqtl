@@ -41,7 +41,7 @@ varscan1 <- scanonevar(cross = fake.f2,
                        mean.formula = formula('phen1 ~ sex + age  + D17M66 + mean.QTL.add + mean.QTL.dom'),
                        var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
                        chrs = c(17:19, 'X'))
-plot(x = varscan1, y = scan1)
+plot(x = varscan1, y = scan1, main = 'test')
 
 # do permutations and convert to empirical p values
 varscan1.perms <- scanonevar.perm(cross = fake.f2,

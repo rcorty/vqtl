@@ -150,8 +150,13 @@ plot.scanonevar <- function(x,
   # draw x axis and label chrs
   segments(x0 = xlim[1], x1 = xlim[2],
            y0 = 0, y1 = 0)
-  mtext(side = 1, text = chrs, at = coords.x.chr$middle, line = 0)
-  mtext(side = 1, text = 'Chromosome', at = mean(xlim), line = 1)
+  if (length(chrs) == 1) {
+    mtext(side = 1, text = paste('Chromosome', chrs), at = mean(xlim), line = 1)
+  } else {
+    mtext(side = 1, text = chrs, at = coords.x.chr$middle, line = 0)
+    mtext(side = 1, text = 'Chromosome', at = mean(xlim), line = 1)
+  }
+
 
   # draw y axis and label chrs
   axis(side = 2)
@@ -204,9 +209,13 @@ plot.scanonevar <- function(x,
       if (alpha.side == 'left') {
         text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
              labels = 'alpha=0.05', adj = c(0, -0.2))
+        text(x = coords.x.locus$coord.x[1], y = -log10(0.01),
+             labels = 'alpha=0.01', adj = c(0, -0.2))
       } else if (alpha.side == 'right') {
         text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
              labels = 'alpha=0.05', adj = c(1, -0.2))
+        text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.01),
+             labels = 'alpha=0.01', adj = c(1, -0.2))
       } else {
         stop("alpha.side must be 'left' or 'right'.")
       }
@@ -233,7 +242,7 @@ plot.scanonevar <- function(x,
 
   # add the title
   if (show.equations) {
-    title <- paste(attr(x = x, 'pheno'),
+    title <- paste(main,
                    '\n', 'mean null:',
                    paste(as.character(attr(x, 'mean.null.formula'))[c(2,1,3)], collapse = ' '),
                    '\n', 'mean alt:',
@@ -244,7 +253,7 @@ plot.scanonevar <- function(x,
                    paste(as.character(attr(x, 'var.alt.formula')), collapse = ' '))
     mtext(text = title, side = 3, line = 0)
   } else {
-    mtext(text = attr(x, 'pheno'), side = 3, line = 0, cex = 1.5)
+    mtext(text = main, side = 3, line = 0, cex = 1.5)
   }
 
   # reset graphical parameters to how they were on start
