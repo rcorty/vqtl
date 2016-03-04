@@ -47,6 +47,6 @@ It is recommended to use approximately 1000 permuted scans to produce highly-rep
 Robert Corty \email{rcorty@gmail.com}
 }
 \seealso{
-\code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
+\code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 }
 

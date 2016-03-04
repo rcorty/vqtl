@@ -16,7 +16,7 @@ Returns TRUE if the two arguments are compatible and FALSE otherwise.
 }
 \description{
 \code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
- This function is used by \code{convert.scanonevar.to.emp.ps}
+ This function is used by \code{scanonevar.to.emp.ps}
 }
 \details{
 
@@ -27,6 +27,6 @@ none
 Robert Corty \email{rcorty@gmail.com}
 }
 \seealso{
-\code{\link{convert.scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+\code{\link{scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 }
 

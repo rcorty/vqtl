@@ -1,10 +1,12 @@
 exportPattern("^[[:alpha:]]+")
 
-import(dglm, evd, dplyr)
+import(dglm, evd, dplyr, qtl)
+
 importFrom(RColorBrewer, brewer.pal)
 importFrom(gtools, mixedsort)
 importFrom(stringr, str_pad)
 importFrom(plyr, mapvalues)
+importFrom(scales, alpha)
 
 S3method(summary, scanonevar)
 S3method(plot, scanonevar)

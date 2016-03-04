@@ -19,6 +19,7 @@ summary.scanonevar <- function(object, thresh, ...) {
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   full.peak <- full.lod <- matches <- mean.peak <- mean.lod <- var.peak <- var.lod <- 'fake.global'
   emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake.global'
+  chr <- pos <- marker.name <- 'fake.global'
 
   if (!any(class(object) == "scanonevar")) {
     stop("Input should have class \"scanonevar\".")

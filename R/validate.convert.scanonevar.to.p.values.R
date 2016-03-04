@@ -3,14 +3,14 @@
 #'  @author Robert Corty \email{rcorty@@gmail.com}
 #'
 #'  @description \code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
-#'  This function is used by \code{convert.scanonevar.to.emp.ps}
+#'  This function is used by \code{scanonevar.to.emp.ps}
 #'
 #'  @param scan the scanonevar to be converted
 #'  @param null.scan.maxes the maximum LODs observed in permutation (null) scans to be used in the conversion.
 #'
 #'  @return Returns TRUE if the two arguments are compatible and FALSE otherwise.
 #'
-#'  @seealso  \code{\link{convert.scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#'  @seealso  \code{\link{scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
 #'  @details none
 

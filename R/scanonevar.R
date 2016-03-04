@@ -33,7 +33,8 @@ scanonevar <- function(cross,
                        return.effect.ses = FALSE,
                        return.effect.ps = FALSE,
                        chrs = unique(names(cross$geno)),
-                       exclusion.window = 0.8)
+                       exclusion.window = 0.8,
+                       family = stats::gaussian)
 {
 
   validated.input <- validate.input.scanonevar(cross = cross,
@@ -51,7 +52,8 @@ scanonevar <- function(cross,
                         return.effects = return.effects,
                         return.effect.ses = return.effect.ses,
                         return.effect.ps = return.effect.ps,
-                        cor.threshold = exclusion.window)
+                        cor.threshold = exclusion.window,
+                        family = family)
 
   return(scan)
 }

@@ -2,7 +2,7 @@
 #'
 #'  @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{convert.scanonevar.to.p.values} takes a scanonevar with LODs as units
+#'  @description \code{scanonevar.to.p.values} takes a scanonevar with LODs as units
 #'    and maxes from permutation scans, estimates an extreme value distribution for the maxes,
 #'    and returns the probability of observing the LOD scores in those EVDs.
 #'
@@ -17,7 +17,7 @@
 #'  @details none
 #'
 
-convert.scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
+scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   chrtype <- 'fake.global'

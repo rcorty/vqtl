@@ -14,7 +14,7 @@
 #'
 #'  @return Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
+#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
 #'  @details It is recommended to use approximately 1000 permuted scans to produce highly-replicable,
 #'    publication-quality empirial p-values.  For this purpose, users are recommended to dispatch this

@@ -26,9 +26,14 @@ margin.plot <- function(cross,
                         marginal.marker.names = NULL,
                         genotype.plotting.names = c('A', 'H', 'B'),
                         subset = 1:nind(cross),
-                        col = rep(rgb(rep(0.5, 4)), nind(cross)),
+                        col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
                         pch = 19,
+                        my.xlab = marginal.marker.name,
+                        my.ylab = focal.phenotype.name,
                         inside = FALSE,
+                        title = paste(focal.phenotype.name, 'by', marginal.phen.name),
+                        title.cex = 1.5,
+                        circle.alpha = 0.2,
                         ...) {
 
   if (any(missing(cross), missing(focal.phenotype.name), !(focal.phenotype.name %in% names(cross$pheno)))) {
@@ -38,11 +43,12 @@ margin.plot <- function(cross,
   num.plots <- sum(length(marginal.phen.names), length(marginal.marker.names))
   if (num.plots == 0) { stop('Must provide a marginal phenotype or marker.')}
 
-  # store current graphical parameters and customize them for this plot
-  start.pars <- par(no.readonly = TRUE)
-
-  # todo: if the user is already doing something with mfrow, dont interfere
-  if (!inside) { par(mfrow = c(1, num.plots)) }
+  #   # store current graphical parameters and customize them for this plot
+  #   start.pars <- par(no.readonly = TRUE)
+  #
+  #   # todo: if the user is already doing something with mfrow, dont interfere
+  #   if (!inside) { par(mfrow = c(1, num.plots)) }
+  par(mar = c(2, 4, 6, 2))
 
   focal.phen <- cross$pheno[[focal.phenotype.name]][subset]
   if (!missing(col) & length(col) == nind(cross)) {
@@ -62,11 +68,14 @@ margin.plot <- function(cross,
     plot(x = jitter(plotting.phen),
          y = focal.phen,
          xlab = marginal.phen.name,
+         ylab = NA,
          xaxt = 'n',
-         main = paste(focal.phenotype.name, 'by', marginal.phen.name),
-         col = col,
+         main = NA,
+         col = alpha(col, 0.5),
          pch = pch,
+         axes = FALSE,
          ...)
+    mtext(text = title, side = 3, line = 1, cex = title.cex)
 
     if (is.factor(marginal.phen)) {
       axis(side = 1, at = unique(marginal.phen), labels = lev.names, tick = TRUE)
@@ -82,12 +91,19 @@ margin.plot <- function(cross,
     plot(x = jitter(genotypes),
          y = focal.phen,
          xaxt = 'n',
-         xlab = marginal.marker.name,
-         main = paste(focal.phenotype.name, 'by', marginal.marker.name),
-         col = col,
+         xlab = NA,
+         ylab = NA,
+         axes = FALSE,
+         col = alpha(col, circle.alpha),
          pch = pch,
+         cex.main = title.cex,
          ...)
-    axis(side = 1, at = 1:3, labels = genotype.plotting.names, tick = TRUE)
+    # axis(side = 1, at = 1:3, labels = genotype.plotting.names, tick = TRUE)
+    axis(side = 2)
+    mtext(text = genotype.plotting.names, side = 1, line = 0, at = 1:3)
+    mtext(side = 1, text = my.xlab, line = 2)
+    mtext(side = 2, text = my.ylab, line = 2)
+    mtext(side = 3, text = title, line = 1, cex = title.cex)
 
     means <- aggregate(x = focal.phen, by = list(genotypes), FUN = mean)[,2]
     sds <- aggregate(x = focal.phen, by = list(genotypes), FUN = sd)[,2]
@@ -120,7 +136,7 @@ margin.plot <- function(cross,
   }
 
   # reset graphical parameteers to how they were on start
-  par(start.pars)
+  # par(start.pars)
 
   # return nothing
   invisible()

@@ -37,7 +37,8 @@ scan.via.dglm <- function(mean.alt.formula,
                           return.effect.ses = FALSE,
                           return.effect.ps = FALSE,
                           cor.threshold = 0.8,
-                          perm = 1:nrow(genoprobs))
+                          perm = 1:nrow(genoprobs),
+                          family = 'gaussian')
 {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
@@ -106,9 +107,11 @@ scan.via.dglm <- function(mean.alt.formula,
 
   # calculate null for joint-test
   if (test.meanvar.effect) {
-    both.null.fit <- dglm(formula = mean.null.formula,
-                          dformula = var.null.formula,
-                          data = mapping.df)
+    both.null.fit <- tryCatch(dglm(formula = mean.null.formula,
+                                   dformula = var.null.formula,
+                                   data = mapping.df,
+                                   family = family),
+                              error = function(e) NA)
     log10lik.bothnull <- -0.5*both.null.fit$m2loglik / log(10)
   }
 
@@ -136,7 +139,8 @@ scan.via.dglm <- function(mean.alt.formula,
 
     both.alt.fit <- tryCatch(dglm(formula = mean.alt.formula,
                                   dformula = var.alt.formula,
-                                  data = mapping.df),
+                                  data = mapping.df,
+                                  family = family),
                              error = function(e) NA)
 
     log10lik.bothalt <- ifelse(test = identical(both.alt.fit, NA), yes = NA, no = -0.5*both.alt.fit$m2loglik / log(10))
@@ -199,7 +203,8 @@ scan.via.dglm <- function(mean.alt.formula,
 
         mean.alt.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
                                              dformula = var.alt.formula,
-                                             data = mapping.df),
+                                             data = mapping.df,
+                                             family = family),
                                  error = function(e) NA)
 
         log10lik.meanalt <- ifelse(test = identical(mean.alt.fit, NA), yes = NA, no = -0.5*mean.alt.fit$m2loglik / log(10))
@@ -207,7 +212,8 @@ scan.via.dglm <- function(mean.alt.formula,
 
       mean.null.fit <- tryCatch(expr = dglm(formula = mean.null.formula,
                                             dformula = var.alt.formula,
-                                            data = mapping.df),
+                                            data = mapping.df,
+                                            family = family),
                                 error = function(e) NA)
 
       log10lik.meannull <- ifelse(test = identical(mean.null.fit, NA), yes = NA, no = -0.5*mean.null.fit$m2loglik / log(10))
@@ -239,7 +245,8 @@ scan.via.dglm <- function(mean.alt.formula,
 
         var.alt.fit <- tryCatch(expr = dglm(formula = mean.alt.formula,
                                             dformula = var.alt.formula,
-                                            data = mapping.df),
+                                            data = mapping.df,
+                                            family = family),
                                 error = function(e) NA)
 
         log10lik.varalt <-  ifelse(test = identical(var.alt.fit, NA), yes = NA, no = -0.5*var.alt.fit$m2loglik / log(10))

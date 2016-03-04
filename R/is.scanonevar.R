@@ -12,7 +12,7 @@
 #'
 #'  @details none
 #'
-#'  @seealso \code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
+#'  @seealso \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 
 is.scanonevar <- function(sov) {
 

@@ -23,8 +23,13 @@ predictive.plot <- function(cross,
                             var.formula,
                             marker.name,
                             phen.name,
-                            mean.rug = TRUE,
-                            genotype.plotting.names = c('AA', 'AB', 'BB')) {
+                            title = paste('Predictive of', response.phen, 'from', phen.name, 'and', marker.name),
+                            title.cex = 1,
+                            mean.rug = FALSE,
+                            genotype.plotting.names = c('AA', 'AB', 'BB'),
+                            ribbon.width = 10,
+                            xlim = NA,
+                            ylim = NA) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   genotype <- plotting.genotype <- 'fake.global'
@@ -33,7 +38,8 @@ predictive.plot <- function(cross,
 
 
   # store current graphical parameters and customize them for this plot
-  start.pars <- par(no.readonly = TRUE)
+  # start.pars <- par(no.readonly = TRUE)
+  par(mar = c(2, 3, 6, 2))
 
   phenotypes <- cross$pheno[[phen.name]]
   genoprobs <- get.genoprobs.by.marker.name(cross = cross, marker.name = marker.name)
@@ -41,12 +47,12 @@ predictive.plot <- function(cross,
   response.phen <- mean.formula[[2]]
 
   # set up display names for the genotype groups (rather than default AA, AB, BB)
-  if (length(genotype.plotting.names) != length(unique(genotypes))) {
-    stop('length of genotype.plotting.names must be equal to the number of genotypes at marker.name')
-  }
+#   if (length(genotype.plotting.names) != length(unique(genotypes))) {
+#     stop('length of genotype.plotting.names must be equal to the number of genotypes at marker.name')
+#   }
   plotting.genotypes <- mapvalues(x = genotypes, from = sort(unique(genotypes)), to = genotype.plotting.names)
 
-  # consider a similar 'plotting' version of phenotype group names?
+  # TODO: consider a similar 'plotting' version of phenotype group names?
 
   if (dim(genoprobs)[2] == 3) {
     model.df <- data.frame(mean.QTL.add = get.additive.coef.from.3.genoprobs(genoprobs),
@@ -54,7 +60,8 @@ predictive.plot <- function(cross,
                            var.QTL.add = get.additive.coef.from.3.genoprobs(genoprobs),
                            var.QTL.dom = get.dom.coef.from.3.genoprobs(genoprobs))
   } else {
-    stop('predictive.plot not yet implemented for sex chromosome')
+    model.df <- data.frame(mean.QTL.add = get.additive.coef.from.2.genoprobs(genoprobs),
+                           var.QTL.add = get.additive.coef.from.2.genoprobs(genoprobs))
   }
 
 
@@ -133,16 +140,21 @@ predictive.plot <- function(cross,
   plotting.tbl$phen.col <- mapvalues(x = plotting.tbl$phen, from = unique.phens, to = phen.group.colors)
 
   # blank plot of correct size
+  if (any(is.na(xlim))) { xlim <- range(c(plotting.tbl$group.mean.lb, plotting.tbl$group.mean.ub)) }
+  if (any(is.na(ylim))) { ylim <- range(c(plotting.tbl$group.var.lb, plotting.tbl$group.var.ub)) }
   with(plotting.tbl,
        plot(x = 1, y = 1,
             type = 'n',
             xlab = NA,
             ylab = NA,
-            xlim = range(c(group.mean.lb, group.mean.ub)),
-            ylim = range(c(group.var.lb, group.var.ub)),
-            main = paste('Predictive of', response.phen, 'from', phen.name, 'and', marker.name)))
-  mtext(side = 1, text = paste(response.phen, 'mean'), line = 2)
-  mtext(side = 2, text = paste(response.phen, 'SD'), line = 2)
+            axes = FALSE,
+            xlim = xlim,
+            ylim = ylim))
+  axis(side = 1)
+  axis(side = 2)
+  mtext(side = 3, line = 0, cex = title.cex, text = title)
+  mtext(side = 1, text = paste('phenotype mean'), line = 2)
+  mtext(side = 2, text = paste('phenotype SD'), line = 2)
 
   # mean run plot type thing
   if (mean.rug) {
@@ -161,7 +173,7 @@ predictive.plot <- function(cross,
                 y0 = group.var.estim,
                 x1 = group.mean.ub,
                 y1 = group.var.estim,
-                col = phen.col,
+                col = alpha(phen.col, 0.5),
                 lwd = 3))
 
   # vertical lines
@@ -170,7 +182,7 @@ predictive.plot <- function(cross,
                 y0 = group.var.lb,
                 x1 = group.mean.estim,
                 y1 = group.var.ub,
-                col = phen.col,
+                col = alpha(phen.col, 0.5),
                 lwd = 3))
 
   # draw light lines connecting same-phenotype groups
@@ -184,13 +196,13 @@ predictive.plot <- function(cross,
     lines(x = plotting.tbl$group.mean.estim[this.group.idxs],
           y = plotting.tbl$group.var.estim[this.group.idxs],
           col = rgb(red = col[1], green = col[2], blue = col[3], maxColorValue = 255, alpha = 50),
-          lwd = 20)
+          lwd = ribbon.width)
   }
 
   # white circles clear space to write genotype names
   with(plotting.tbl,
        points(x = group.mean.estim, y = group.var.estim,
-              pch = 19, col = rgb(1, 1, 1), cex = 5))
+              pch = 19, col = rgb(1, 1, 1, 0.5), cex = 5))
 
   # write genotype names
   with(plotting.tbl,
@@ -199,7 +211,7 @@ predictive.plot <- function(cross,
             col = phen.col))
 
   # reset graphical parameteers to how they were on start
-  par(start.pars)
+#   par(start.pars)
 
   # return nothing
   invisible()

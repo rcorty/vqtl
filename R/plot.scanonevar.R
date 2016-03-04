@@ -27,7 +27,7 @@
 #'    float type, this function produces an error.  The author is open to suggestions on how
 #'    to deal with this situation better.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
+#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
 #'  @details none
 #'
@@ -36,21 +36,28 @@ plot.scanonevar <- function(x,
                             y = NULL,
                             chrs = unique(x$chr),
                             units.to.plot,
-                            col = c("black", "blue", "red", "darkgreen"),
+                            col = c("black", "blue", "red", "forestgreen"),
                             bandcol = 'lightgray',
                             legends = c('DGLM-joint', 'DGLM-mean', 'DGLM-var', 'LM'),
                             legend.pos = 'top',
+                            legend.ncol = 2,
+                            legend.cex = 1,
                             gap = 25,
                             incl.markers = TRUE,
-                            main = attr(x, 'pheno'),
+                            title = attr(x, 'pheno'),
+                            title.cex = 1.5,
                             ylim = c(0, 1.05*max(coords.y.locus, na.rm = TRUE)),
                             show.equations = (length(chrs) != 1),
                             alpha.side = 'left',
+                            line.width = 1,
+                            vertical.bar = NA,
                             ...)
 {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   chr <- pos <- len <- matches <- 'fake.global'
+  full.lod <- mean.lod <- var.lod <- 'fake.global'
+  emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake.global'
 
   # validate scanonevar object
   if (!is.scanonevar(x)) {
@@ -60,9 +67,9 @@ plot.scanonevar <- function(x,
   # store current graphical parameters and customize them for this plot
   # start.pars <- par(no.readonly = TRUE)
   if (show.equations) {
-    par(mar = c(3,4,5,1))
+    par(mar = c(2,3,5,2))
   } else {
-    par(mar = c(3,4,2.5,1))
+    par(mar = c(2,3,6,2))
   }
 
   # convert scanone.for.comparison to tbl_df if needed
@@ -148,8 +155,8 @@ plot.scanonevar <- function(x,
   }
 
   # draw x axis and label chrs
-  segments(x0 = xlim[1], x1 = xlim[2],
-           y0 = 0, y1 = 0)
+#   segments(x0 = xlim[1], x1 = xlim[2],
+#            y0 = 0, y1 = 0)
   if (length(chrs) == 1) {
     mtext(side = 1, text = paste('Chromosome', chrs), at = mean(xlim), line = 1)
   } else {
@@ -172,7 +179,7 @@ plot.scanonevar <- function(x,
       lines(x = coords.x.locus[this.chr.loci, ][['coord.x']],
             y = coords.y.locus[this.chr.loci,][[test.name]],
             col = col[test.idx],
-            lwd = 2)
+            lwd = line.width)
     }
 
   }
@@ -184,18 +191,29 @@ plot.scanonevar <- function(x,
                x1 = lead(coords.x.locus$coord.x),
                y0 = y$lod,
                y1 = lead(y$lod),
-               lwd = 2*with(coords.x.locus, pos != len),
+               lwd = line.width*with(coords.x.locus, pos != len),
                col = col[length(col)])
     }
   }
   if (attr(x, 'units') == 'emp.ps') {
     if (!is.null(y)) {
-      segments(x0 = coords.x.locus$coord.x,
-               x1 = lead(coords.x.locus$coord.x),
-               y0 = -log10(y$emp.p.scanone),
-               y1 = -log10(lead(y$emp.p.scanone)),
-               lwd = 2*with(coords.x.locus, pos != len),
-               col = col[length(col)])
+
+      for (this.chr in unique(coords.x.locus$chr)) {
+
+        this.chr.loci <- coords.x.locus$chr == this.chr
+        lines(x = coords.x.locus[this.chr.loci, ][['coord.x']],
+              y = -log10(y$emp.p.scanone[this.chr.loci]),
+              col = col[length(col)],
+              lwd = line.width)
+#
+#         segments(x0 = coords.x.locus$coord.x,
+#                  x1 = lead(coords.x.locus$coord.x),
+#                  y0 = -log10(y$emp.p.scanone),
+#                  y1 = -log10(lead(y$emp.p.scanone)),
+#                  lwd = line.width*with(coords.x.locus, pos != len),
+#                  col = col[length(col)])
+
+      }
     }
   }
 
@@ -204,18 +222,18 @@ plot.scanonevar <- function(x,
 
   # add thresholds on p-value scale
   if (attr(x, 'units') == 'emp.ps') {
-    abline(h = -log10(c(0.05, 0.01)), lty = c(1, 2))
+    abline(h = -log10(c(0.05, 0.01)), lty = c(1, 3))
     if (!any(is.null(alpha.side), is.na(alpha.side))) {
       if (alpha.side == 'left') {
         text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
-             labels = 'alpha=0.05', adj = c(0, -0.2))
+             labels = expression(paste(alpha, "=0.05")), adj = c(0, -0.2))
         text(x = coords.x.locus$coord.x[1], y = -log10(0.01),
-             labels = 'alpha=0.01', adj = c(0, -0.2))
+             labels = expression(paste(alpha, "=0.01")), adj = c(0, -0.2))
       } else if (alpha.side == 'right') {
         text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
-             labels = 'alpha=0.05', adj = c(1, -0.2))
+             labels = expression(paste(alpha, "=0.05")), adj = c(1, -0.2))
         text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.01),
-             labels = 'alpha=0.01', adj = c(1, -0.2))
+             labels = expression(paste(alpha, "=0.01")), adj = c(1, -0.2))
       } else {
         stop("alpha.side must be 'left' or 'right'.")
       }
@@ -232,17 +250,22 @@ plot.scanonevar <- function(x,
              col = 'gray50')
   }
 
+  if (!is.na(vertical.bar)) {
+    segments(x0 = vertical.bar, y0 = ylim[1], x1 = vertical.bar, y1 = ylim[2])
+  }
+
+
   # draw the legend
   if (!any(is.null(legends), is.na(legends))) {
     legend(x = legend.pos,
            legend = legends,
-           fill = col, cex = 1, bty = 'n',
+           fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
            x.intersp = 0.3, y.intersp = 1, xjust = 0.5, yjust = 0)
   }
 
   # add the title
   if (show.equations) {
-    title <- paste(main,
+    title <- paste(title,
                    '\n', 'mean null:',
                    paste(as.character(attr(x, 'mean.null.formula'))[c(2,1,3)], collapse = ' '),
                    '\n', 'mean alt:',
@@ -251,9 +274,9 @@ plot.scanonevar <- function(x,
                    paste(as.character(attr(x, 'var.null.formula')), collapse = ' '),
                    '\n', 'var alt:',
                    paste(as.character(attr(x, 'var.alt.formula')), collapse = ' '))
-    mtext(text = title, side = 3, line = 0)
+    mtext(text = title, side = 3, line = 1, cex = title.cex)
   } else {
-    mtext(text = main, side = 3, line = 0, cex = 1.5)
+    mtext(text = title, side = 3, line = 1, cex = title.cex)
   }
 
   # reset graphical parameters to how they were on start

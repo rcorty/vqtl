@@ -2,6 +2,30 @@
 library(qtl)
 library(vqtl)
 
+B6.C58.cross <- readRDS('~/Dropbox (ValdarLab)/Aim1_for_local/vQTL_reanalysis/rds/B6_C58_cross_rem2ol_transformed_and_fa.RDS')
+
+
+
+predictive.plot(cross = B6.C58.cross,
+                mean.formula = formula('rint.AVGVELO ~ sex + (mean.QTL.add)'),
+                var.formula = formula('~sex + (var.QTL.add)'),
+                phen.name = 'sex',
+                marker.name = 'X.85.251',
+                title = 'Predictive of Average Moving Velocity \n by sex and X chr 85Mb marker',
+                title.cex = 1.2,
+                genotype.plotting.names = c('B6', 'H', 'C58'),
+                xlim = xlim.pred, ylim = ylim.pred)
+
+
+
+a <- scanonevar(cross = B6.C58.cross,
+           mean.formula = formula('TOTDIST ~ sex + mean.QTL.add + mean.QTL.dom'),
+           var.formula = formula('~ sex + var.QTL.add + var.QTL.dom'),
+           chrs = c(19, 'X'))
+
+b <- scanone(cross = B6.C58.cross, chr = c(19, 'X'), pheno.col = 10)
+plot(a, b)
+
 set.seed(27599)
 
 data(fake.f2)
@@ -22,7 +46,7 @@ fake.f2$pheno$phen1 <- rnorm(n = N, mean = 20, sd = 2)
 margin.plot(cross = fake.f2,
             focal.phenotype.name = 'phenotype',
             marginal.phen.names = list('sex', 'age'),
-            marginal.marker.names = 'D17M88',
+            marginal.marker.names = 'DXM66',
             pch = 19, col = col.sex,
             subset = (col.sex == 'blue'))
 
@@ -43,6 +67,7 @@ varscan1 <- scanonevar(cross = fake.f2,
                        chrs = c(17:19, 'X'))
 plot(x = varscan1, y = scan1, main = 'test')
 
+
 # do permutations and convert to empirical p values
 varscan1.perms <- scanonevar.perm(cross = fake.f2,
                                   mean.formula = formula('phen1 ~ sex + age + D17M66 + mean.QTL.add + mean.QTL.dom'),
@@ -50,7 +75,7 @@ varscan1.perms <- scanonevar.perm(cross = fake.f2,
                                   chrs = c(17:19, 'X'),
                                   n.perms = 20)
 
-varscan1b <- convert.scanonevar.to.p.values(scanonevar = varscan1, perm.scan.maxes = varscan1.perms)
+varscan1b <- scanonevar.to.p.values(scanonevar = varscan1, perm.scan.maxes = varscan1.perms)
 
 plot(x = varscan1b, ylim = c(0, 3))
 
@@ -121,3 +146,15 @@ varscan3b <- convert.scanonevar.to.empirical.ps(scan = varscan3,
 # and it's log will be -Inf, so we can't plot....maybe should replace 0's with .Machine$double.eps?
 # not likely to come up in real work, so I'll leave it as an error-throwing case for now
 plot(varscan3b)
+
+
+
+fake.f2$pheno$numSomething <- rpois(n = nind(fake.f2), lambda = 8)
+
+# scanonevar with poisson regression
+varscan1b <- scanonevar(cross = fake.f2,
+                        mean.formula = formula('numSomething ~ sex + age  + D17M66 + mean.QTL.add + mean.QTL.dom'),
+                        var.formula = formula('~sex + age + var.QTL.add + var.QTL.dom'),
+                        chrs = c(17:19, 'X'),
+                        family = 'poisson')
+plot(x = varscan1b, y = scan1, main = 'test')

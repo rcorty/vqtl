@@ -5,11 +5,13 @@
 \title{plot.scanonevar}
 \usage{
 \method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr), units.to.plot,
-  col = c("black", "blue", "red", "darkgreen"), bandcol = "lightgray",
+  col = c("black", "blue", "red", "forestgreen"), bandcol = "lightgray",
   legends = c("DGLM-joint", "DGLM-mean", "DGLM-var", "LM"),
-  legend.pos = "top", gap = 25, incl.markers = TRUE, main = attr(x,
-  "pheno"), ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
-  show.equations = (length(chrs) != 1), alpha.side = "left", ...)
+  legend.pos = "top", legend.ncol = 2, legend.cex = 1, gap = 25,
+  incl.markers = TRUE, title = attr(x, "pheno"), title.cex = 1.5,
+  ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
+  show.equations = (length(chrs) != 1), alpha.side = "left",
+  line.width = 1, vertical.bar = NA, ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}
@@ -32,13 +34,13 @@
 
 \item{incl.markers}{Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.}
 
-\item{main}{Optionally, a title for the plot.  Defaults to the name of the phenotype from the scanonevar.}
-
 \item{ylim}{Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.}
 
 \item{show.equations}{Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.}
 
 \item{...}{Additionaly graphical parameters.}
+
+\item{main}{Optionally, a title for the plot.  Defaults to the name of the phenotype from the scanonevar.}
 }
 \value{
 Returns nothing.  Only makes the plot.
@@ -59,6 +61,6 @@ If such a strong signal was observed that the empirical p-value underflows R's
 Robert Corty \email{rcorty@gmail.com}
 }
 \seealso{
-\code{\link{scanonevar}}, \code{\link{convert.scanonevar.to.p.values}}
+\code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 }
 
