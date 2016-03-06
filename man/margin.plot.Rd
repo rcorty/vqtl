@@ -8,9 +8,8 @@ margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
   marginal.marker.names = NULL, genotype.plotting.names = c("A", "H", "B"),
   subset = 1:nind(cross), col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
   pch = 19, my.xlab = marginal.marker.name,
-  my.ylab = focal.phenotype.name, inside = FALSE,
-  title = paste(focal.phenotype.name, "by", marginal.phen.name),
-  title.cex = 1.5, circle.alpha = 0.2, ...)
+  my.ylab = focal.phenotype.name, title = paste(focal.phenotype.name, "by",
+  marginal.phen.name), title.cex = 1.5, circle.alpha = 0.2)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
@@ -25,7 +24,19 @@ margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
 
 \item{subset}{the subset of individuals to use}
 
-\item{...}{additional graphical parameters}
+\item{col}{optionally, color of dots, as in base R graphics.  Defaults to gray.}
+
+\item{pch}{optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).}
+
+\item{my.xlab}{optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.}
+
+\item{my.ylab}{optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.}
+
+\item{title}{optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.}
+
+\item{title.cex}{optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.}
+
+\item{circle.alpha}{optionally, alpha (transparency) of discs.  Defaults to 0.2.}
 }
 \value{
 None.  Only makes plot.
@@ -40,6 +51,15 @@ None.  Only makes plot.
 
 
 none
+}
+\examples{
+\dontrun{
+   margin.plot(cross = my.cross,
+               focal.phenotype.name = my.phenotype,
+               marginal.phen.name = list('sex', 'age'),
+               marginal.marker.name = list('chrA_markerB', 'chrC_markerD'))
+
+ }
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}

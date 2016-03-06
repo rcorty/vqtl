@@ -4,6 +4,7 @@
 #'
 #'  @description \code{scan.via.dglm} should not typically be called by a user.
 #'  This function is used by both \code{scanonevar} and \code{scanonevar.perm}.
+#'  This function is not typically necessary for a typical user.
 #'
 #'  @param mean.alt.formula The formula for the trait mean in the alternative model.
 #'    \code{mean.null.formula} and \code{test.mean.effect} are inferred from it.
@@ -17,6 +18,7 @@
 #'  @param cor.threshold Numeric between 0 and 1 indicating how tightly a locus must be correlated with a covariate to be skipped.
 #'    e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.
 #'  @param perm The permutation to apply to the genotypes.  Defaults to identity permutation.
+#'
 #'  @inheritParams scanonevar
 #'
 #'  @return Returns a scanonevar object.
@@ -24,6 +26,7 @@
 #'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
 #'  @details none
+#'
 #'
 
 scan.via.dglm <- function(mean.alt.formula,

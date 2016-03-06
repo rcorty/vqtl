@@ -10,12 +10,29 @@
 #'  @param marker.name The name of the marker the effects of which we want to investigate and visualize.
 #'  @param phen.name The categorical phenotype the effects of which we want to investigate and visualize.
 #'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
+#'  @param title Optionally, title for the plot.  Defaults to 'Predictive of [response phenotype] from
+#'    [predictive phenotype (e.g. sex)] and [marker name]
+#'  @param title.cex Optionally, character expansion for title.  Defaults to 1.
+#'  @param ribbon.width Optionally, width of ribbon connecting same-phenotype (different genotype) groups.
+#'    Defaults to 10.
+#'  @param xlim Optionally specify x-axis limits.  Defaults to data-dependent.
+#'  @param ylim Optionally specify y-axis limits.  Defaults to data.dependent.
+#'
 #'
 #'  @return None.  Only makes plot.
 #'
 #'  @inheritParams scanonevar
 #'
 #'  @details none
+#'
+#'  @examples
+#'  \dontrun{
+#'    predictive.plot(cross = my.cross,
+#                     mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                     var.formula = '~ sex + var.QTL.add + var.QTL.dom'
+#'                    marker.name = 'chrA_markerB',
+#'                    phen.name = 'my.categorical.phen')
+#'  }
 #'
 #'
 predictive.plot <- function(cross,
@@ -25,7 +42,6 @@ predictive.plot <- function(cross,
                             phen.name,
                             title = paste('Predictive of', response.phen, 'from', phen.name, 'and', marker.name),
                             title.cex = 1,
-                            mean.rug = FALSE,
                             genotype.plotting.names = c('AA', 'AB', 'BB'),
                             ribbon.width = 10,
                             xlim = NA,
@@ -39,7 +55,7 @@ predictive.plot <- function(cross,
 
   # store current graphical parameters and customize them for this plot
   # start.pars <- par(no.readonly = TRUE)
-  par(mar = c(2, 3, 6, 2))
+  # par(mar = c(2, 3, 6, 2))
 
   phenotypes <- cross$pheno[[phen.name]]
   genoprobs <- get.genoprobs.by.marker.name(cross = cross, marker.name = marker.name)
@@ -68,7 +84,7 @@ predictive.plot <- function(cross,
   model.df <- cbind(model.df, cross$pheno)
 
   # if no 'var.formula', use lm for modeling
-  if (missing(var.formula) | mean.rug) {
+  if (missing(var.formula)) {
 
     lm.fit <- lm(formula = mean.formula, data = model.df)
 
@@ -155,16 +171,6 @@ predictive.plot <- function(cross,
   mtext(side = 3, line = 0, cex = title.cex, text = title)
   mtext(side = 1, text = paste('phenotype mean'), line = 2)
   mtext(side = 2, text = paste('phenotype SD'), line = 2)
-
-  # mean run plot type thing
-  if (mean.rug) {
-
-    with(plotting.tbl,
-         points(x = group.mean.estim,
-                y = rep(min(c(group.var.lb, group.var.ub)), length(group.mean.estim)),
-                pch = 15, cex = 1.5, col = phen.col))
-  }
-
 
 
   # horizontal lines

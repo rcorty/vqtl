@@ -36,6 +36,9 @@ scan.via.dglm(mean.alt.formula, var.alt.formula, genoprobs, mapping.df,
   e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.}
 
 \item{perm}{The permutation to apply to the genotypes.  Defaults to identity permutation.}
+
+\item{family}{Family of distribution to be modeled.  Defaults to 'gaussian'.
+   See dglm and glm documentation for other options.  Most notable other options is 'poisson'}
 }
 \value{
 Returns a scanonevar object.
@@ -43,6 +46,7 @@ Returns a scanonevar object.
 \description{
 \code{scan.via.dglm} should not typically be called by a user.
  This function is used by both \code{scanonevar} and \code{scanonevar.perm}.
+ This function is not typically necessary for a typical user.
 }
 \details{
 

@@ -6,9 +6,8 @@
 \usage{
 predictive.plot(cross, mean.formula, var.formula, marker.name, phen.name,
   title = paste("Predictive of", response.phen, "from", phen.name, "and",
-  marker.name), title.cex = 1, mean.rug = FALSE,
-  genotype.plotting.names = c("AA", "AB", "BB"), ribbon.width = 10,
-  xlim = NA, ylim = NA)
+  marker.name), title.cex = 1, genotype.plotting.names = c("AA", "AB",
+  "BB"), ribbon.width = 10, xlim = NA, ylim = NA)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
@@ -27,7 +26,19 @@ predictive.plot(cross, mean.formula, var.formula, marker.name, phen.name,
 
 \item{phen.name}{The categorical phenotype the effects of which we want to investigate and visualize.}
 
+\item{title}{Optionally, title for the plot.  Defaults to 'Predictive of [response phenotype] from
+  [predictive phenotype (e.g. sex)] and [marker name]}
+
+\item{title.cex}{Optionally, character expansion for title.  Defaults to 1.}
+
 \item{genotype.plotting.names}{Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.}
+
+\item{ribbon.width}{Optionally, width of ribbon connecting same-phenotype (different genotype) groups.
+  Defaults to 10.}
+
+\item{xlim}{Optionally specify x-axis limits.  Defaults to data-dependent.}
+
+\item{ylim}{Optionally specify y-axis limits.  Defaults to data.dependent.}
 }
 \value{
 None.  Only makes plot.
@@ -41,6 +52,13 @@ None.  Only makes plot.
 
 
 none
+}
+\examples{
+\dontrun{
+   predictive.plot(cross = my.cross,
+                   marker.name = 'chrA_markerB',
+                   phen.name = 'my.categorical.phen')
+ }
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}

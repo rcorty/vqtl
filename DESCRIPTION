@@ -1,15 +1,15 @@
 Package: vqtl
 Type: Package
-Title: Genome Scans to Accomodate and Target Genetic and Non-Genetic Effects on Trait Variance
-Version: 0.1
+Title: Genome Scans to Accommodate and Target Genetic and Non-Genetic Effects on Trait Variance
+Version: 1.0
 Date: 2016-03-04
 Author: Robert Corty
 Maintainer: Robert Corty <rcorty@gmail.com>
 Description: In recognition that there are many factors (genetic loci, macro-genetic factors such as sex,
   and environmental factors) that influence the environmental variation, the 'vqtl' package conducts genome
-  scans that accomodate and target these factors.  The main functions of this pacakge, \code{scanonevar} and
-  \code{scanonevar.perm} take as input a cross object from the popular \pkg{qtl} package.
+  scans that accommodate and target these factors.  The main functions of this package, scanonevar() and
+  scanonevar.perm() take as input a cross object from the popular 'qtl' package.
 Depends: R (>= 2.14.0), dglm, evd, dplyr, qtl
-Imports: RColorBrewer, gtools, stringr, plyr, scales
+Imports: RColorBrewer, gtools, stringr, plyr, scales, graphics, grDevices
 License: GPL-3
 LazyData: TRUE

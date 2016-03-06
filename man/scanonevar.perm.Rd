@@ -43,6 +43,13 @@ It is recommended to use approximately 1000 permuted scans to produce highly-rep
    function to many computers in parallel, carefully setting the seed on each computer to insure
    pseudo-randomness.
 }
+\examples{
+\dontrun{
+   my.perms <- scanonevar.perm(cross = my.cross,
+                               n.perms = 10))
+
+ }
+}
 \author{
 Robert Corty \email{rcorty@gmail.com}
 }

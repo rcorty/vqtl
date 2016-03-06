@@ -7,6 +7,11 @@ importFrom(gtools, mixedsort)
 importFrom(stringr, str_pad)
 importFrom(plyr, mapvalues)
 importFrom(scales, alpha)
+importFrom("grDevices", "col2rgb", "rgb")
+importFrom("graphics", "abline", "axis", "legend", "lines", "mtext",
+           "par", "plot", "rect", "segments", "text")
+importFrom("stats", "aggregate", "drop.terms", "end", "fitted", "lm",
+           "predict", "reformulate", "sd", "start", "terms", "formula")
 
 S3method(summary, scanonevar)
 S3method(plot, scanonevar)

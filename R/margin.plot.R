@@ -13,11 +13,26 @@
 #'  @param marginal.marker.names a list of marker names, whose values will be averaged over (put on the x-axis).
 #'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
 #'  @param subset the subset of individuals to use
-#'  @param ... additional graphical parameters
+#'  @param col optionally, color of dots, as in base R graphics.  Defaults to gray.
+#'  @param pch optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).
+#'  @param my.xlab optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.
+#'  @param my.ylab optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.
+#'  @param title optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.
+#'  @param title.cex optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.
+#'  @param circle.alpha optionally, alpha (transparency) of discs.  Defaults to 0.2.
 #'
 #'  @return None.  Only makes plot.
 #'
 #'  @details none
+#'
+#'  @examples
+#'  \dontrun{
+#'    margin.plot(cross = my.cross,
+#'                focal.phenotype.name = my.phenotype,
+#'                marginal.phen.name = list('sex', 'age'),
+#'                marginal.marker.name = list('chrA_markerB', 'chrC_markerD'))
+#'
+#'  }
 #'
 #'
 margin.plot <- function(cross,
@@ -30,11 +45,9 @@ margin.plot <- function(cross,
                         pch = 19,
                         my.xlab = marginal.marker.name,
                         my.ylab = focal.phenotype.name,
-                        inside = FALSE,
                         title = paste(focal.phenotype.name, 'by', marginal.phen.name),
                         title.cex = 1.5,
-                        circle.alpha = 0.2,
-                        ...) {
+                        circle.alpha = 0.2) {
 
   if (any(missing(cross), missing(focal.phenotype.name), !(focal.phenotype.name %in% names(cross$pheno)))) {
     stop('Must provide a cross and a focal phenotype in that cross.')
@@ -42,13 +55,6 @@ margin.plot <- function(cross,
 
   num.plots <- sum(length(marginal.phen.names), length(marginal.marker.names))
   if (num.plots == 0) { stop('Must provide a marginal phenotype or marker.')}
-
-  #   # store current graphical parameters and customize them for this plot
-  #   start.pars <- par(no.readonly = TRUE)
-  #
-  #   # todo: if the user is already doing something with mfrow, dont interfere
-  #   if (!inside) { par(mfrow = c(1, num.plots)) }
-  par(mar = c(2, 4, 6, 2))
 
   focal.phen <- cross$pheno[[focal.phenotype.name]][subset]
   if (!missing(col) & length(col) == nind(cross)) {
@@ -73,8 +79,7 @@ margin.plot <- function(cross,
          main = NA,
          col = alpha(col, 0.5),
          pch = pch,
-         axes = FALSE,
-         ...)
+         axes = FALSE)
     mtext(text = title, side = 3, line = 1, cex = title.cex)
 
     if (is.factor(marginal.phen)) {
@@ -96,9 +101,7 @@ margin.plot <- function(cross,
          axes = FALSE,
          col = alpha(col, circle.alpha),
          pch = pch,
-         cex.main = title.cex,
-         ...)
-    # axis(side = 1, at = 1:3, labels = genotype.plotting.names, tick = TRUE)
+         cex.main = title.cex)
     axis(side = 2)
     mtext(text = genotype.plotting.names, side = 1, line = 0, at = 1:3)
     mtext(side = 1, text = my.xlab, line = 2)

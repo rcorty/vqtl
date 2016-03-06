@@ -16,10 +16,16 @@
 #'  @param legend.pos Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.
 #'  @param gap Optionally, The space between chromosomes in Mb.  Defaults to 25.
 #'  @param incl.markers Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.
-#'  @param main Optionally, a title for the plot.  Defaults to the name of the phenotype from the scanonevar.
 #'  @param ylim Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.
 #'  @param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.
-#'  @param ... Additionaly graphical parameters.
+#'  @param legend.ncol Optionally, the number of columns in the legend.  Defaults to 2.
+#'  @param legend.cex Optionally, character expansion for the legend.  Defaults to 1.
+#'  @param title Optionally, title for plot.  Defaults to phenotype from scanonevar object.
+#'  @param title.cex Optionally, title character expansion.  Defaults to 1.5
+#'  @param alpha.side Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'
+#'  @param line.width Optionally, width of plotted lines.  Defaults to 1.
+#'  @param vertical.bar Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.
+#'  @param ... optional graphical parameters
 #'
 #'  @return Returns nothing.  Only makes the plot.
 #'
@@ -27,9 +33,37 @@
 #'    float type, this function produces an error.  The author is open to suggestions on how
 #'    to deal with this situation better.
 #'
+#'    These plots look a lot better when both x (the scanone.var object) and y (optional scanone
+#'    for comparison) are in units of empirical p values than when they are in LOD units.
+#'
 #'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
 #'  @details none
+#'
+#'  @examples
+#'  \dontrun{
+#'    my.scanonevar <- scanonevar.perm(cross = my.cross,
+#                                      mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                      var.formula = '~ sex + var.QTL.add + var.QTL.dom')
+#'
+#'    my.perms <- scanonevar.perm(cross = my.cross,
+#                                 mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                 var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                                n.perms = 10))
+#'
+#'    scanonevar.to.p.values(scanonevar = my.scanonevar,
+#'                           perm.scan.maxes = my.perms)
+#'
+#'    plot(x = my.scanonevar)
+#'
+#'    my.scanone <- scanone(cross = my.cross,
+#'                          pheno.col = 'my.phenotype',
+#'                          addcovar = 'sex')
+#'
+#'    plot(x = my.scanonevar, y = my.scanone)
+#'  }
+#'
+#'
 #'
 
 plot.scanonevar <- function(x,
@@ -65,7 +99,6 @@ plot.scanonevar <- function(x,
   }
 
   # store current graphical parameters and customize them for this plot
-  # start.pars <- par(no.readonly = TRUE)
   if (show.equations) {
     par(mar = c(2,3,5,2))
   } else {

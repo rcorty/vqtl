@@ -13,9 +13,13 @@ units(object)
 units of scanonevar object
 }
 \description{
-
+Utility function to get the units of a scanonevar, which is either 'LODs'
+   (logarithm of the odds between null and alternative model) or 'emp.ps' (empirically
+   determined p.value of that LOD)
 }
 \details{
+
+
 none
 }
 \author{

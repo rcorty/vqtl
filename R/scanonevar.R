@@ -20,11 +20,22 @@
 #'  @param chrs The subset of chromosomes to scan (defaults to all chromosomes).
 #'  @param exclusion.window Numeric between 0 and 1 indicating how tightly a locus must be correlated with a covariate to be skipped.
 #'    e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.
+#'  @param family Family of distribution to be modeled.  Defaults to 'gaussian'.
+#'    See dglm and glm documentation for other options.  Most notable other options is 'poisson'
 #'
 #'  @return A scanonevar object.
 #'
 #'  @details none
 #'
+#'  @examples
+#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'    my.cross <- calc.genoprob(my.cross)
+#'
+#'    scanonevar(cross = my.cross,
+#'               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'               var.formula = '~sex + var.QTL.add + var.QTL.dom',
+#'               chrs = 1:3)
 #'
 scanonevar <- function(cross,
                        mean.formula,

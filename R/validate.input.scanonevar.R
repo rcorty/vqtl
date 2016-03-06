@@ -56,6 +56,15 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
     }
   }
 
+
+  # ensure formulae are formulae
+  if (class(mean.formula) != 'formula') {
+    mean.formula <- formula(mean.formula)
+  }
+  if (class(var.formula) != 'formula') {
+    var.formula <- formula(var.formula)
+  }
+
   # get the names of all the variables needed (markers and phenotypes)
   mean.var.names <- all.vars(mean.formula, unique = TRUE)
   var.var.names <- all.vars(var.formula, unique = TRUE)

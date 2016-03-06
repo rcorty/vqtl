@@ -14,6 +14,8 @@
 #'  @return None.  Only prints results to screen.
 #'
 #'  @details none
+#'
+#'
 summary.scanonevar <- function(object, thresh, ...) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined

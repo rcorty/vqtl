@@ -16,6 +16,21 @@
 #'
 #'  @details none
 #'
+#'  @examples
+#'  \dontrun{
+#'    my.scanonevar <- scanonevar.perm(cross = my.cross,
+#                                      mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                      var.formula = '~ sex + var.QTL.add + var.QTL.dom')
+#'
+#'    my.perms <- scanonevar.perm(cross = my.cross,
+#                                 mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                 var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                                n.perms = 10))
+#'
+#'    scanonevar.to.p.values(scanonevar = my.scanonevar,
+#'                           perm.scan.maxes = my.perms)
+#'  }
+#'
 
 scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
 

@@ -23,6 +23,15 @@
 #'
 #'  @details none
 #'
+#'  @examples
+#'  \dontrun{
+#'    my.perms <- scanonevar.perm(cross = my.cross,
+#                                 mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                 var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                                n.perms = 10))
+#'
+#'  }
+#'
 scanonevar.perm <- function(cross,
                             mean.formula,
                             var.formula,

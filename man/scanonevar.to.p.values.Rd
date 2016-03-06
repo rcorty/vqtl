@@ -25,6 +25,17 @@ Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 
 
 none
 }
+\examples{
+\dontrun{
+   my.scanonevar <- scanonevar.perm(cross = my.cross,
+
+   my.perms <- scanonevar.perm(cross = my.cross,
+                               n.perms = 10))
+
+   scanonevar.to.p.values(scanonevar = my.scanonevar,
+                          perm.scan.maxes = my.perms)
+ }
+}
 \author{
 Robert Corty \email{rcorty@gmail.com}
 }
