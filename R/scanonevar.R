@@ -43,6 +43,7 @@ scanonevar <- function(cross,
                        return.effects = FALSE,
                        return.effect.ses = FALSE,
                        return.effect.ps = FALSE,
+                       return.models = FALSE,
                        chrs = unique(names(cross$geno)),
                        exclusion.window = 0.8,
                        family = stats::gaussian)
@@ -63,6 +64,7 @@ scanonevar <- function(cross,
                         return.effects = return.effects,
                         return.effect.ses = return.effect.ses,
                         return.effect.ps = return.effect.ps,
+                        return.models = return.models,
                         cor.threshold = exclusion.window,
                         family = family)
 

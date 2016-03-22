@@ -39,6 +39,7 @@ scan.via.dglm <- function(mean.alt.formula,
                           return.effects = FALSE,
                           return.effect.ses = FALSE,
                           return.effect.ps = FALSE,
+                          return.models = FALSE,
                           cor.threshold = 0.8,
                           perm = 1:nrow(genoprobs),
                           family = 'gaussian')
@@ -82,7 +83,7 @@ scan.via.dglm <- function(mean.alt.formula,
   log10lik.bothalt <- log10lik.bothnull <- log10lik.meanalt <- log10lik.meannull <- log10lik.varalt <- log10lik.varnull <- NA
   chrtype <- rep(NA, length(marker.names))
 
-  if (any(return.effects, return.effect.ses, return.effect.ps)) {
+  if (any(return.effects, return.effect.ses, return.effect.ps, return.models)) {
     num.mean.effects <- length(all.vars(mean.alt.formula)) # minus 1 for response, plus one for intercept term
     num.var.effects <- length(all.vars(var.alt.formula)) + 1 # add one for the intercept
     num.markers <- length(marker.names)
@@ -106,6 +107,9 @@ scan.via.dglm <- function(mean.alt.formula,
                        dimnames = list(marker.names,
                                        c('p.mean.intercept', paste0('p.mean.', all.vars(mean.alt.formula)[-1]),
                                          'p.var.intercept', paste0('p.var.', all.vars(var.alt.formula)))))
+  }
+  if (return.models) {
+    models <- vector(mode = 'list', length = num.markers)
   }
 
   # calculate null for joint-test
@@ -144,20 +148,18 @@ scan.via.dglm <- function(mean.alt.formula,
                                   dformula = var.alt.formula,
                                   data = mapping.df,
                                   family = family),
-                             error = function(e) NA)
+                             error = function(e) list(m2loglik = NA))
 
-    log10lik.bothalt <- ifelse(test = identical(both.alt.fit, NA), yes = NA, no = -0.5*both.alt.fit$m2loglik / log(10))
+    log10lik.bothalt <- -0.5*both.alt.fit$m2loglik / log(10)
 
-    if (!identical(both.alt.fit, NA)) {
+    if (!is.na(both.alt.fit$m2loglik)) {
 
       if (any(return.effects, return.effect.ses, return.effect.ps)) {
         if (ncol(marker.genoprobs == 3)) {
-
           mean.indices <- 1:(num.mean.effects)
           var.indices <- (num.mean.effects + 1):(num.mean.effects + num.var.effects)
         }
         if (ncol(marker.genoprobs) == 2) {
-
           mean.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,mean.indices]))
           mean.indices <- mean.indices[-mean.idx.to.rm]
 
@@ -176,6 +178,9 @@ scan.via.dglm <- function(mean.alt.formula,
       if (return.effect.ps) {
         effect.ps[marker.idx, mean.indices] <- summary(both.alt.fit)$coef[,'Pr(>|t|)']
         effect.ps[marker.idx, var.indices] <- summary(both.alt.fit$dispersion.fit)$coef[,'Pr(>|t|)']
+      }
+      if (return.models) {
+        models[[marker.idx]] <- both.alt.fit
       }
     }
 
@@ -285,7 +290,6 @@ scan.via.dglm <- function(mean.alt.formula,
   if (return.effect.ps) {
     varscan <- bind_cols(varscan, data.frame(effect.ps))
   }
-
   class(varscan) <- c('scanonevar', class(varscan))
   attr(varscan, 'pheno') <- as.character(mean.null.formula[[2]])
   attr(varscan, 'units') <- 'lods'
@@ -294,6 +298,10 @@ scan.via.dglm <- function(mean.alt.formula,
   attr(varscan, 'mean.alt.formula') <- mean.alt.formula
   attr(varscan, 'var.alt.formula') <- var.alt.formula
   attr(varscan, 'null.fit') <- both.null.fit
+
+  if (return.models) {
+    return(list(varscan = varscan, models = models))
+  }
 
   return(varscan)
 }
