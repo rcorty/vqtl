@@ -15,9 +15,9 @@
 #'  @param subset the subset of individuals to use
 #'  @param col optionally, color of dots, as in base R graphics.  Defaults to gray.
 #'  @param pch optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).
-#'  @param my.xlab optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.
-#'  @param my.ylab optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.
-#'  @param title optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.
+#'  @param xlab.override optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.
+#'  @param ylab.override optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.
+#'  @param title.override optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.
 #'  @param title.cex optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.
 #'  @param circle.alpha optionally, alpha (transparency) of discs.  Defaults to 0.2.
 #'
@@ -26,13 +26,18 @@
 #'  @details none
 #'
 #'  @examples
-#'  \dontrun{
-#'    margin.plot(cross = my.cross,
-#'                focal.phenotype.name = my.phenotype,
-#'                marginal.phen.name = list('sex', 'age'),
-#'                marginal.marker.name = list('chrA_markerB', 'chrC_markerD'))
+#'    set.seed(27599)
+#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'    my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                      mean = my.cross$geno$`1`$data[,5],
+#'                                      sd = my.cross$geno$`2`$data[,5])
+#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'    my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
 #'
-#'  }
+#'    margin.plot(cross = my.cross,
+#'                focal.phenotype.name = 'phenotype',
+#'                marginal.phen.name = list('sex', 'cage'),
+#'                marginal.marker.name = list('D1M5', 'D2M5'))
 #'
 #'
 margin.plot <- function(cross,
@@ -43,9 +48,9 @@ margin.plot <- function(cross,
                         subset = 1:nind(cross),
                         col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
                         pch = 19,
-                        my.xlab = marginal.marker.name,
-                        my.ylab = focal.phenotype.name,
-                        title = paste(focal.phenotype.name, 'by', marginal.phen.name),
+                        xlab.override = NA,
+                        ylab.override = NA,
+                        title.override = NA,
                         title.cex = 1.5,
                         circle.alpha = 0.2) {
 
@@ -63,29 +68,37 @@ margin.plot <- function(cross,
 
   for (marginal.phen.name in marginal.phen.names) {
 
-    marginal.phen <- cross$pheno[[marginal.phen.name]][subset]
-    if (is.factor(marginal.phen)) {
-      lev.names <- levels(marginal.phen)
-      plotting.phen <- as.numeric(marginal.phen)
-    } else {
-      plotting.phen <- marginal.phen
-    }
+    marginal.phen <- factor(cross$pheno[[marginal.phen.name]][subset])
+    plotting.phen <- as.numeric(marginal.phen)
 
     plot(x = jitter(plotting.phen),
          y = focal.phen,
-         xlab = marginal.phen.name,
-         ylab = NA,
          xaxt = 'n',
-         main = NA,
-         col = alpha(col, 0.5),
-         pch = pch,
-         axes = FALSE)
-    mtext(text = title, side = 3, line = 1, cex = title.cex)
+         xlab = NA,
+         ylab = NA,
+         axes = FALSE,
+         col = alpha(col, circle.alpha),
+         pch = pch)
 
-    if (is.factor(marginal.phen)) {
-      axis(side = 1, at = unique(marginal.phen), labels = lev.names, tick = TRUE)
-    }
+    # x axis stuff
+    mtext(side = 1, text = ifelse(test = is.na(xlab.override),
+                                  yes = marginal.phen.name,
+                                  no = xlab.override),
+          line = 2)
+    mtext(side = 1, at = 1:length(levels(marginal.phen)), text = levels(marginal.phen))
 
+    # y axis stuff
+    axis(side = 2)
+    mtext(side = 2, text = ifelse(test = is.na(ylab.override),
+                                  yes = focal.phenotype.name,
+                                  no = ylab.override),
+          line = 2)
+
+    # plot title
+    mtext(side = 3, text = ifelse(test = is.na(title.override),
+                                  yes = paste(focal.phenotype.name, 'by', marginal.phen.name),
+                                  no = title.override),
+          line = 1, cex = title.cex)
   }
 
   for (marginal.marker.name in marginal.marker.names) {
@@ -100,13 +113,21 @@ margin.plot <- function(cross,
          ylab = NA,
          axes = FALSE,
          col = alpha(col, circle.alpha),
-         pch = pch,
-         cex.main = title.cex)
+         pch = pch)
     axis(side = 2)
     mtext(text = genotype.plotting.names, side = 1, line = 0, at = 1:3)
-    mtext(side = 1, text = my.xlab, line = 2)
-    mtext(side = 2, text = my.ylab, line = 2)
-    mtext(side = 3, text = title, line = 1, cex = title.cex)
+    mtext(side = 1, text = ifelse(test = is.na(xlab.override),
+                                  yes = marginal.marker.name,
+                                  no = xlab.override),
+          line = 2)
+    mtext(side = 2, text = ifelse(test = is.na(ylab.override),
+                                  yes = focal.phenotype.name,
+                                  no = ylab.override),
+          line = 2)
+    mtext(side = 3, text = ifelse(test = is.na(title.override),
+                                  yes = paste(focal.phenotype.name, 'by', marginal.marker.name),
+                                  no = title.override),
+          line = 1, cex = title.cex)
 
     means <- aggregate(x = focal.phen, by = list(genotypes), FUN = mean)[,2]
     sds <- aggregate(x = focal.phen, by = list(genotypes), FUN = sd)[,2]

@@ -26,14 +26,27 @@
 #'  @details none
 #'
 #'  @examples
-#'  \dontrun{
-#'    predictive.plot(cross = my.cross,
-#                     mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#                     var.formula = '~ sex + var.QTL.add + var.QTL.dom'
-#'                    marker.name = 'chrA_markerB',
-#'                    phen.name = 'my.categorical.phen')
-#'  }
 #'
+#'    set.seed(27599)
+#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'    my.cross <- calc.genoprob(my.cross)
+#'    my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                      mean = my.cross$geno$`1`$data[,5],
+#'                                      sd = my.cross$geno$`2`$data[,5])
+#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'    my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
+#'
+#'    predictive.plot(cross = my.cross,
+#'                    mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                    var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                    marker.name = 'D1M5',
+#'                    phen.name = 'sex')
+#'
+#'    predictive.plot(cross = my.cross,
+#'                    mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                    var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                    marker.name = 'D2M5',
+#'                    phen.name = 'sex')
 #'
 predictive.plot <- function(cross,
                             mean.formula,
@@ -56,6 +69,9 @@ predictive.plot <- function(cross,
   # store current graphical parameters and customize them for this plot
   # start.pars <- par(no.readonly = TRUE)
   # par(mar = c(2, 3, 6, 2))
+
+  mean.formula <- formula(mean.formula)
+  var.formula <- formula(var.formula)
 
   phenotypes <- cross$pheno[[phen.name]]
   genoprobs <- get.genoprobs.by.marker.name(cross = cross, marker.name = marker.name)
