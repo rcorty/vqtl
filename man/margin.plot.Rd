@@ -7,9 +7,8 @@
 margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
   marginal.marker.names = NULL, genotype.plotting.names = c("A", "H", "B"),
   subset = 1:nind(cross), col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
-  pch = 19, my.xlab = marginal.marker.name,
-  my.ylab = focal.phenotype.name, title = paste(focal.phenotype.name, "by",
-  marginal.phen.name), title.cex = 1.5, circle.alpha = 0.2)
+  pch = 19, xlab.override = NA, ylab.override = NA, title.override = NA,
+  title.cex = 1.5, circle.alpha = 0.2)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
@@ -28,11 +27,11 @@ margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
 
 \item{pch}{optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).}
 
-\item{my.xlab}{optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.}
+\item{xlab.override}{optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.}
 
-\item{my.ylab}{optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.}
+\item{ylab.override}{optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.}
 
-\item{title}{optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.}
+\item{title.override}{optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.}
 
 \item{title.cex}{optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.}
 
@@ -53,13 +52,18 @@ None.  Only makes plot.
 none
 }
 \examples{
-\dontrun{
-   margin.plot(cross = my.cross,
-               focal.phenotype.name = my.phenotype,
-               marginal.phen.name = list('sex', 'age'),
-               marginal.marker.name = list('chrA_markerB', 'chrC_markerD'))
+set.seed(27599)
+   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+   my.cross$pheno$phenotype <- rnorm(n = 100,
+                                     mean = my.cross$geno$`1`$data[,5],
+                                     sd = my.cross$geno$`2`$data[,5])
+   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+   my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
 
- }
+   margin.plot(cross = my.cross,
+               focal.phenotype.name = 'phenotype',
+               marginal.phen.name = list('sex', 'cage'),
+               marginal.marker.name = list('D1M5', 'D2M5'))
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}

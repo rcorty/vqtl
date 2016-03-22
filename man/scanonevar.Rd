@@ -6,8 +6,8 @@
 \usage{
 scanonevar(cross, mean.formula, var.formula, return.effects = FALSE,
   return.effect.ses = FALSE, return.effect.ps = FALSE,
-  chrs = unique(names(cross$geno)), exclusion.window = 0.8,
-  family = stats::gaussian)
+  return.models = FALSE, chrs = unique(names(cross$geno)),
+  exclusion.window = 0.8, family = stats::gaussian)
 }
 \arguments{
 \item{cross}{The cross on which the scanonevar will be conducted.}

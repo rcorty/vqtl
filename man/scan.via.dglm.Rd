@@ -7,7 +7,8 @@
 scan.via.dglm(mean.alt.formula, var.alt.formula, genoprobs, mapping.df,
   chr.by.marker, pos.by.marker, marker.names, return.effects = FALSE,
   return.effect.ses = FALSE, return.effect.ps = FALSE,
-  cor.threshold = 0.8, perm = 1:nrow(genoprobs), family = "gaussian")
+  return.models = FALSE, cor.threshold = 0.8, perm = 1:nrow(genoprobs),
+  family = "gaussian")
 }
 \arguments{
 \item{mean.alt.formula}{The formula for the trait mean in the alternative model.

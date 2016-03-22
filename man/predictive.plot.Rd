@@ -54,11 +54,26 @@ None.  Only makes plot.
 none
 }
 \examples{
-\dontrun{
+set.seed(27599)
+   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+   my.cross <- calc.genoprob(my.cross)
+   my.cross$pheno$phenotype <- rnorm(n = 100,
+                                     mean = my.cross$geno$`1`$data[,5],
+                                     sd = my.cross$geno$`2`$data[,5])
+   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+   my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
+
    predictive.plot(cross = my.cross,
-                   marker.name = 'chrA_markerB',
-                   phen.name = 'my.categorical.phen')
- }
+                   mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+                   var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+                   marker.name = 'D1M5',
+                   phen.name = 'sex')
+
+   predictive.plot(cross = my.cross,
+                   mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+                   var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+                   marker.name = 'D2M5',
+                   phen.name = 'sex')
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}

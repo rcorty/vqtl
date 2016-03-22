@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr), units.to.plot,
   col = c("black", "blue", "red", "forestgreen"), bandcol = "lightgray",
-  legends = c("DGLM-joint", "DGLM-mean", "DGLM-var", "LM"),
+  legends = if (is.null(y)) {     c("DGLM-joint", "DGLM-mean", "DGLM-var") }
+  else {     c("DGLM-joint", "DGLM-mean", "DGLM-var", "LM") },
   legend.pos = "top", legend.ncol = 2, legend.cex = 1, gap = 25,
   incl.markers = TRUE, title = attr(x, "pheno"), title.cex = 1.5,
   ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
@@ -73,23 +74,22 @@ If such a strong signal was observed that the empirical p-value underflows R's
    for comparison) are in units of empirical p values than when they are in LOD units.
 }
 \examples{
-\dontrun{
-   my.scanonevar <- scanonevar.perm(cross = my.cross,
+set.seed(27599)
+   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+   my.cross$pheno$phenotype <- rnorm(n = 100,
+                                     mean = my.cross$geno$`1`$data[,5],
+                                     sd = my.cross$geno$`2`$data[,5])
+   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+   my.cross <- calc.genoprob(my.cross)
 
-   my.perms <- scanonevar.perm(cross = my.cross,
-                               n.perms = 10))
+   my.scanonevar <- scanonevar(cross = my.cross,
+                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
+                               chrs = 1:3)
 
-   scanonevar.to.p.values(scanonevar = my.scanonevar,
-                          perm.scan.maxes = my.perms)
+   summary(my.scanonevar)
 
-   plot(x = my.scanonevar)
-
-   my.scanone <- scanone(cross = my.cross,
-                         pheno.col = 'my.phenotype',
-                         addcovar = 'sex')
-
-   plot(x = my.scanonevar, y = my.scanone)
- }
+   plot(my.scanonevar)
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}
