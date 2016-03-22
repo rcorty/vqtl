@@ -1,15 +1,21 @@
-# ######### Simulate mQTL and vQTL modeled with scanonevar
-# library(qtl)
-# library(vqtl)
-#
-# B6.C58.cross <- readRDS('~/Dropbox (ValdarLab)/Aim1_for_local/vQTL_reanalysis/rds/B6_C58_cross_rem2ol_transformed_and_fa.RDS')
-#
-#
-#
-# a <- scanonevar(cross = B6.C58.cross,
-#            mean.formula = formula('TOTDIST ~ sex + mean.QTL.add + mean.QTL.dom'),
-#            var.formula = formula('~ sex + var.QTL.add + var.QTL.dom'),
-#            chrs = c(19, 'X'))
+######### Simulate mQTL and vQTL modeled with scanonevar
+library(vqtl)
+
+my.cross <- sim.cross(map = sim.map(), type = 'f2')
+my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+my.cross$pheno$phenotype <- rnorm(n = 100, mean = my.cross$geno$`2`$data[,4])
+my.cross <- calc.genoprob(my.cross)
+
+a <- scanonevar(cross = my.cross,
+                mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+                var.formula = '~sex + var.QTL.add + var.QTL.dom',
+                return.models = TRUE,
+                chrs = 1:3)
+
+plot(a$varscan)
+
+
+
 #
 # b <- scanone(cross = B6.C58.cross, chr = c(19, 'X'), pheno.col = 10)
 # plot(a, b)
