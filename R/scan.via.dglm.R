@@ -40,6 +40,7 @@ scan.via.dglm <- function(mean.alt.formula,
                           return.effect.ses = FALSE,
                           return.effect.ps = FALSE,
                           return.models = FALSE,
+                          return.null.fit = FALSE,
                           cor.threshold = 0.8,
                           perm = 1:nrow(genoprobs),
                           family = 'gaussian')
@@ -297,7 +298,7 @@ scan.via.dglm <- function(mean.alt.formula,
   if (test.var.effect) { attr(varscan, 'var.null.formula') <- var.null.formula }
   attr(varscan, 'mean.alt.formula') <- mean.alt.formula
   attr(varscan, 'var.alt.formula') <- var.alt.formula
-  attr(varscan, 'null.fit') <- both.null.fit
+  if (return.null. fit) { attr(varscan, 'null.fit') <- both.null.fit }
 
   if (return.models) {
     return(list(varscan = varscan, models = models))
