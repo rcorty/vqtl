@@ -161,10 +161,10 @@ scan.via.dglm <- function(mean.alt.formula,
           var.indices <- (num.mean.effects + 1):(num.mean.effects + num.var.effects)
         }
         if (ncol(marker.genoprobs) == 2) {
-          mean.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,mean.indices]))
+          mean.idx.to.rm <- grep(pattern = 'dom', x = colnames(fitted.effects[,mean.indices]))
           mean.indices <- mean.indices[-mean.idx.to.rm]
 
-          var.idx.to.rm <- grep(pattern = 'dom', x = colnames(effect.ps[,var.indices]))
+          var.idx.to.rm <- grep(pattern = 'dom', x = colnames(fitted.effects[,var.indices]))
           var.indices <- var.indices[-var.idx.to.rm]
         }
       }
@@ -298,7 +298,7 @@ scan.via.dglm <- function(mean.alt.formula,
   if (test.var.effect) { attr(varscan, 'var.null.formula') <- var.null.formula }
   attr(varscan, 'mean.alt.formula') <- mean.alt.formula
   attr(varscan, 'var.alt.formula') <- var.alt.formula
-  if (return.null. fit) { attr(varscan, 'null.fit') <- both.null.fit }
+  if (return.null.fit) { attr(varscan, 'null.fit') <- both.null.fit }
 
   if (return.models) {
     return(list(varscan = varscan, models = models))
