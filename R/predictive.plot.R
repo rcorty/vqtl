@@ -65,10 +65,7 @@ predictive.plot <- function(cross,
   indiv.mean.estim <- indiv.mean.lb <- indiv.mean.ub  <- 'fake.global'
   indiv.var.estim <- indiv.var.lb <- indiv.var.ub  <- 'fake.global'
 
-
-  # store current graphical parameters and customize them for this plot
-  # start.pars <- par(no.readonly = TRUE)
-  # par(mar = c(2, 3, 6, 2))
+  par(mgp = c(3, 0.5, 0))
 
   mean.formula <- formula(mean.formula)
   var.formula <- formula(var.formula)
@@ -184,9 +181,9 @@ predictive.plot <- function(cross,
             ylim = ylim))
   axis(side = 1)
   axis(side = 2)
-  mtext(side = 3, line = 0, cex = title.cex, text = title)
-  mtext(side = 1, text = paste('phenotype mean'), line = 2)
-  mtext(side = 2, text = paste('phenotype SD'), line = 2)
+  mtext(side = 3, line = 1, cex = title.cex, text = title)
+  mtext(side = 1, text = paste('phenotype mean'), line = 1.5)
+  mtext(side = 2, text = paste('phenotype SD'), line = 1.5)
 
 
   # horizontal lines
@@ -231,9 +228,6 @@ predictive.plot <- function(cross,
        text(x = group.mean.estim, y = group.var.estim,
             labels = plotting.genotype, cex = 1.5,
             col = phen.col))
-
-  # reset graphical parameteers to how they were on start
-#   par(start.pars)
 
   # return nothing
   invisible()

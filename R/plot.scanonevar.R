@@ -25,6 +25,7 @@
 #'  @param alpha.side Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'
 #'  @param line.width Optionally, width of plotted lines.  Defaults to 1.
 #'  @param vertical.bar Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.
+#'  @param suppress.chromosome Optionally, suppress the word "Chromosome" across the bottom of the plot
 #'  @param ... optional graphical parameters
 #'
 #'  @return Returns nothing.  Only makes the plot.
@@ -84,6 +85,7 @@ plot.scanonevar <- function(x,
                             alpha.side = 'left',
                             line.width = 1,
                             vertical.bar = NA,
+                            suppress.chromosome = FALSE,
                             ...)
 {
 
@@ -92,16 +94,11 @@ plot.scanonevar <- function(x,
   full.lod <- mean.lod <- var.lod <- 'fake.global'
   emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake.global'
 
+  par(mgp = c(3, 0.5, 0))
+
   # validate scanonevar object
   if (!is.scanonevar(x)) {
     stop(paste('scanonevar argument is not a valid scanonevar object:', attr(is.scanonevar(x), 'why.not')))
-  }
-
-  # store current graphical parameters and customize them for this plot
-  if (show.equations) {
-    par(mar = c(2,3,5,2))
-  } else {
-    par(mar = c(2,3,6,2))
   }
 
   # convert scanone.for.comparison to tbl_df if needed
@@ -171,7 +168,7 @@ plot.scanonevar <- function(x,
   # make plotting area
   xlim <- c(-gap/2, max(coords.x.chr$end) + gap/2)
   plot(-42, -42, xlim = xlim, ylim = ylim,
-       type = 'n', xaxs = 'i',
+       type = 'n', xaxs = 'i', main = NA,
        xlab = NA, ylab = NA, axes = FALSE)
 
   # shade in bg for every other chr
@@ -193,13 +190,13 @@ plot.scanonevar <- function(x,
     mtext(side = 1, text = paste('Chromosome', chrs), at = mean(xlim), line = 1)
   } else {
     mtext(side = 1, text = chrs, at = coords.x.chr$middle, line = 0)
-    mtext(side = 1, text = 'Chromosome', at = mean(xlim), line = 1)
+    if (!suppress.chromosome) { mtext(side = 1, text = 'Chromosome', at = mean(xlim), line = 1) }
   }
 
 
   # draw y axis and label chrs
   axis(side = 2)
-  mtext(side = 2, text = ylab, line = 2, at = mean(ylim))
+  mtext(side = 2, text = ylab, line = 1.5, at = mean(ylim))
 
   # plot lines
   for (test.idx in 1:ncol(coords.y.locus)) {
@@ -289,10 +286,20 @@ plot.scanonevar <- function(x,
 
   # draw the legend
   if (!any(is.null(legends), is.na(legends))) {
-    legend(x = legend.pos,
-           legend = legends,
-           fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
-           x.intersp = 0.3, y.intersp = 1, xjust = 0.5, yjust = 0)
+    if (length(legend.pos) == 1) {
+      legend(x = legend.pos,
+             legend = legends,
+             fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
+             x.intersp = 0.3, y.intersp = 1, xjust = 1, yjust = 0)
+    }
+    if (length(legend.pos) == 2) {
+      legend(x = legend.pos[1],
+             y = legend.pos[2],
+             legend = legends,
+             fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
+             x.intersp = 0.3, y.intersp = 1, xjust = 1, yjust = 0)
+    }
+
   }
 
   # add the title
@@ -310,9 +317,6 @@ plot.scanonevar <- function(x,
   } else {
     mtext(text = title, side = 3, line = 1, cex = title.cex)
   }
-
-  # reset graphical parameters to how they were on start
-  # par(start.pars)
 
   # return nothing
   invisible()

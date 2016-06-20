@@ -54,6 +54,8 @@ margin.plot <- function(cross,
                         title.cex = 1.5,
                         circle.alpha = 0.2) {
 
+  par(mgp = c(3, 0.5, 0))
+
   if (any(missing(cross), missing(focal.phenotype.name), !(focal.phenotype.name %in% names(cross$pheno)))) {
     stop('Must provide a cross and a focal phenotype in that cross.')
   }
@@ -84,7 +86,7 @@ margin.plot <- function(cross,
     mtext(side = 1, text = ifelse(test = is.na(xlab.override),
                                   yes = marginal.phen.name,
                                   no = xlab.override),
-          line = 2)
+          line = 1.5, cex = 1)
     mtext(side = 1, at = 1:length(levels(marginal.phen)), text = levels(marginal.phen))
 
     # y axis stuff
@@ -92,7 +94,7 @@ margin.plot <- function(cross,
     mtext(side = 2, text = ifelse(test = is.na(ylab.override),
                                   yes = focal.phenotype.name,
                                   no = ylab.override),
-          line = 2)
+          line = 1.5, cex = 1)
 
     # plot title
     mtext(side = 3, text = ifelse(test = is.na(title.override),
@@ -114,12 +116,15 @@ margin.plot <- function(cross,
          axes = FALSE,
          col = alpha(col, circle.alpha),
          pch = pch)
-    axis(side = 2)
-    mtext(text = genotype.plotting.names, side = 1, line = 0, at = 1:3)
+
+    # x axis and labels
+    mtext(text = genotype.plotting.names, side = 1, line = 1, at = 1:3)
     mtext(side = 1, text = ifelse(test = is.na(xlab.override),
                                   yes = marginal.marker.name,
                                   no = xlab.override),
-          line = 2)
+          line = 1)
+
+    axis(side = 2)
     mtext(side = 2, text = ifelse(test = is.na(ylab.override),
                                   yes = focal.phenotype.name,
                                   no = ylab.override),
@@ -158,9 +163,6 @@ margin.plot <- function(cross,
              y1 = c(means[2:3], means[2:3] + sds[2:3], means[2:3] - sds[2:3]),
              lty = 2)
   }
-
-  # reset graphical parameteers to how they were on start
-  # par(start.pars)
 
   # return nothing
   invisible()
