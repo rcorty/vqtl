@@ -20,7 +20,8 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
 
   # calc genoprobs if needed
   if (!('prob' %in% names(cross$geno[[1]]))) {
-    stop('Must run calc.genoprob on the cross before passing it to scanonevar')
+    cross <- calc.genoprob(cross = cross, step = 2.0)
+    message('Running calc.genoprob with step=2.0, off.end=0, error.prob=0.0001, map.function="haldane", stepwidth="fixed"')
   }
 
   # turn genoprobs into one big tbl_df

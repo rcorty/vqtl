@@ -1,16 +1,18 @@
 ######### Simulate mQTL and vQTL modeled with scanonevar
+library(qtl)
 library(vqtl)
 
-my.cross <- sim.cross(map = sim.map(), type = 'f2')
-my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-my.cross$pheno$phenotype <- rnorm(n = 100, mean = my.cross$geno$`2`$data[,4])
+my.cross <- sim.cross(map = sim.map(len = rep(100, 10), n.mar = 30, eq.spacing = TRUE),
+                      n.ind = 200,
+                      type = 'f2')
+my.cross$pheno$sex <- rep(x = c(0, 1), each = 100)
+# my.cross$pheno$phenotype <- rnorm(n = 100, mean = my.cross$geno$`2`$data[,4])
 my.cross <- calc.genoprob(my.cross)
 
 a <- scanonevar(cross = my.cross,
                 mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
                 var.formula = '~sex + var.QTL.add + var.QTL.dom',
-                return.models = TRUE,
-                chrs = 1:3)
+                return.models = TRUE)
 
 plot(a$varscan)
 

@@ -38,8 +38,8 @@
 #'               chrs = 1:3)
 #'
 scanonevar <- function(cross,
-                       mean.formula,
-                       var.formula,
+                       mean.formula = 'phenotype ~ mean.QTL.add + mean.QTL.dom',
+                       var.formula = '~ var.QTL.add + var.QTL.dom',
                        return.effects = FALSE,
                        return.effect.ses = FALSE,
                        return.effect.ps = FALSE,
