@@ -36,7 +36,8 @@ scanonevar.perm <- function(cross,
                             mean.formula,
                             var.formula,
                             n.perms,
-                            chrs = unique(names(cross$geno)))
+                            chrs = unique(names(cross$geno)),
+                            verbose.return = FALSE)
 {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
@@ -66,16 +67,20 @@ scanonevar.perm <- function(cross,
                                marker.names = marker.names,
                                perm = sample(nrow(genoprobs)))
 
-    max.for.cran <- function(x) { max(x, na.rm = TRUE) }
-    this.perm <- perm.scan %>%
-      group_by(chrtype) %>%
-      select(full.lod, mean.lod, var.lod) %>%
-      summarise_each(funs(max.for.cran))
+    if (!verbose.return) {
+      max.for.cran <- function(x) { max(x, na.rm = TRUE) }
+      perm.scan <- perm.scan %>%
+        group_by(chrtype) %>%
+        select(full.lod, mean.lod, var.lod) %>%
+        summarise_each(funs(max.for.cran))
+    } else {
+      perm.scan$perm <- perm.idx
+    }
 
     if (is.null(all.perms)) {
-      all.perms <- this.perm
+      all.perms <- perm.scan
     } else {
-      all.perms <- rbind(all.perms, this.perm)
+      all.perms <- rbind(all.perms, perm.scan)
     }
 
   }
