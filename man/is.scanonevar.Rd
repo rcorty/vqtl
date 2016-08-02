@@ -2,24 +2,28 @@
 % Please edit documentation in R/is.scanonevar.R
 \name{is.scanonevar}
 \alias{is.scanonevar}
-\title{@title is.scanonevar}
+\title{is.scanonevar}
 \usage{
 is.scanonevar(sov)
 }
+\arguments{
+\item{sov}{the object which is tested for being a scanonevar object}
+}
+\value{
+Returns TRUE if 'sov' is a valid scanonevar object, with attribute 'why.not' an empty list
+  Returns FALSE if 'sov' is not a valid scanonevar object with attribute 'why.not' a list of
+  error messages for failed tests
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+Tests whether an object is a valid scanonevar object
 }
 \details{
-@description Tests whether an object is a valid scanonevar object
-
-@param sov the object which is tested for being a scanonevar object
-
-@return Returns TRUE if 'sov' is a valid scanonevar object, with attribute 'why.not' an empty list
-   Returns FALSE if 'sov' is not a valid scanonevar object with attribute 'why.not' a list of
-   error messages for failed tests
-
-@details none
-
-@seealso \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
+none
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
+}
+\seealso{
+\code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 }
 

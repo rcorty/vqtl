@@ -2,37 +2,42 @@
 % Please edit documentation in R/convert.scanonevar.to.p.values.R
 \name{scanonevar.to.p.values}
 \alias{scanonevar.to.p.values}
-\title{@title Convert Scanonevar from LODs to Empirical p-values}
+\title{Convert Scanonevar from LODs to Empirical p-values}
 \usage{
 scanonevar.to.p.values(scanonevar, perm.scan.maxes)
 }
+\arguments{
+\item{scanonevar}{the \code{scanonevar} in LODs to be converted to emprirical p values}
+
+\item{perm.scan.maxes}{the tbl_df object returned by scanonevar.perm, the maximum LOD score
+observed on a per-scan, per-chromosome-type basis in permutation scans.}
+}
+\value{
+Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 'emp.ps'}.
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+\code{scanonevar.to.p.values} takes a scanonevar with LODs as units
+  and maxes from permutation scans, estimates an extreme value distribution for the maxes,
+  and returns the probability of observing the LOD scores in those EVDs.
 }
 \details{
-@description \code{scanonevar.to.p.values} takes a scanonevar with LODs as units
-   and maxes from permutation scans, estimates an extreme value distribution for the maxes,
-   and returns the probability of observing the LOD scores in those EVDs.
+none
+}
+\examples{
+\dontrun{
+  my.scanonevar <- scanonevar.perm(cross = my.cross,
 
-@param scanonevar the \code{scanonevar} in LODs to be converted to emprirical p values
- @param perm.scan.maxes the tbl_df object returned by scanonevar.perm, the maximum LOD score
-   observed on a per-scan, per-chromosome-type basis in permutation scans.
+  my.perms <- scanonevar.perm(cross = my.cross,
+                              n.perms = 10))
 
-@return Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 'emp.ps'}.
-
-@seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
-
-@details none
-
-@examples
- \dontrun{
-   my.scanonevar <- scanonevar.perm(cross = my.cross,
-
-my.perms <- scanonevar.perm(cross = my.cross,
-                               n.perms = 10))
-
-scanonevar.to.p.values(scanonevar = my.scanonevar,
-                          perm.scan.maxes = my.perms)
- }
+  scanonevar.to.p.values(scanonevar = my.scanonevar,
+                         perm.scan.maxes = my.perms)
+}
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
+}
+\seealso{
+\code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 }
 

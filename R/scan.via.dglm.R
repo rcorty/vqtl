@@ -1,34 +1,33 @@
-#'  @title Conduct a Scanonevar Using the DGLM Function
+#' @title Conduct a Scanonevar Using the DGLM Function
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{scan.via.dglm} should not typically be called by a user.
-#'  This function is used by both \code{scanonevar} and \code{scanonevar.perm}.
-#'  This function is not typically necessary for a typical user.
+#' @description \code{scan.via.dglm} should not typically be called by a user.
+#' This function is used by both \code{scanonevar} and \code{scanonevar.perm}.
+#' This function is not typically necessary for a typical user.
 #'
-#'  @param mean.alt.formula The formula for the trait mean in the alternative model.
-#'    \code{mean.null.formula} and \code{test.mean.effect} are inferred from it.
-#'  @param var.alt.formula The formula for the trait variance in the alternative model.
-#'    \code{var.null.formula} and \code{test.var.effect} are inferred from it.
-#'  @param genoprobs The probability of each genotype for each individual.
-#'  @param mapping.df The tbl_df with the response, all covariates, and space for the focal genotype.
-#'  @param chr.by.marker a vector of the chromosome name of each marker
-#'  @param pos.by.marker a vector of the position of each marker
-#'  @param marker.names a vector of the name of each marker
-#'  @param cor.threshold Numeric between 0 and 1 indicating how tightly a locus must be correlated with a covariate to be skipped.
-#'    e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.
-#'  @param perm The permutation to apply to the genotypes.  Defaults to identity permutation.
+#' @param mean.alt.formula The formula for the trait mean in the alternative model.
+#'   \code{mean.null.formula} and \code{test.mean.effect} are inferred from it.
+#' @param var.alt.formula The formula for the trait variance in the alternative model.
+#'   \code{var.null.formula} and \code{test.var.effect} are inferred from it.
+#' @param genoprobs The probability of each genotype for each individual.
+#' @param mapping.df The tbl_df with the response, all covariates, and space for the focal genotype.
+#' @param chr.by.marker a vector of the chromosome name of each marker
+#' @param pos.by.marker a vector of the position of each marker
+#' @param marker.names a vector of the name of each marker
+#' @param cor.threshold Numeric between 0 and 1 indicating how tightly a locus must be correlated with a covariate to be skipped.
+#'   e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.
+#' @param perm The permutation to apply to the genotypes.  Defaults to identity permutation.
 #'
-#'  @inheritParams scanonevar
+#' @inheritParams scanonevar
 #'
-#'  @return Returns a scanonevar object.
+#' @return Returns a scanonevar object.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
-#'  @details none
-#'
-#'
-
+#' @details none
+#
+#
 scan.via.dglm <- function(mean.alt.formula,
                           var.alt.formula,
                           genoprobs,

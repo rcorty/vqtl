@@ -1,63 +1,65 @@
-#'  @title plot.scanonevar
+#' @title plot.scanonevar
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{plot.scanonevar} implements the plot generic for objects of class 'scanonevar'.
-#'    Because scanonevar objects can be viewed in terms of LODs or empirical p-values,
-#'    this plotting function checks the 'units' attribute to determine which to plot.
+#' @description \code{plot.scanonevar} implements the plot generic for objects of class 'scanonevar'.
+#' Because scanonevar objects can be viewed in terms of LODs or empirical p-values,
+#' this plotting function checks the 'units' attribute to determine which to plot.
 #'
-#'  @param x the \code{scanonevar} object to be plotted
-#'  @param y Optionally, a \code{scanone} object to be plotting for comparison to the \code{scanonevar} object.
-#'  @param chrs Optionally, the subset of the chromosomes to plot
-#'  @param units.to.plot Optionally, whether to plot 'lods' or 'emp.ps'.
-#'  @param col Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.
-#'  @param bandcol Optionally, a background color for the even-index chromosomes in this scan.
-#'  @param legends Optionally, the name to put for each scan in the legend.  Defaults to \code{c('mean or var', 'mean', 'var', 'scanone for comparison')}.
-#'  @param legend.pos Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.
-#'  @param gap Optionally, The space between chromosomes in Mb.  Defaults to 25.
-#'  @param incl.markers Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.
-#'  @param ylim Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.
-#'  @param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.
-#'  @param legend.ncol Optionally, the number of columns in the legend.  Defaults to 2.
-#'  @param legend.cex Optionally, character expansion for the legend.  Defaults to 1.
-#'  @param title Optionally, title for plot.  Defaults to phenotype from scanonevar object.
-#'  @param title.cex Optionally, title character expansion.  Defaults to 1.5
-#'  @param alpha.side Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'
-#'  @param line.width Optionally, width of plotted lines.  Defaults to 1.
-#'  @param vertical.bar Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.
-#'  @param suppress.chromosome Optionally, suppress the word "Chromosome" across the bottom of the plot
-#'  @param ... optional graphical parameters
+#' @param x the \code{scanonevar} object to be plotted
+#' @param y Optionally, a \code{scanone} object to be plotting for comparison to the \code{scanonevar} object.
+#' @param chrs Optionally, the subset of the chromosomes to plot
+#' @param units.to.plot Optionally, whether to plot 'lods' or 'emp.ps'.
+#' @param col Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.
+#' @param bandcol Optionally, a background color for the even-index chromosomes in this scan.
+#' @param legends Optionally, the name to put for each scan in the legend.  Defaults to \code{c('mean or var', 'mean', 'var', 'scanone for comparison')}.
+#' @param legend.pos Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.
+#' @param gap Optionally, The space between chromosomes in Mb.  Defaults to 25.
+#' @param incl.markers Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.
+#' @param ylim Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.
+#' @param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.
+#' @param legend.ncol Optionally, the number of columns in the legend.  Defaults to 2.
+#' @param legend.cex Optionally, character expansion for the legend.  Defaults to 1.
+#' @param title Optionally, title for plot.  Defaults to phenotype from scanonevar object.
+#' @param title.cex Optionally, title character expansion.  Defaults to 1.5
+#' @param alpha.side Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'
+#' @param line.width Optionally, width of plotted lines.  Defaults to 1.
+#' @param vertical.bar Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.
+#' @param suppress.chromosome Optionally, suppress the word "Chromosome" across the bottom of the plot
+#' @param ... optional graphical parameters
 #'
-#'  @return Returns nothing.  Only makes the plot.
+#' @return Returns nothing.  Only makes the plot.
 #'
-#'  @details If such a strong signal was observed that the empirical p-value underflows R's
+#' @details If such a strong signal was observed that the empirical p-value underflows R's
 #'    float type, this function produces an error.  The author is open to suggestions on how
 #'    to deal with this situation better.
 #'
 #'    These plots look a lot better when both x (the scanone.var object) and y (optional scanone
 #'    for comparison) are in units of empirical p values than when they are in LOD units.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
+#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
-#'  @details none
+#' @export
 #'
-#'  @examples
-#'    set.seed(27599)
-#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'    my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                      mean = my.cross$geno$`1`$data[,5],
-#'                                      sd = my.cross$geno$`2`$data[,5])
-#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'    my.cross <- calc.genoprob(my.cross)
+#' @details none
 #'
-#'    my.scanonevar <- scanonevar(cross = my.cross,
-#'                                mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                                var.formula = '~sex + var.QTL.add + var.QTL.dom',
-#'                                chrs = 1:3)
+#' @examples
+#'   set.seed(27599)
+#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'   my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                     mean = my.cross$geno$`1`$data[,5],
+#'                                     sd = my.cross$geno$`2`$data[,5])
+#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'   my.cross <- calc.genoprob(my.cross)
 #'
-#'    summary(my.scanonevar)
+#'   my.scanonevar <- scanonevar(cross = my.cross,
+#'                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
+#'                               chrs = 1:3)
 #'
-#'    plot(my.scanonevar)
+#'   summary(my.scanonevar)
+#'
+#'   plot(my.scanonevar)
 #'
 #'
 #'

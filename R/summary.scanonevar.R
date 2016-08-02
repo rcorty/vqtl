@@ -1,37 +1,37 @@
-#'  @title Summary of Peaks in Scanonevar
+#' @title Summary of Peaks in Scanonevar
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{summary.scanonevar} prints out the loci in a scanonevar object
-#'    that exceed \code{thresh}.  It is an S3 generic for summary().  It handles scanonevar
-#'    objects in both LOD units and empirical p value units.
+#' @description \code{summary.scanonevar} prints out the loci in a scanonevar object
+#'   that exceed \code{thresh}.  It is an S3 generic for summary().  It handles scanonevar
+#'   objects in both LOD units and empirical p value units.
 #'
-#'  @param object the scanonevar object to be summarized
-#'  @param thresh the threshold over which (for LODs) or under which (for emprirical p values)
-#'    a locus will be printed.
-#'  @param ... additional arguments controlling the summary
+#' @param object the scanonevar object to be summarized
+#' @param thresh the threshold over which (for LODs) or under which (for emprirical p values)
+#'   a locus will be printed.
+#' @param ... additional arguments controlling the summary
 #'
-#'  @return None.  Only prints results to screen.
+#' @return None.  Only prints results to screen.
 #'
-#'  @details none
+#' @details none
 #'
-#'  @examples
-#'    set.seed(27599)
-#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'    my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                      mean = my.cross$geno$`1`$data[,5],
-#'                                      sd = my.cross$geno$`2`$data[,5])
-#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'    my.cross <- calc.genoprob(my.cross)
+#' @examples
+#'   set.seed(27599)
+#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'   my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                     mean = my.cross$geno$`1`$data[,5],
+#'                                     sd = my.cross$geno$`2`$data[,5])
+#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'   my.cross <- calc.genoprob(my.cross)
 #'
-#'    my.scanonevar <- scanonevar(cross = my.cross,
-#'                                mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                                var.formula = '~sex + var.QTL.add + var.QTL.dom',
-#'                                chrs = 1:3)
+#'   my.scanonevar <- scanonevar(cross = my.cross,
+#'                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
+#'                               chrs = 1:3)
 #'
-#'    summary(my.scanonevar)
+#'   summary(my.scanonevar)
 #'
-#'    plot(my.scanonevar)
+#'   plot(my.scanonevar)
 #'
 summary.scanonevar <- function(object, thresh, ...) {
 

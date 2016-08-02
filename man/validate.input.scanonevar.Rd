@@ -2,23 +2,37 @@
 % Please edit documentation in R/validate.input.scanonevar.R
 \name{validate.input.scanonevar}
 \alias{validate.input.scanonevar}
-\title{@title Validate the Input before Conducting a Scanonevar}
+\title{Validate the Input before Conducting a Scanonevar}
 \usage{
 validate.input.scanonevar(cross, mean.formula, var.formula,
   chrs = names(cross$geno))
 }
+\arguments{
+\item{cross}{The cross on which scanonevar will be performed, to be validated}
+
+\item{mean.formula}{The formula that describes the response, and the covariates and genetic effects that influence it.
+The left hand side of the ~ must be a single phenotype that is in the cross.
+The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
+and the special terms: mean.QTL.add (additive effect on the mean) and mean.QTL.dom (dominance deviation from additive on the mean).}
+
+\item{var.formula}{The formula that describes the covariates and the genetic effects that influence residual (environmental) variation.
+There should be nothing on the left of the ~ (Inferred to be residual variation).
+The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
+and the special terms: var.QTL.add (additive effect on the variance) and var.QTL.dom (dominance deviation from additive on the variance).}
+
+\item{chrs}{The subset of chromosomes to scan (defaults to all chromosomes).}
+}
+\value{
+Validated and organized inputs for scanonevar
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+\code{validate.input.scanonevar} should not typically be called by
+  a user.  It validates the input to the \code{scanonevar} function.
 }
 \details{
-@description \code{validate.input.scanonevar} should not typically be called by
-   a user.  It validates the input to the \code{scanonevar} function.
-
-@param cross The cross on which scanonevar will be performed, to be validated
- @inheritParams scanonevar
-
-@return Validated and organized inputs for scanonevar
-
-@details none
+none
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
 }
 

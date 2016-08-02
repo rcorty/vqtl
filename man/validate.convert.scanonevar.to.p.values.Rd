@@ -2,24 +2,29 @@
 % Please edit documentation in R/validate.convert.scanonevar.to.p.values.R
 \name{validate.convert.scanonevar.to.p.values}
 \alias{validate.convert.scanonevar.to.p.values}
-\title{@title Check the Compatibility of the Scanonevar to be Converted with the Permutations to be Used in the Conversion}
+\title{Check the Compatibility of the Scanonevar to be Converted with the Permutations to be Used in the Conversion}
 \usage{
 validate.convert.scanonevar.to.p.values(scan, null.scan.maxes)
 }
+\arguments{
+\item{scan}{the scanonevar to be converted}
+
+\item{null.scan.maxes}{the maximum LODs observed in permutation (null) scans to be used in the conversion.}
+}
+\value{
+Returns TRUE if the two arguments are compatible and FALSE otherwise.
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+\code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
+This function is used by \code{scanonevar.to.emp.ps}
 }
 \details{
-@description \code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
- This function is used by \code{scanonevar.to.emp.ps}
-
-@param scan the scanonevar to be converted
- @param null.scan.maxes the maximum LODs observed in permutation (null) scans to be used in the conversion.
-
-@return Returns TRUE if the two arguments are compatible and FALSE otherwise.
-
-@seealso  \code{\link{scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
-
-@details none
+none
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
+}
+\seealso{
+\code{\link{scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 }
 

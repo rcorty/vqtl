@@ -1,17 +1,17 @@
-#'  @title Validate the Input before Conducting a Scanonevar
+#' @title Validate the Input before Conducting a Scanonevar
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{validate.input.scanonevar} should not typically be called by
-#'    a user.  It validates the input to the \code{scanonevar} function.
+#' @description \code{validate.input.scanonevar} should not typically be called by
+#'   a user.  It validates the input to the \code{scanonevar} function.
 #'
-#'  @param cross The cross on which scanonevar will be performed, to be validated
-#'  @inheritParams scanonevar
+#' @param cross The cross on which scanonevar will be performed, to be validated
+#' @inheritParams scanonevar
 #'
-#'  @return Validated and organized inputs for scanonevar
+#' @return Validated and organized inputs for scanonevar
 #'
-#'  @details none
-#'
+#' @details none
+#
 validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = names(cross$geno))
 {
 
@@ -20,7 +20,7 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
 
   # calc genoprobs if needed
   if (!('prob' %in% names(cross$geno[[1]]))) {
-    cross <- calc.genoprob(cross = cross, step = 2.0)
+    cross <- qtl::calc.genoprob(cross = cross, step = 2.0)
     message('Running calc.genoprob with step=2.0, off.end=0, error.prob=0.0001, map.function="haldane", stepwidth="fixed"')
   }
 

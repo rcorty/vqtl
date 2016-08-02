@@ -1,45 +1,45 @@
-#'  @title Plot Phenotype of interest Averaged (Marginalized) Across Specified Markers and Phenotypes
+#' @title Plot Phenotype of interest Averaged (Marginalized) Across Specified Markers and Phenotypes
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{margin.plot} should be used to visually investigate the relationship
-#'    between the phenotype of interest and other phenotypes.  \code{margin.plot} can also
-#'    be used to visualize the relationship between the phenotype of interest and genetic
-#'    loci of interest, but \code{predictive.plot} is usually preferrable.
+#' @description \code{margin.plot} should be used to visually investigate the relationship
+#'   between the phenotype of interest and other phenotypes.  \code{margin.plot} can also
+#'   be used to visualize the relationship between the phenotype of interest and genetic
+#'   loci of interest, but \code{predictive.plot} is usually preferrable.
 #'
-#'  @param cross The cross object to be plotted
-#'  @param focal.phenotype.name the phenotype to put on the y-axis
-#'  @param marginal.phen.names a list of phenotypes to average over (put on the x-axis).
-#'  @param marginal.marker.names a list of marker names, whose values will be averaged over (put on the x-axis).
-#'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
-#'  @param subset the subset of individuals to use
-#'  @param col optionally, color of dots, as in base R graphics.  Defaults to gray.
-#'  @param pch optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).
-#'  @param xlab.override optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.
-#'  @param ylab.override optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.
-#'  @param title.override optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.
-#'  @param title.cex optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.
-#'  @param circle.alpha optionally, alpha (transparency) of discs.  Defaults to 0.2.
+#' @param cross The cross object to be plotted
+#' @param focal.phenotype.name the phenotype to put on the y-axis
+#' @param marginal.phen.names a list of phenotypes to average over (put on the x-axis).
+#' @param marginal.marker.names a list of marker names, whose values will be averaged over (put on the x-axis).
+#' @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
+#' @param subset the subset of individuals to use
+#' @param col optionally, color of dots, as in base R graphics.  Defaults to gray.
+#' @param pch optionally, plotting character, as in base R graphics.  Defaults to 19 (disc).
+#' @param xlab.override optionally, x axis label, as in base R graphics.  Defaults to the name of the marginal marker.
+#' @param ylab.override optionally, y axis label, as in base R graphics.  Defaults to focal phenotype name.
+#' @param title.override optionally, plot title, as in base R graphics.  Defaults to 'focal phenotype name by marginal phenotype name'.
+#' @param title.cex optionally, character expansion for title, as in base R graphics.  Defaults to 1.5.
+#' @param circle.alpha optionally, alpha (transparency) of discs.  Defaults to 0.2.
 #'
-#'  @return None.  Only makes plot.
+#' @return None.  Only makes plot.
 #'
-#'  @details none
+#' @details none
+#' @export
 #'
-#'  @examples
-#'    set.seed(27599)
-#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'    my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                      mean = my.cross$geno$`1`$data[,5],
-#'                                      sd = my.cross$geno$`2`$data[,5])
-#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'    my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
+#' @examples
+#'   set.seed(27599)
+#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'   my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                     mean = my.cross$geno$`1`$data[,5],
+#'                                     sd = my.cross$geno$`2`$data[,5])
+#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'   my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
 #'
-#'    margin.plot(cross = my.cross,
-#'                focal.phenotype.name = 'phenotype',
-#'                marginal.phen.name = list('sex', 'cage'),
-#'                marginal.marker.name = list('D1M5', 'D2M5'))
-#'
-#'
+#'   margin.plot(cross = my.cross,
+#'               focal.phenotype.name = 'phenotype',
+#'               marginal.phen.name = list('sex', 'cage'),
+#'               marginal.marker.name = list('D1M5', 'D2M5'))
+#
 margin.plot <- function(cross,
                         focal.phenotype.name,
                         marginal.phen.names = NULL,

@@ -1,22 +1,21 @@
-#'  @title Get Local Maxima from Scanonevar
+#' @title Get Local Maxima from Scanonevar
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{get.peaks.from.scanonevar} scans the genome for loci such that
-#'    the locus to the left has a lower value and the locus to the right has a lower value.
-#'    This value can be either LOD score or -log10(p-value)
+#' @description \code{get.peaks.from.scanonevar} scans the genome for loci such that
+#'   the locus to the left has a lower value and the locus to the right has a lower value.
+#'   This value can be either LOD score or -log10(p-value)
 #'
-#'  @param x the \code{scanonevar} object from which the peaks will be identified
-#'  @param thresh Optionally, the threshold over which a value has to be to be considered a peak.
-#'    For example if one locus has a LOD score of 1 and the loci to its sides have LOD score of
-#'    0.9, that's not really an interesting or "peaky" locus.  Defaults to 3 if x is in LOD units
-#'    and 0.05 if x is in p-values
+#' @param x the \code{scanonevar} object from which the peaks will be identified
+#' @param thresh Optionally, the threshold over which a value has to be to be considered a peak.
+#'   For example if one locus has a LOD score of 1 and the loci to its sides have LOD score of
+#'   0.9, that's not really an interesting or "peaky" locus.  Defaults to 3 if x is in LOD units
+#'   and 0.05 if x is in p-values
 #'
-#'  @return tbl_df of identified loci
+#' @return tbl_df of identified loci
 #'
-#'  @details none
-#'
-
+#' @details none
+#
 get.peaks.from.scanonevar <- function(x, thresh) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined

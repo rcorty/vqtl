@@ -1,52 +1,53 @@
-#'  @title Plot Predictive Interval for Categorical Genotype/Phenotype Groups
+#' @title Plot Predictive Interval for Categorical Genotype/Phenotype Groups
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{predictive.plot} should be used to visually investigate loci identified
-#'    with plot.scanonevar or summary.scanonevar.  The user can specify the same mean and variance
-#'    formulae that were used in the scan, or specify new formulae to investigate interactions.
+#' @description \code{predictive.plot} should be used to visually investigate loci identified
+#'   with plot.scanonevar or summary.scanonevar.  The user can specify the same mean and variance
+#'   formulae that were used in the scan, or specify new formulae to investigate interactions.
 #'
-#'  @param cross The cross object to be plotted
-#'  @param marker.name The name of the marker the effects of which we want to investigate and visualize.
-#'  @param phen.name The categorical phenotype the effects of which we want to investigate and visualize.
-#'  @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
-#'  @param title Optionally, title for the plot.  Defaults to 'Predictive of [response phenotype] from
-#'    [predictive phenotype (e.g. sex)] and [marker name]
-#'  @param title.cex Optionally, character expansion for title.  Defaults to 1.
-#'  @param ribbon.width Optionally, width of ribbon connecting same-phenotype (different genotype) groups.
-#'    Defaults to 10.
-#'  @param xlim Optionally specify x-axis limits.  Defaults to data-dependent.
-#'  @param ylim Optionally specify y-axis limits.  Defaults to data.dependent.
+#' @param cross The cross object to be plotted
+#' @param marker.name The name of the marker the effects of which we want to investigate and visualize.
+#' @param phen.name The categorical phenotype the effects of which we want to investigate and visualize.
+#' @param genotype.plotting.names Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.
+#' @param title Optionally, title for the plot.  Defaults to 'Predictive of [response phenotype] from
+#'   [predictive phenotype (e.g. sex)] and [marker name]
+#' @param title.cex Optionally, character expansion for title.  Defaults to 1.
+#' @param ribbon.width Optionally, width of ribbon connecting same-phenotype (different genotype) groups.
+#'   Defaults to 10.
+#' @param xlim Optionally specify x-axis limits.  Defaults to data-dependent.
+#' @param ylim Optionally specify y-axis limits.  Defaults to data.dependent.
 #'
 #'
-#'  @return None.  Only makes plot.
+#' @return None.  Only makes plot.
 #'
-#'  @inheritParams scanonevar
+#' @inheritParams scanonevar
 #'
-#'  @details none
+#' @export
 #'
-#'  @examples
+#' @details none
 #'
-#'    set.seed(27599)
-#'    my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'    my.cross <- calc.genoprob(my.cross)
-#'    my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                      mean = my.cross$geno$`1`$data[,5],
-#'                                      sd = my.cross$geno$`2`$data[,5])
-#'    my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'    my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
+#' @examples
+#'   set.seed(27599)
+#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'   my.cross <- calc.genoprob(my.cross)
+#'   my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                     mean = my.cross$geno$`1`$data[,5],
+#'                                     sd = my.cross$geno$`2`$data[,5])
+#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'   my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
 #'
-#'    predictive.plot(cross = my.cross,
-#'                    mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                    var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-#'                    marker.name = 'D1M5',
-#'                    phen.name = 'sex')
+#'   predictive.plot(cross = my.cross,
+#'                   mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                   var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                   marker.name = 'D1M5',
+#'                   phen.name = 'sex')
 #'
-#'    predictive.plot(cross = my.cross,
-#'                    mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                    var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-#'                    marker.name = 'D2M5',
-#'                    phen.name = 'sex')
+#'   predictive.plot(cross = my.cross,
+#'                   mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                   var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                   marker.name = 'D2M5',
+#'                   phen.name = 'sex')
 #'
 predictive.plot <- function(cross,
                             mean.formula,

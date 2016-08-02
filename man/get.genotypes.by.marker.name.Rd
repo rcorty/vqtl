@@ -2,28 +2,34 @@
 % Please edit documentation in R/get.genotypes.by.marker.name.R
 \name{get.genotypes.by.marker.name}
 \alias{get.genotypes.by.marker.name}
-\title{@title Get Genotypes From a Cross Object By Marker Name}
+\title{Get Genotypes From a Cross Object By Marker Name}
 \usage{
 get.genotypes.by.marker.name(cross, marker.name, use.genoprobs = TRUE,
   as.matrix = FALSE)
 }
+\arguments{
+\item{cross}{The cross from which the genetic information will be extracted.}
+
+\item{marker.name}{The name of the marker where we want to know each individuals most likely genotype.}
+
+\item{use.genoprobs}{Defaults to TRUE.  Should we look at the genoprobs to figure out the
+most likely genotype?  This ensures that there will be no NA.  But in some cases there may be
+significant uncertainty, so this may oversimplify the true situation.}
+
+\item{as.matrix}{Defaults to FALSE.  Should the resulting genotypes be returns as a vector of numeric
+values (default) or a matrix?}
+}
+\value{
+Most likely genotype (or NA) for all individuals in the cross at the specified locus.
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+\code{get.genotypes.by.marker.name} is an accessor function that
+  returns the most likely genotype of each individual in the cross at the given marker.
 }
 \details{
-@description \code{get.genotypes.by.marker.name} is an accessor function that
-   returns the most likely genotype of each individual in the cross at the given marker.
-
-@param cross The cross from which the genetic information will be extracted.
- @param marker.name The name of the marker where we want to know each individuals most likely genotype.
- @param use.genoprobs Defaults to TRUE.  Should we look at the genoprobs to figure out the
-   most likely genotype?  This ensures that there will be no NA.  But in some cases there may be
-   significant uncertainty, so this may oversimplify the true situation.
- @param as.matrix Defaults to FALSE.  Should the resulting genotypes be returns as a vector of numeric
-   values (default) or a matrix?
-
-@return Most likely genotype (or NA) for all individuals in the cross at the specified locus.
-
-@details none
+none
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
 }
 

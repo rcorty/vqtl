@@ -42,14 +42,14 @@ d1 <- scanonevar(cross = my.cross,
 d2 <- scanone(cross = my.cross,
               pheno.col = 'phenotype4')
 
-
-pdf(file = '../2016_G3_PackageVQTL_Corty/images/LOD_scans.pdf', width = 6, height = 8)
-par(mfrow = c(4, 1), mar = c(3.1, 3.1, 3.1, 2.1))
-plot(x = a1, y = a2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
-plot(x = b1, y = b2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
-plot(x = c1, y = c2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
-plot(x = d1, y = d2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5)
-dev.off()
+#
+# pdf(file = '../2016_G3_PackageVQTL_Corty/images/LOD_scans.pdf', width = 6, height = 8)
+# par(mfrow = c(4, 1), mar = c(3.1, 3.1, 3.1, 2.1))
+# plot(x = a1, y = a2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
+# plot(x = b1, y = b2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
+# plot(x = c1, y = c2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5, suppress.chromosome = TRUE)
+# plot(x = d1, y = d2, show.equations = FALSE, legend.pos = 'right', legend.ncol = 1, ylim = c(0, 17), title.cex = 1.2, line.width = 1.5)
+# dev.off()
 
 #
 # b <- scanone(cross = B6.C58.cross, chr = c(19, 'X'), pheno.col = 10)

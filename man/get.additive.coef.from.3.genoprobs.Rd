@@ -2,27 +2,32 @@
 % Please edit documentation in R/get.additive.coef.from.3.genoprobs.R
 \name{get.additive.coef.from.3.genoprobs}
 \alias{get.additive.coef.from.3.genoprobs}
-\title{@title Compute Additive Coefficient From Three Genotype Probabilities}
+\title{Compute Additive Coefficient From Three Genotype Probabilities}
 \usage{
 get.additive.coef.from.3.genoprobs(paa, pab, pbb)
 }
+\arguments{
+\item{paa}{A vector of length n giving the probability of AA-type for each individual,
+or a matrix or data.frame of dimension n-by-3 giving probability of AA-type and
+the probability of AB-type and the probability of BB-type for each individual.}
+
+\item{pab}{A vector of length n giving the probability of AB-type for each individual,
+or missing if \code{pa} is a data.frame or matrix.}
+
+\item{pbb}{A vector of length n giving the probability of BB-type for each individual,
+or missing if \code{pa} is a data.frame or matrix.}
+}
+\value{
+Additive coefficient vector.
+}
 \description{
-@author Robert Corty \email{rcorty@gmail.com}
+\code{get.add.coef.from.3.genoprobs} should not typically be called by a user.
+  It is used to reliably set up model coefficients from genotype probabilities.
 }
 \details{
-@description \code{get.add.coef.from.3.genoprobs} should not typically be called by a user.
-   It is used to reliably set up model coefficients from genotype probabilities.
-
-@param paa A vector of length n giving the probability of AA-type for each individual,
-   or a matrix or data.frame of dimension n-by-3 giving probability of AA-type and
-   the probability of AB-type and the probability of BB-type for each individual.
- @param pab A vector of length n giving the probability of AB-type for each individual,
-   or missing if \code{pa} is a data.frame or matrix.
- @param pbb A vector of length n giving the probability of BB-type for each individual,
-   or missing if \code{pa} is a data.frame or matrix.
-
-@return Additive coefficient vector.
-
-@details none
+none
+}
+\author{
+Robert Corty \email{rcorty@gmail.com}
 }
 

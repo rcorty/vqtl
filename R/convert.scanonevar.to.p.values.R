@@ -1,36 +1,37 @@
-#'  @title Convert Scanonevar from LODs to Empirical p-values
+#' @title Convert Scanonevar from LODs to Empirical p-values
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{scanonevar.to.p.values} takes a scanonevar with LODs as units
-#'    and maxes from permutation scans, estimates an extreme value distribution for the maxes,
-#'    and returns the probability of observing the LOD scores in those EVDs.
+#' @description \code{scanonevar.to.p.values} takes a scanonevar with LODs as units
+#'   and maxes from permutation scans, estimates an extreme value distribution for the maxes,
+#'   and returns the probability of observing the LOD scores in those EVDs.
 #'
-#'  @param scanonevar the \code{scanonevar} in LODs to be converted to emprirical p values
-#'  @param perm.scan.maxes the tbl_df object returned by scanonevar.perm, the maximum LOD score
-#'    observed on a per-scan, per-chromosome-type basis in permutation scans.
+#' @param scanonevar the \code{scanonevar} in LODs to be converted to emprirical p values
+#' @param perm.scan.maxes the tbl_df object returned by scanonevar.perm, the maximum LOD score
+#'   observed on a per-scan, per-chromosome-type basis in permutation scans.
 #'
-#'  @return Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 'emp.ps'}.
+#' @return Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 'emp.ps'}.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
-#'  @details none
+#' @details none
+#' @export
 #'
-#'  @examples
-#'  \dontrun{
-#'    my.scanonevar <- scanonevar.perm(cross = my.cross,
-#                                      mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#                                      var.formula = '~ sex + var.QTL.add + var.QTL.dom')
+#' @examples
+#' \dontrun{
+#'   my.scanonevar <- scanonevar.perm(cross = my.cross,
+#                                     mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                     var.formula = '~ sex + var.QTL.add + var.QTL.dom')
 #'
-#'    my.perms <- scanonevar.perm(cross = my.cross,
-#                                 mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#                                 var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-#'                                n.perms = 10))
+#'   my.perms <- scanonevar.perm(cross = my.cross,
+#                                mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                               n.perms = 10))
 #'
-#'    scanonevar.to.p.values(scanonevar = my.scanonevar,
-#'                           perm.scan.maxes = my.perms)
-#'  }
-#'
+#'   scanonevar.to.p.values(scanonevar = my.scanonevar,
+#'                          perm.scan.maxes = my.perms)
+#' }
+#
 
 scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
 

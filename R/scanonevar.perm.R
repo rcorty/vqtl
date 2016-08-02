@@ -1,37 +1,37 @@
-#'  @title Conduct Scanonevars on Permuted Genotype Data
+#' @title Conduct Scanonevars on Permuted Genotype Data
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description \code{scanonevar.perm} conducts many \code{scanonevar}s on permuted data
-#'    and returns the maximum observed LOD score for each chromosome type in each scan.
-#'    The results should be put into \code{convert.scanonevar.to.empirical.ps} with a scan in LODs
-#'    to convert that scan to empirical p-values.  It's important that all the parameters used in
-#'    \code{scanonevar.perm} are the same as the parameters that were used in the \code{scanonevar}
-#'    that they will be used to convert to empirical ps.
+#' @description \code{scanonevar.perm} conducts many \code{scanonevar}s on permuted data
+#'   and returns the maximum observed LOD score for each chromosome type in each scan.
+#'   The results should be put into \code{convert.scanonevar.to.empirical.ps} with a scan in LODs
+#'   to convert that scan to empirical p-values.  It's important that all the parameters used in
+#'   \code{scanonevar.perm} are the same as the parameters that were used in the \code{scanonevar}
+#'   that they will be used to convert to empirical ps.
 #'
-#'  @param n.perms the number of permutations to conduct
-#'  @inheritParams scanonevar
+#' @param n.perms the number of permutations to conduct
+#' @inheritParams scanonevar
 #'
-#'  @return Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
+#' @return Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
 #'
-#'  @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
+#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
-#'  @details It is recommended to use approximately 1000 permuted scans to produce highly-replicable,
-#'    publication-quality empirial p-values.  For this purpose, users are recommended to dispatch this
-#'    function to many computers in parallel, carefully setting the seed on each computer to insure
-#'    pseudo-randomness.
+#' @details It is recommended to use approximately 1000 permuted scans to produce highly-replicable,
+#'   publication-quality empirial p-values.  For this purpose, users are recommended to dispatch this
+#'   function to many computers in parallel, carefully setting the seed on each computer to insure
+#'   pseudo-randomness.
 #'
-#'  @details none
+#' @details none
 #'
-#'  @examples
-#'  \dontrun{
-#'    my.perms <- scanonevar.perm(cross = my.cross,
-#                                 mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#                                 var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-#'                                n.perms = 10))
+#' @examples
+#' \dontrun{
+#'   my.perms <- scanonevar.perm(cross = my.cross,
+#                                mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#                                var.formula = '~ sex + var.QTL.add + var.QTL.dom',
+#'                               n.perms = 10))
 #'
-#'  }
-#'
+#' }
+#
 scanonevar.perm <- function(cross,
                             mean.formula,
                             var.formula,

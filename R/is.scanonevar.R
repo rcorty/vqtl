@@ -1,19 +1,18 @@
-#'  @title is.scanonevar
+#' @title is.scanonevar
 #'
-#'  @author Robert Corty \email{rcorty@@gmail.com}
+#' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#'  @description Tests whether an object is a valid scanonevar object
+#' @description Tests whether an object is a valid scanonevar object
 #'
-#'  @param sov the object which is tested for being a scanonevar object
+#' @param sov the object which is tested for being a scanonevar object
 #'
-#'  @return Returns TRUE if 'sov' is a valid scanonevar object, with attribute 'why.not' an empty list
-#'    Returns FALSE if 'sov' is not a valid scanonevar object with attribute 'why.not' a list of
-#'    error messages for failed tests
+#' @return Returns TRUE if 'sov' is a valid scanonevar object, with attribute 'why.not' an empty list
+#'   Returns FALSE if 'sov' is not a valid scanonevar object with attribute 'why.not' a list of
+#'   error messages for failed tests
 #'
-#'  @details none
+#' @details none
 #'
-#'  @seealso \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
-
+#' @seealso \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 is.scanonevar <- function(sov) {
 
   ret <- TRUE
