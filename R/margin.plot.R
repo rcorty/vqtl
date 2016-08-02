@@ -87,7 +87,7 @@ margin.plot <- function(cross,
                                   yes = marginal.phen.name,
                                   no = xlab.override),
           line = 1.5, cex = 1)
-    mtext(side = 1, at = 1:length(levels(marginal.phen)), text = levels(marginal.phen))
+    mtext(side = 1, at = 1:length(levels(marginal.phen)), text = levels(marginal.phen), line = 0.5)
 
     # y axis stuff
     axis(side = 2)
@@ -118,7 +118,7 @@ margin.plot <- function(cross,
          pch = pch)
 
     # x axis and labels
-    mtext(text = genotype.plotting.names, side = 1, line = 1, at = 1:3)
+    mtext(text = genotype.plotting.names, side = 1, line = 0, at = 1:3)
     mtext(side = 1, text = ifelse(test = is.na(xlab.override),
                                   yes = marginal.marker.name,
                                   no = xlab.override),
