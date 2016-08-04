@@ -27,19 +27,10 @@ scan.via.dglm(mean.alt.formula, var.alt.formula, genoprobs, mapping.df,
 
 \item{marker.names}{a vector of the name of each marker}
 
-\item{return.effects}{Logical indicating whether the estimated effects should be returned.}
-
-\item{return.effect.ses}{Logical indicating whether the standard errors of the estimated effects should be returned.}
-
-\item{return.effect.ps}{Logical indicating whether the p-value of the estimated effects should be returned.}
-
 \item{cor.threshold}{Numeric between 0 and 1 indicating how tightly a locus must be correlated with a covariate to be skipped.
 e.g. if cor.threshold is 0.8 (it's default) any locus with \code{cor(locus, covariate) > 0.8} will be skipped.}
 
 \item{perm}{The permutation to apply to the genotypes.  Defaults to identity permutation.}
-
-\item{family}{Family of distribution to be modeled.  Defaults to 'gaussian'.
-See dglm and glm documentation for other options.  Most notable other options is 'poisson'}
 }
 \value{
 Returns a scanonevar object.

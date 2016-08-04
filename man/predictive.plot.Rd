@@ -12,15 +12,13 @@ predictive.plot(cross, mean.formula, var.formula, marker.name, phen.name,
 \arguments{
 \item{cross}{The cross object to be plotted}
 
-\item{mean.formula}{The formula that describes the response, and the covariates and genetic effects that influence it.
-The left hand side of the ~ must be a single phenotype that is in the cross.
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: mean.QTL.add (additive effect on the mean) and mean.QTL.dom (dominance deviation from additive on the mean).}
+\item{mean.formula}{The formula to describe the mean of the phenotype.
+Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
+components of the QTL effect on the mean.}
 
-\item{var.formula}{The formula that describes the covariates and the genetic effects that influence residual (environmental) variation.
-There should be nothing on the left of the ~ (Inferred to be residual variation).
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: var.QTL.add (additive effect on the variance) and var.QTL.dom (dominance deviation from additive on the variance).}
+\item{var.formula}{The formula to describe the residual variance of the
+phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
+dominance components of the QTL effect on residual phenotype variance.}
 
 \item{marker.name}{The name of the marker the effects of which we want to investigate and visualize.}
 

@@ -8,21 +8,17 @@ scanonevar.perm(cross, mean.formula, var.formula, n.perms,
   chrs = unique(names(cross$geno)), verbose.return = FALSE)
 }
 \arguments{
-\item{cross}{The cross on which the scanonevar will be conducted.}
+\item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
 
-\item{mean.formula}{The formula that describes the response, and the covariates and genetic effects that influence it.
-The left hand side of the ~ must be a single phenotype that is in the cross.
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: mean.QTL.add (additive effect on the mean) and mean.QTL.dom (dominance deviation from additive on the mean).}
+\item{mean.formula}{The formula to describe the mean of the phenotype.
+Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
+components of the QTL effect on the mean.}
 
-\item{var.formula}{The formula that describes the covariates and the genetic effects that influence residual (environmental) variation.
-There should be nothing on the left of the ~ (Inferred to be residual variation).
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: var.QTL.add (additive effect on the variance) and var.QTL.dom (dominance deviation from additive on the variance).}
+\item{var.formula}{The formula to describe the residual variance of the
+phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
+dominance components of the QTL effect on residual phenotype variance.}
 
 \item{n.perms}{the number of permutations to conduct}
-
-\item{chrs}{The subset of chromosomes to scan (defaults to all chromosomes).}
 }
 \value{
 Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
