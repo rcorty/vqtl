@@ -34,8 +34,8 @@ scanonevar <- function(cross,
                                                var.formula = var.formula)
 
   scanonevar_(modeling.df = wrangled.inputs$modeling.df,
-              scan.df = wrangled.input$scan.df,
+              marker.info.df = wrangled.inputs$marker.info.df,
+              genoprob.df = wrangled.input$genoprob.df,
               scan.types = wrangled.input$scan.types,
-              mean.formula = mean.formula,
-              var.formula = var.formula)
+              scan.formulae = wrangled.inputs$scan.formulae)
 }
