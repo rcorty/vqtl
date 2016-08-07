@@ -15,12 +15,19 @@ validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
                                        var.formula) {
 
-  # todo rewrite this function using if () { stop(message) }
+  # todo: rewrite this function using if () { stop(message) }
   # rather than stopifnot to improve error messages
 
   # 'cross' must be a valid cross object
   stopifnot(is.cross(cross))
 
+  # mean.formula must have a LHS, operator, and RHS
+  stopifnot(length(mean.formula) == 3)
+  stopifnot(mean.formula[[1]] == '~')
+
+  # var.formula must have an operator and a RHS
+  stopifnot(length(var.formula) == 2)
+  stopifnot(var.formula[[1]] == '~')
 
   # the response in 'mean.formula' must be a phenotype in the cross
   stopifnot(as.character(mean.formula[[2]]) %in% names(cross[['pheno']]))

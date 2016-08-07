@@ -1,0 +1,108 @@
+context("Testing validate.scanonevar.input_")
+
+test_that(desc = "Testing is.cross, the first check in validate.scanonevar.input_",
+          code = {
+            expect_error(object = validate.scanonevar.input_(cross = 27599,
+                                                             mean.formula = 27599,
+                                                             var.formula = 27599))
+          })
+
+test_that(
+  desc = 'Testing the checks that all variables excpet mean.QTL.add, mean.QTL.dom, var.QTL.add, and var.QTL.dom are either the name of a phenotype or the name of a genetic marker',
+  code = {
+    test.cross <- qtl::sim.cross(map = qtl::sim.map())
+    test.cross[['pheno']][['sex']] <- sample(x = c(0, 1),
+                                             size = qtl::nind(test.cross),
+                                             replace = TRUE)
+
+
+    # mean.formula has no RHS
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula =  ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # mean.formula RHS isn't a phenotype in cross
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = applesauce ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # mean.formula has a covariate thats not a keyword, phenotype, nor marker
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ applesauce + mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # var.formula has a covariate thats not a keyword, phenotype, nor marker
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ applesauce + var.QTL.add + var.QTL.dom))
+
+    # mean.formula uses a variance keyword
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ var.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # var.formula uses a mean keyword
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = applesauce ~  mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ mean.QTL.add + var.QTL.dom))
+
+    # same mean keyword appears more than once in mean.formula
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = applesauce ~ mean.QTL.add + mean.QTL.add,
+                                                     var.formula = ~ mean.QTL.add + var.QTL.dom))
+
+
+    # same var keyword appears more than once in var.formula
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = applesauce ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ mean.QTL.add + var.QTL.add))
+
+    # no mean keywords nor var keywords
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = applesauce ~ 1,
+                                                     var.formula = ~ 1))
+
+
+
+
+    # simplest valid input (defaults of scanonevar)
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # add a phenotype covariate to mean.formula
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ sex + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # ada a phenotype covariate to var.formula
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ sex + var.QTL.add + var.QTL.dom))
+
+    # add a marker covariate to mean.formula
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ D1M3 + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ var.QTL.add + var.QTL.dom))
+
+    # add a marker covariate to var.formula
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ D1M3 + var.QTL.add + var.QTL.dom))
+
+    # add both types of covariates to both formulae
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ sex + D1M3 + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ sex + D1M3 + var.QTL.add + var.QTL.dom))
+
+    # mean keywords but no var keywords
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ sex + D1M3 + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ sex + D1M3))
+
+    # var keywords but no mean keywords
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ sex + D1M3,
+                                                    var.formula = ~ sex + D1M3 + var.QTL.add + var.QTL.dom))
+  }
+)

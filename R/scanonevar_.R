@@ -46,6 +46,7 @@ scanonevar_ <- function(modeling.df,
     marker.name <- result[['marker.name']][marker.idx]
     marker.genoprobs <- dplyr::filter(.data = genoprob.df,
                                       marker.name == marker.name)
+    # need to widen this since it's coming in long format
 
     this.marker.modeling.df <- make.marker.specific.modeling.df(general.modeling.df = modeling.df,
                                                                 marker.genoprobs = marker.genoprobs,
