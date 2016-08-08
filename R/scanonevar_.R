@@ -116,8 +116,7 @@ scanonevar_ <- function(modeling.df,
 
 
 #' @title initialize.scanonevar.result_
-#' @name initizlize.scanonevar.result_
-#' @author Robert W. Corty
+#' @rdname scanonevar_
 #'
 #' @inheritParams scanonevar_
 #'
@@ -167,8 +166,7 @@ initialize.scanonevar.result_ <- function(loc.info.df,
 
 
 #' @title LOD
-#' @name LOD
-#' @author Robert W. Corty \email{rcorty@@gmail.com}
+#' @rdname scanonevar_
 #'
 #' @param alt alternative DGLM
 #' @param null null DGLM
@@ -193,6 +191,17 @@ LOD <- function(alt, null) {
 
 
 
+#' @title make.loc.specific.modeling.df
+#' @rdname scanonevar_
+#'
+#' @param general.modeling.df The modeling df that will be used across the scan,
+#' should have NA for all QTL columns.  These columns will be filled in in the result.
+#' @param loc.genoprobs The genoprobs of all individuals of all allels at this loc.
+#' @param model.formulae The formulae used for the scan.
+#'
+#' @return a modeling df appropriate for modeling at one specific loc
+#' @export
+#'
 make.loc.specific.modeling.df <- function(general.modeling.df,
                                           loc.genoprobs,
                                           model.formulae) {
@@ -216,6 +225,17 @@ make.loc.specific.modeling.df <- function(general.modeling.df,
 }
 
 
+
+#' @title additive.component
+#' @rdname scanonevar_
+#'
+#' @param genoprobs.long The genoprobs from which the additive genetic
+#' component should be extracted.  The 'long' format implies that each row
+#' has information on the genoprob of one individual having one allele.
+#'
+#' @return A vector of the additive genetic component at the locus
+#' @export
+#'
 additive.component <- function(genoprobs.long) {
 
   alleles <- unique(genoprobs.long[['allele']])
@@ -236,6 +256,16 @@ additive.component <- function(genoprobs.long) {
 }
 
 
+#' @title dominance.component
+#' @rdname scanonevar_
+#'
+#' @param genoprobs.long The genoprobs from which the additive genetic
+#' component should be extracted.  The 'long' format implies that each row
+#' has information on the genoprob of one individual having one allele.
+#'
+#' @return A vector of the dominance genetic component at the locus
+#' @export
+#'
 dominance.component <- function(genoprobs.long) {
 
   alleles <- unique(genoprobs.long[['allele']])
