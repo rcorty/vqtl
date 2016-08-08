@@ -115,7 +115,7 @@ is.cross.w.genoprobs <- function(x) {
       return(FALSE)
     return(TRUE)
   }
-  if (!all(sapply(X = x[['geno']], FUN = function(x) is.valid.prob.array(a = x[['prob']], cross = x, chr = x))))
+  if (!all(sapply(X = x[['geno']], FUN = function(chr) is.valid.prob.array(a = chr[['prob']], cross = x, chr = chr))))
     return(FALSE)
 
   # all values in the prob array must be between 0 and 1
