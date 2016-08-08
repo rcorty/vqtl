@@ -4,18 +4,18 @@
 \alias{scanonevar_}
 \title{scanonevar_}
 \usage{
-scanonevar_(modeling.df, genoprob.df, marker.info.df, scan.types, scan.formulae)
+scanonevar_(modeling.df, genoprob.df, loc.info.df, scan.types, scan.formulae)
 }
 \arguments{
 \item{modeling.df}{the tbl_df that contains the response, all covariates,
 and NA columns appropriate for marker effects}
 
 \item{genoprob.df}{the tbl_df that contains the probability of each genotype
-for each individual at each marker or pseudomarker}
+for each individual at each loc, where a 'loc' is either a marker or a pseudomarker}
 
-\item{marker.info.df}{the tbl_df that contains information about the
-markers that are being scanned, minimally a 'marker.name', 'chr' (short for
-'chromosome') and 'pos' (short for 'position') for each marker.}
+\item{loc.info.df}{the tbl_df that contains information about the
+locs that are being scanned, minimally a 'loc.name', 'chr' (short for
+'chromosome') and 'pos' (short for 'position') for each loc.}
 
 \item{scan.types}{Type(s) of scan(s) to be conducted, one of: 'mean',
 'var', or c('mean', 'var', 'joint')}

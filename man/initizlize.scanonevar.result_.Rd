@@ -5,12 +5,12 @@
 \alias{initizlize.scanonevar.result_}
 \title{initialize.scanonevar.result_}
 \usage{
-initialize.scanonevar.result_(marker.info.df, scan.types)
+initialize.scanonevar.result_(loc.info.df, scan.types)
 }
 \arguments{
-\item{marker.info.df}{the tbl_df that contains information about the
-markers that are being scanned, minimally a 'marker.name', 'chr' (short for
-'chromosome') and 'pos' (short for 'position') for each marker.}
+\item{loc.info.df}{the tbl_df that contains information about the
+locs that are being scanned, minimally a 'loc.name', 'chr' (short for
+'chromosome') and 'pos' (short for 'position') for each loc.}
 
 \item{scan.types}{Type(s) of scan(s) to be conducted, one of: 'mean',
 'var', or c('mean', 'var', 'joint')}
@@ -23,10 +23,10 @@ the scanonevar function, it will be a scanonevar object.
 This internal function should not typically be called by a user.
 }
 \examples{
-x <- dplyr::data_frame(marker.name = c('m1', 'm2'),
+x <- dplyr::data_frame(loc.name = c('m1', 'm2'),
                        chr = c(1, 1),
                        pos = c(5, 10))
-initialize.scanonevar.result_(marker.info.df = x,
+initialize.scanonevar.result_(loc.info.df = x,
                               scan.types = 'mean')
 
 }

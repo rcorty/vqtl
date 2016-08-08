@@ -11,15 +11,15 @@
 \usage{
 wrangle.scanonevar.input_(cross, mean.formula, var.formula)
 
-wrangle.scan.types_(mean.formula, var.formula)
-
-wrangle.scan.formulae_(cross, mean.formula, var.formula)
-
 wrangle.loc.info.df_(cross)
 
 wrangle.genoprob.df_(cross)
 
-wrangle.modeling.df_(cross, scan.formulae)
+wrangle.scan.types_(mean.formula, var.formula)
+
+wrangle.scan.formulae_(mean.formula, var.formula)
+
+wrangle.modeling.df_(cross, scan.formulae, genoprobs)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
@@ -41,7 +41,6 @@ of scan to do: mqtl, vqtl, and/or mvqtl.
 }
 \examples{
 x <- 27599
-
 }
 \author{
 Robert W. Corty \email{rcorty@gmail.com}
