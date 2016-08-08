@@ -4,7 +4,7 @@
 \alias{is.scanonevar}
 \title{is.scanonevar}
 \usage{
-is.scanonevar(sov)
+is.scanonevar(x)
 }
 \arguments{
 \item{sov}{the object which is tested for being a scanonevar object}
