@@ -4,15 +4,8 @@
 \alias{plot.scanonevar}
 \title{plot.scanonevar}
 \usage{
-\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x$chr), units.to.plot,
-  col = c("black", "blue", "red", "forestgreen"), bandcol = "lightgray",
-  legends = if (is.null(y)) {     c("DGLM-joint", "DGLM-mean", "DGLM-var") }
-  else {     c("DGLM-joint", "DGLM-mean", "DGLM-var", "LM") },
-  legend.pos = "top", legend.ncol = 2, legend.cex = 1, gap = 25,
-  incl.markers = TRUE, title = attr(x, "pheno"), title.cex = 1.5,
-  ylim = c(0, 1.05 * max(coords.y.locus, na.rm = TRUE)),
-  show.equations = (length(chrs) != 1), alpha.side = "left",
-  line.width = 1, vertical.bar = NA, suppress.chromosome = FALSE, ...)
+\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x[["chr"]]),
+  plotting.units = c("LOD", "asymp.p", "empir.p"))
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}
@@ -31,21 +24,21 @@
 
 \item{legend.pos}{Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.}
 
-\item{legend.ncol}{Optionally, the number of columns in the legend.  Defaults to 2.}
-
-\item{legend.cex}{Optionally, character expansion for the legend.  Defaults to 1.}
-
 \item{gap}{Optionally, The space between chromosomes in Mb.  Defaults to 25.}
 
 \item{incl.markers}{Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.}
 
-\item{title}{Optionally, title for plot.  Defaults to phenotype from scanonevar object.}
-
-\item{title.cex}{Optionally, title character expansion.  Defaults to 1.5}
-
 \item{ylim}{Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.}
 
 \item{show.equations}{Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.}
+
+\item{legend.ncol}{Optionally, the number of columns in the legend.  Defaults to 2.}
+
+\item{legend.cex}{Optionally, character expansion for the legend.  Defaults to 1.}
+
+\item{title}{Optionally, title for plot.  Defaults to phenotype from scanonevar object.}
+
+\item{title.cex}{Optionally, title character expansion.  Defaults to 1.5}
 
 \item{alpha.side}{Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'}
 
@@ -70,30 +63,16 @@ If such a strong signal was observed that the empirical p-value underflows R's
    float type, this function produces an error.  The author is open to suggestions on how
    to deal with this situation better.
 
-   These plots look a lot better when both x (the scanone.var object) and y (optional scanone
+   These plots look a lot better when both x (the scanonevar object) and y (optional scanone
    for comparison) are in units of empirical p values than when they are in LOD units.
 
 none
 }
 \examples{
-  set.seed(27599)
-  my.cross <- sim.cross(map = sim.map(), type = 'f2')
-  my.cross$pheno$phenotype <- rnorm(n = 100,
-                                    mean = my.cross$geno$`1`$data[,5],
-                                    sd = my.cross$geno$`2`$data[,5])
-  my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-  my.cross <- calc.genoprob(my.cross)
-
-  my.scanonevar <- scanonevar(cross = my.cross,
-                              mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-                              var.formula = '~sex + var.QTL.add + var.QTL.dom',
-                              chrs = 1:3)
-
-  summary(my.scanonevar)
-
-  plot(my.scanonevar)
-
-
+set.seed(27599)
+test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+test.sov <- scanonevar(cross = test.cross)
+plot(test.sov)
 
 }
 \author{

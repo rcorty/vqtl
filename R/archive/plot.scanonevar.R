@@ -39,41 +39,103 @@
 #'
 #' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
 #'
-#' @importFrom dplyr %>%
 #' @export
 #'
 #' @details none
 #'
 #' @examples
-#' set.seed(27599)
-#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
-#' test.sov <- scanonevar(cross = test.cross)
-#' plot(test.sov)
+#'   set.seed(27599)
+#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
+#'   my.cross$pheno$phenotype <- rnorm(n = 100,
+#'                                     mean = my.cross$geno$`1`$data[,5],
+#'                                     sd = my.cross$geno$`2`$data[,5])
+#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
+#'   my.cross <- calc.genoprob(my.cross)
 #'
+#'   my.scanonevar <- scanonevar(cross = my.cross,
+#'                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
+#'                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
+#'                               chrs = 1:3)
+#'
+#'   summary(my.scanonevar)
+#'
+#'   plot(my.scanonevar)
+#'
+#'
+#'
+
 plot.scanonevar <- function(x,
                             y = NULL,
-                            chrs = unique(x[['chr']]),
-                            plotting.units = c('LOD', 'asymp.p', 'empir.p'))
+                            chrs = unique(x$chr),
+                            units.to.plot,
+                            col = c("black", "blue", "red", "forestgreen"),
+                            bandcol = 'lightgray',
+                            legends = if (is.null(y)) {
+                              c('DGLM-joint', 'DGLM-mean', 'DGLM-var')
+                            } else {
+                              c('DGLM-joint', 'DGLM-mean', 'DGLM-var', 'LM')
+                            },
+                            legend.pos = 'top',
+                            legend.ncol = 2,
+                            legend.cex = 1,
+                            gap = 25,
+                            incl.markers = TRUE,
+                            title = attr(x, 'pheno'),
+                            title.cex = 1.5,
+                            ylim = c(0, 1.05*max(coords.y.locus, na.rm = TRUE)),
+                            show.equations = (length(chrs) != 1),
+                            alpha.side = 'left',
+                            line.width = 1,
+                            vertical.bar = NA,
+                            suppress.chromosome = FALSE,
+                            ...)
 {
 
-  # can only plot if x is a scanonevar and y, if present, is a scanone
-  stopifnot(is.scanonevar(x))
-  if (!is.null(y)) {
-    stopifnot('scanone' %in% class(y))
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  chr <- pos <- len <- matches <- 'fake.global'
+  full.lod <- mean.lod <- var.lod <- 'fake.global'
+  emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake.global'
+
+  par(mgp = c(3, 0.5, 0))
+
+  # validate scanonevar object
+  if (!is.scanonevar(x)) {
+    stop(paste('scanonevar argument is not a valid scanonevar object:', attr(is.scanonevar(x), 'why.not')))
   }
 
-  # filter down to requested chromosomes, and make y a tbl_df
-  x <- dplyr::filter(.data = x, chr %in% chrs)
-  y <- dplyr::filter(.data = dplyr::tbl_df(y), chr %in% chrs)
+  # convert scanone.for.comparison to tbl_df if needed
+  if (!any(is.null(y), is.tbl(y))) {
+    y <- tbl_df(y)
+  }
 
-  # pull necessary columns into to.plot
-  to.plot <- pull.plotting.columns_(sov = x, so = y, plotting.units = plotting.units)
+  # subset scanonevar to necessary chrs only
+  # needs to be triggered in another way...consider that x and y may have diff chrs?
+  if (!identical(chrs, unique(x$chr))) {
+
+    temp <- dplyr::filter(x, chr %in% chrs)
+    y <- dplyr::filter(y, chr %in% chrs)
+
+    class(temp) <- class(x)
+    attr(temp, 'method') <- attr(x, 'method')
+    attr(temp, 'type') <- attr(x, 'type')
+    attr(temp, 'model') <- attr(x, 'model')
+    attr(temp, 'mean.null.formula') <- attr(x, 'mean.null.formula')
+    attr(temp, 'mean.alt.formula') <- attr(x, 'mean.alt.formula')
+    attr(temp, 'var.null.formula') <- attr(x, 'var.null.formula')
+    attr(temp, 'var.alt.formula') <- attr(x, 'var.alt.formula')
+    attr(temp, 'pheno') <- attr(x, 'pheno')
+    attr(temp, 'null.effects') <- attr(x, 'null.effects')
+    attr(temp, 'units') <- attr(x, 'units')
+    attr(temp, 'null.fit') <- attr(x, 'null.fit')
+    temp$chr <- factor(temp$chr)
+
+    x <- temp
+  }
 
   # x coordinates for plotting
-  to.plot$chr <- factor(x$chr)
-  levels(to.plot$chr) <- gtools::mixedsort(levels(to.plot$chr))
-
-  coords.x.chr <- to.plot %>%
+  x$chr <- factor(x$chr)
+  levels(x$chr) <- mixedsort(levels(x$chr))
+  coords.x.chr <- x %>%
     group_by(chr) %>%
     summarise(len = max(pos) - min(pos)) %>%
     mutate(start = cumsum(dplyr::lag(len + gap, default = 0))) %>%
@@ -83,6 +145,26 @@ plot.scanonevar <- function(x,
   coords.x.locus <- left_join(coords.x.chr, x, by = 'chr') %>%
     mutate(coord.x = start + pos)
 
+  # set up units if missing
+  if (missing(units.to.plot)) {
+    if (attr(x, 'units') == 'lods') {
+      units.to.plot <- 'lods'
+    }
+    if (attr(x, 'units') == 'emp.ps') {
+      units.to.plot <- 'emp.ps'
+    }
+  }
+
+  # y coordinates for plotting
+  if (units.to.plot == 'lods') {
+    coords.y.locus <- x %>% select(full.lod, mean.lod, var.lod)
+    ylab <- 'LOD'
+  } else if (units.to.plot == 'emp.ps') {
+    coords.y.locus <- -log10(x %>% select(emp.p.full.lod, emp.p.mean.lod, emp.p.var.lod))
+    ylab = '-log10(p)'
+  } else {
+    stop("units.to.plot must be 'lods' or 'emp.ps'")
+  }
 
 
   # make plotting area
@@ -104,8 +186,8 @@ plot.scanonevar <- function(x,
   }
 
   # draw x axis and label chrs
-  #   segments(x0 = xlim[1], x1 = xlim[2],
-  #            y0 = 0, y1 = 0)
+#   segments(x0 = xlim[1], x1 = xlim[2],
+#            y0 = 0, y1 = 0)
   if (length(chrs) == 1) {
     mtext(side = 1, text = paste('Chromosome', chrs), at = mean(xlim), line = 1)
   } else {
@@ -154,13 +236,13 @@ plot.scanonevar <- function(x,
               y = -log10(y$emp.p.scanone[this.chr.loci]),
               col = col[length(col)],
               lwd = line.width)
-        #
-        #         segments(x0 = coords.x.locus$coord.x,
-        #                  x1 = lead(coords.x.locus$coord.x),
-        #                  y0 = -log10(y$emp.p.scanone),
-        #                  y1 = -log10(lead(y$emp.p.scanone)),
-        #                  lwd = line.width*with(coords.x.locus, pos != len),
-        #                  col = col[length(col)])
+#
+#         segments(x0 = coords.x.locus$coord.x,
+#                  x1 = lead(coords.x.locus$coord.x),
+#                  y0 = -log10(y$emp.p.scanone),
+#                  y1 = -log10(lead(y$emp.p.scanone)),
+#                  lwd = line.width*with(coords.x.locus, pos != len),
+#                  col = col[length(col)])
 
       }
     }
@@ -241,41 +323,3 @@ plot.scanonevar <- function(x,
   # return nothing
   invisible()
 }
-
-
-
-pull.plotting.columns_ <- function(sov, so, plotting.units) {
-
-  to.plot <- dplyr::select(.data = sov,
-                           loc.name, chr, pos)
-
-  # pull appropriate data into plotting columns
-  if (plotting.units == 'LOD') {
-    to.plot[['mean.to.plot']] <- sov[['mean.lod']]
-    to.plot[['var.to.plot']] <- sov[['var.lod']]
-    to.plot[['joint.to.plot']] <- sov[['joint.lod']]
-    to.plot[['so.to.plot']] <- so[['lod']]
-  }
-
-  if (plotting.units == 'asymp.p') {
-    to.plot[['mean.to.plot']] <- -log10(sov[['mean.asymp.p']])
-    to.plot[['var.to.plot']] <- -log10(sov[['var.asymp.p']])
-    to.plot[['joint.to.plot']] <- -log10(sov[['joint.asymp.p']])
-    to.plot[['so.to.plot']] <- -log10(lod2pval(so[['lod']], df = 2))
-  }
-
-  if (plotting.units == 'empir.p') {
-    to.plot[['mean.to.plot']] <- -log10(sov[['mean.empir.p']])
-    to.plot[['var.to.plot']] <- -log10(sov[['var.empir.p']])
-    to.plot[['joint.to.plot']] <- -log10(sov[['joint.empir.p']])
-    to.plot[['so.to.plot']] <- -log10(so[['empir.p']])
-  }
-
-}
-
-
-
-lod2pval <- function(lod, df) {
-  return(pchisq(q = lod, df = df, lower.tail = FALSE))
-}
-
