@@ -75,13 +75,15 @@ test_that(
 
     expect_identical(object = wrangle.scan.formulae_(mean.formula = a ~ b,
                                                      var.formula = ~ c + var.QTL.add),
-                     expected = list(var.alt.formula = ~ c + var.QTL.add,
+                     expected = list(mean.alt.formula = a ~ b,
+                                     var.alt.formula = ~ c + var.QTL.add,
                                      var.null.formula = ~ c))
 
     expect_identical(object = wrangle.scan.formulae_(mean.formula = a ~ b + mean.QTL.add,
                                                      var.formula = ~ c),
                      expected = list(mean.alt.formula = a ~ b + mean.QTL.add,
-                                     mean.null.formula = a ~ b))
+                                     mean.null.formula = a ~ b,
+                                     var.alt.formula = ~ c))
   }
 )
 
@@ -134,31 +136,37 @@ test_that(
   desc = 'testing wrangle.modeling.df_',
   code = {
     test.cross <- qtl::sim.cross(map = qtl::sim.map())
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
     test.cross[['pheno']][['sex']] <- sample(x = c(0, 1), size = qtl::nind(object = test.cross), replace = TRUE)
     test.cross[['pheno']][['bodyweight']] <- rnorm(n = qtl::nind(object = test.cross), mean = 10, sd = 1)
+    genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
 
 
     # covariates of all three types (keyword, phenotype, and marker) in
     # mean and variance submodels, but no overlap between submodels
-    formulae1 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3 + mean.QTL.add,
-                                        var.formula = ~ D5M4 + sex + var.QTL.add)
+    formulae1 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3_add + D1M3_dom + mean.QTL.add,
+                                        var.formula = ~ D5M4_add + sex + var.QTL.add)
     modeling.df1 <- wrangle.modeling.df_(cross = test.cross,
+                                         genoprobs = genoprob.df,
                                          scan.formulae = formulae1)
-    needed.names1 <- c('phenotype', 'mean.QTL.add', 'var.QTL.add', 'bodyweight', 'sex', 'D1M3', 'D5M4')
+    needed.names1 <- c('phenotype', 'mean.QTL.add', 'var.QTL.add', 'bodyweight', 'sex', 'D1M3_add', 'D1M3_dom', 'D5M4_add')
     expect_true(object = all(names(modeling.df1) %in% needed.names1))
     expect_true(object = all(!is.na(dplyr::select(modeling.df1, -dplyr::matches('QTL')))))
 
 
     # covariates of all three types (keyword, phenotype, and marker) in
     # mean and variance submodels, with overlap between submodels
-    formulae2 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3 + mean.QTL.add,
-                                        var.formula = ~ bodyweight + D1M3 + var.QTL.add)
+    formulae2 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3_add + mean.QTL.add,
+                                        var.formula = ~ bodyweight + D1M3_add + var.QTL.add)
     modeling.df2 <- wrangle.modeling.df_(cross = test.cross,
+                                         genoprobs = genoprob.df,
                                          scan.formulae = formulae2)
-    needed.names2 <- c('phenotype', 'mean.QTL.add', 'var.QTL.add', 'bodyweight', 'D1M3')
+    needed.names2 <- c('phenotype', 'mean.QTL.add', 'var.QTL.add', 'bodyweight', 'D1M3_add')
     expect_true(object = all(names(modeling.df2) %in% needed.names2))
     expect_true(object = all(!is.na(dplyr::select(modeling.df2, -dplyr::matches('QTL')))))
 
+    # need a test of ability to wrangle df when only mean or only var testing is being done
+    # e.g. when mean or var models are NULL
     # do more tests if you can think of how to do them
   }
 )

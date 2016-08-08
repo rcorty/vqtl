@@ -8,7 +8,9 @@ test_that(desc = "Testing is.cross, the first check in validate.scanonevar.input
           })
 
 test_that(
-  desc = 'Testing the checks that all variables excpet mean.QTL.add, mean.QTL.dom, var.QTL.add, and var.QTL.dom are either the name of a phenotype or the name of a genetic marker',
+  desc = paste('Testing the checks that all variables excpet mean.QTL.add,',
+               'mean.QTL.dom, var.QTL.add, and var.QTL.dom are either the name',
+               'of a genetic marker followed by _add or _dom or the name of a phenotype'),
   code = {
     test.cross <- qtl::sim.cross(map = qtl::sim.map())
     test.cross[['pheno']][['sex']] <- sample(x = c(0, 1),
@@ -62,6 +64,17 @@ test_that(
                                                      mean.formula = applesauce ~ 1,
                                                      var.formula = ~ 1))
 
+    # mean.formula has a marker with neither '_add' nor '_dom' appended
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ D1M2 + mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
+
+
+    # var.formula has a marker with neither '_add' nor '_dom' appended
+    expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ D1M3 + var.QTL.add + var.QTL.dom))
+
 
 
 
@@ -82,27 +95,27 @@ test_that(
 
     # add a marker covariate to mean.formula
     expect_true(object = validate.scanonevar.input_(cross = test.cross,
-                                                    mean.formula = phenotype ~ D1M3 + mean.QTL.add + mean.QTL.dom,
+                                                    mean.formula = phenotype ~ D1M3_add + mean.QTL.add + mean.QTL.dom,
                                                     var.formula = ~ var.QTL.add + var.QTL.dom))
 
     # add a marker covariate to var.formula
     expect_true(object = validate.scanonevar.input_(cross = test.cross,
                                                     mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-                                                    var.formula = ~ D1M3 + var.QTL.add + var.QTL.dom))
+                                                    var.formula = ~ D1M3_add + var.QTL.add + var.QTL.dom))
 
     # add both types of covariates to both formulae
     expect_true(object = validate.scanonevar.input_(cross = test.cross,
-                                                    mean.formula = phenotype ~ sex + D1M3 + mean.QTL.add + mean.QTL.dom,
-                                                    var.formula = ~ sex + D1M3 + var.QTL.add + var.QTL.dom))
+                                                    mean.formula = phenotype ~ sex + D1M3_dom + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ sex + D1M3_add + var.QTL.add + var.QTL.dom))
 
     # mean keywords but no var keywords
     expect_true(object = validate.scanonevar.input_(cross = test.cross,
-                                                    mean.formula = phenotype ~ sex + D1M3 + mean.QTL.add + mean.QTL.dom,
-                                                    var.formula = ~ sex + D1M3))
+                                                    mean.formula = phenotype ~ sex + D1M3_add + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ sex + D1M3_dom))
 
     # var keywords but no mean keywords
     expect_true(object = validate.scanonevar.input_(cross = test.cross,
-                                                    mean.formula = phenotype ~ sex + D1M3,
-                                                    var.formula = ~ sex + D1M3 + var.QTL.add + var.QTL.dom))
+                                                    mean.formula = phenotype ~ sex + D1M3_add,
+                                                    var.formula = ~ sex + D1M3_dom + var.QTL.add + var.QTL.dom))
   }
 )
