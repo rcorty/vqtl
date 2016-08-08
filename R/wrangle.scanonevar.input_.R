@@ -12,7 +12,7 @@
 #'
 #' @examples
 #' x <- 27599
-#'
+#' @export
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula) {
@@ -31,9 +31,10 @@ wrangle.scanonevar.input_ <- function(cross,
 
   scan.types <- wrangle.scan.types_(mean.formula, var.formula)
 
-  scan.formulae <- wrangle.scan.formulae_(cross, mean.formula, var.formula)
+  scan.formulae <- wrangle.scan.formulae_(mean.formula, var.formula)
 
   modeling.df <- wrangle.modeling.df_(cross = cross,
+                                      genoprobs = genoprob.df.long,
                                       scan.formulae = scan.formulae)
 
   return(list(scan.types = scan.types,
@@ -47,11 +48,63 @@ wrangle.scanonevar.input_ <- function(cross,
 
 
 
+#' @title wrangle.loc.info.df_
+#' @rdname wrangle.scanonevar.input_
+#'
+#' @inheritParams wrangle.scanonevar.input_
+#' @export
+wrangle.loc.info.df_ <- function (cross) {
+
+  loc.info.from.chr <- function(x) {
+    chr.name <- names(class(x))
+    prob.map <- attr(x = x[['prob']], which = 'map')
+    names.starting.with.loc.idxs <- grep(pattern = '^loc', names(prob.map))
+    names(prob.map)[names.starting.with.loc.idxs] <-
+      paste0('chr', chr.name, '_', names(prob.map)[names.starting.with.loc.idxs])
+
+    return(dplyr::data_frame(loc.name = names(prob.map),
+                             chr = chr.name,
+                             pos = prob.map))
+  }
+  # NB: names(class(x)) is the notation to get the name of a chromosome
+  return(dplyr::bind_rows(lapply(X = cross[['geno']],
+                                 FUN = loc.info.from.chr)))
+}
+
+
+#' @title wrangle.genoprob.df_
+#' @rdname wrangle.scanonevar.input_
+#'
+#' @inheritParams wrangle.scanonevar.input_
+#' @export
+wrangle.genoprob.df_ <- function(cross) {
+
+  genoprobs.from.chr <- function(x) {
+    prob.tbl <- x[['prob']]
+    num.width <- max(nchar(as.character(1:dim(prob.tbl)[1])))
+    if (is.null(dimnames(prob.tbl)[[1]])) {
+      dimnames(prob.tbl)[[1]] <- paste0('org',
+                                        stringr::str_pad(string = 1:dim(prob.tbl)[1],
+                                                         width = num.width))
+    }
+    names.starting.with.loc.idxs <- grep(pattern = '^loc', dimnames(prob.tbl)[[2]])
+    dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs] <-
+      paste0('chr', names(class(x)), '_', dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs])
+    return(as.data.frame.table(prob.tbl, stringsAsFactors = FALSE))
+  }
+
+  genoprob.df <- dplyr::tbl_df(dplyr::bind_rows(lapply(X = cross[['geno']],
+                                                       FUN = genoprobs.from.chr)))
+  names(genoprob.df) <- c('iid', 'loc.name', 'allele', 'genoprob')
+  return(genoprob.df)
+}
+
+
 #' @title wrangle.scan.types_
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#'
+#' @export
 wrangle.scan.types_ <- function(mean.formula,
                                 var.formula) {
 
@@ -73,19 +126,14 @@ wrangle.scan.types_ <- function(mean.formula,
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#'
-wrangle.scan.formulae_ <- function(cross,
-                                   mean.formula,
+#' @export
+wrangle.scan.formulae_ <- function(mean.formula,
                                    var.formula) {
 
   mean.terms <- labels(terms(mean.formula))
   var.terms <- labels(terms(var.formula))
 
-  # first, identify terms that are genetic markers and replace them with marker_allele
-  # exclude the last allele to avoid singularity, e.g. (AA, AB, BB) -> (AA, BB)
-  # and (g1, g2) -> (g1)
-  mean.marker.idxs <- which(mean.terms %in% colnames(qtl::pull.geno(cross)))
-
+  # second, identify terms that are 'keywords' and remove them to make the null formulae
   mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = mean.terms)
   var.qtl.idxs <- grep(pattern = 'var.QTL', x = var.terms)
 
@@ -124,66 +172,14 @@ wrangle.scan.formulae_ <- function(cross,
 }
 
 
-#' @title wrangle.loc.info.df_
-#' @rdname wrangle.scanonevar.input_
-#'
-#' @inheritParams wrangle.scanonevar.input_
-#'
-wrangle.loc.info.df_ <- function (cross) {
-
-  loc.info.from.chr <- function(x) {
-    chr.name <- names(class(x))
-    prob.map <- attr(x = x[['prob']], which = 'map')
-    return(dplyr::data_frame(loc.name = paste0('chr', chr.name, '_', names(prob.map)),
-                             chr = chr.name,
-                             pos = prob.map))
-  }
-  # NB: names(class(x)) is the notation to get the name of a chromosome
-  loc.info.df <- dplyr::bind_rows(lapply(X = cross[['geno']],
-                                         FUN = loc.info.from.chr))
-
-  return(loc.info.df)
-}
-
-
-#' @title wrangle.genoprob.df_
-#' @rdname wrangle.scanonevar.input_
-#'
-#' @inheritParams wrangle.scanonevar.input_
-#'
-wrangle.genoprob.df_ <- function(cross) {
-
-  genoprobs.from.chr <- function(x) {
-    chr.name <- names(class(x))
-    prob.tbl <- x[['prob']]
-    num.width <- max(nchar(as.character(1:dim(prob.tbl)[1])))
-    if (is.null(dimnames(prob.tbl)[[1]])) {
-      dimnames(prob.tbl)[[1]] <- paste0('org',
-                                        stringr::str_pad(string = 1:dim(prob.tbl)[1],
-                                                         width = num.width,
-                                                         side = 'left',
-                                                         pad = '0'))
-    }
-    dimnames(prob.tbl)[[2]] <- paste0('chr', names(class(x)), '_', dimnames(prob.tbl)[[2]])
-    return(as.data.frame.table(prob.tbl, stringsAsFactors = FALSE))
-  }
-
-  genoprob.df <- dplyr::tbl_df(dplyr::bind_rows(lapply(X = cross[['geno']],
-                                                FUN = genoprobs.from.chr)))
-  names(genoprob.df) <- c('iid', 'loc.name', 'allele', 'genoprob')
-
-  return(genoprob.df)
-
-}
-
-
 #' @title wrangle.modeling.df_
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#'
+#' @export
 wrangle.modeling.df_ <- function(cross,
-                                 scan.formulae) {
+                                 scan.formulae,
+                                 genoprobs) {
 
   # start making modeling.df with response
   response.name <- as.character(scan.formulae[['mean.alt.formula']][[2]])
@@ -214,16 +210,30 @@ wrangle.modeling.df_ <- function(cross,
 
 
   # get the covariate names that are markers and add them to modeling.df
-  mean.marker.covar.names <- mean.covar.names[mean.covar.names %in% colnames(qtl::pull.geno(cross))]
-  var.marker.covar.names <- var.covar.names[var.covar.names %in% colnames(qtl::pull.geno(cross))]
-  all.genoprobs <- qtl::pull.genoprob(cross = cross)
-  for (marker.covar.name in unique(c(mean.marker.covar.names, var.marker.covar.names))) {
-    this.marker.genoprobs <- all.genoprobs[, grep(pattern = marker.covar.name, x = colnames(all.genoprobs))]
-    colnames(this.marker.genoprobs) <- gsub(pattern = ':', replacement = '_', x = colnames(this.marker.genoprobs))
-    modeling.df <- dplyr::bind_cols(modeling.df,
-                                    as.data.frame(this.marker.genoprobs[,-ncol(this.marker.genoprobs)]))
+  marker.names <- colnames(qtl::pull.geno(cross))
+  add.marker.names <- paste0(marker.names, '_add')
+  dom.marker.names <- paste0(marker.names, '_dom')
+  mean.add.marker.covar.names <- mean.covar.names[mean.covar.names %in% add.marker.names]
+  mean.dom.marker.covar.names <- mean.covar.names[mean.covar.names %in% dom.marker.names]
+  var.add.marker.covar.names <- var.covar.names[var.covar.names %in% add.marker.names]
+  var.dom.marker.covar.names <- var.covar.names[var.covar.names %in% dom.marker.names]
+
+  for (add.marker.covar.name in unique(c(mean.add.marker.covar.names, var.add.marker.covar.names))) {
+    this.marker.genoprobs <- dplyr::filter(.data = genoprobs,
+                                           loc.name == substr(x = add.marker.covar.name,
+                                                              start = 1,
+                                                              stop = nchar(add.marker.covar.name) - 4))
+    modeling.df[[add.marker.covar.name]] <- additive.component(this.marker.genoprobs)
   }
 
+
+  for (dom.marker.covar.name in unique(c(mean.dom.marker.covar.names, var.dom.marker.covar.names))) {
+    this.marker.genoprobs <- dplyr::filter(.data = genoprobs,
+                                           loc.name == substr(x = dom.marker.covar.name,
+                                                              start = 1,
+                                                              stop = nchar(dom.marker.covar.name) - 4))
+    modeling.df[[dom.marker.covar.name]] <- dominance.component(this.marker.genoprobs)
+  }
 
   return(modeling.df)
 }
