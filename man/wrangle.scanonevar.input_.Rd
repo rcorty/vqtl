@@ -13,7 +13,7 @@ wrangle.scanonevar.input_(cross, mean.formula, var.formula)
 
 wrangle.scan.types_(mean.formula, var.formula)
 
-wrangle.scan.formulae_(mean.formula, var.formula)
+wrangle.scan.formulae_(cross, mean.formula, var.formula)
 
 wrangle.loc.info.df_(cross)
 

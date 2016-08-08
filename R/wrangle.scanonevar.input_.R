@@ -22,13 +22,16 @@ wrangle.scanonevar.input_ <- function(cross,
     cross <- qtl::calc.genoprob(cross = cross, step = 2)
   }
 
-  scan.types <- wrangle.scan.types_(mean.formula, var.formula)
-
-  scan.formulae <- wrangle.scan.formulae_(mean.formula, var.formula)
-
+  # qtl::pull.geno and qtl::pull.markers don't provide information on pseudomarkers
+  # qtl::pull.genoprob doesn't give the position of the pseudomarkers
   loc.info.df <- wrangle.loc.info.df_(cross = cross)
 
+  # could probably reshape the output from qtl::pull.genoprob to accomplish the same thing
   genoprob.df.long <- wrangle.genoprob.df_(cross = cross)
+
+  scan.types <- wrangle.scan.types_(mean.formula, var.formula)
+
+  scan.formulae <- wrangle.scan.formulae_(cross, mean.formula, var.formula)
 
   modeling.df <- wrangle.modeling.df_(cross = cross,
                                       scan.formulae = scan.formulae)
@@ -38,8 +41,6 @@ wrangle.scanonevar.input_ <- function(cross,
               modeling.df = modeling.df,
               loc.info.df = loc.info.df,
               genoprob.df = genoprob.df.long))
-
-
 }
 
 
@@ -57,14 +58,14 @@ wrangle.scan.types_ <- function(mean.formula,
   mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = labels(terms(mean.formula)))
   var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(terms(var.formula)))
 
-  if (all(length(mean.qtl.idxs), !length(var.qtl.idxs)))
-    scan.types <- 'mean'
-  if (all(!length(mean.qtl.idxs), length(var.qtl.idxs)))
-    scan.types <- 'var'
-  if (all(length(mean.qtl.idxs), length(var.qtl.idxs)))
-    scan.types <- c('mean', 'var', 'joint')
+  if (all(mean.qtl.idxs, !var.qtl.idxs))
+    return('mean')
+  if (all(!mean.qtl.idxs, var.qtl.idxs))
+    return('var')
+  if (all(mean.qtl.idxs, var.qtl.idxs))
+    return(c('mean', 'var', 'joint'))
 
-  return(scan.types)
+  stop('Should never get here.')
 }
 
 
@@ -73,16 +74,25 @@ wrangle.scan.types_ <- function(mean.formula,
 #'
 #' @inheritParams wrangle.scanonevar.input_
 #'
-wrangle.scan.formulae_ <- function(mean.formula,
+wrangle.scan.formulae_ <- function(cross,
+                                   mean.formula,
                                    var.formula) {
 
-  mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = labels(terms(mean.formula)))
-  var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(terms(var.formula)))
+  mean.terms <- labels(terms(mean.formula))
+  var.terms <- labels(terms(var.formula))
 
-  # if no qtl terms, mean alt and null models are NULL and no mean testing will be done
+  # first, identify terms that are genetic markers and replace them with marker_allele
+  # exclude the last allele to avoid singularity, e.g. (AA, AB, BB) -> (AA, BB)
+  # and (g1, g2) -> (g1)
+  mean.marker.idxs <- which(mean.terms %in% colnames(qtl::pull.geno(cross)))
+
+  mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = mean.terms)
+  var.qtl.idxs <- grep(pattern = 'var.QTL', x = var.terms)
+
+  # if no qtl terms, 'mean.null' is NULL and no mean testing will be done
   # if no non-qtl terms, rhs is just 1
   if (length(mean.qtl.idxs) == 0) {
-    mean.formula <- mean.null.formula <- NULL
+    mean.null.formula <- NULL
   } else if (length(mean.qtl.idxs) == length(labels(terms(mean.formula)))) {
     mean.null.formula <- reformulate(termlabels = '1', response = mean.formula[[2]])
   } else {
@@ -91,10 +101,10 @@ wrangle.scan.formulae_ <- function(mean.formula,
                                             keep.response = TRUE))
   }
 
-  # if no qtl terms, var alt and null models are NULL and no var testing will be done
+  # if no qtl terms, 'var.null' is NULL and no var testing will be done
   # if no non-qtl terms, rhs is just 1
   if (length(var.qtl.idxs) == 0) {
-    var.formula <- var.null.formula <- NULL
+    var.null.formula <- NULL
   } else if (length(var.qtl.idxs) == length(labels(terms(var.formula)))) {
     var.null.formula <- reformulate(termlabels = '1', response = NULL)
   } else {
@@ -146,8 +156,13 @@ wrangle.genoprob.df_ <- function(cross) {
   genoprobs.from.chr <- function(x) {
     chr.name <- names(class(x))
     prob.tbl <- x[['prob']]
+    num.width <- max(nchar(as.character(1:dim(prob.tbl)[1])))
     if (is.null(dimnames(prob.tbl)[[1]])) {
-      dimnames(prob.tbl)[[1]] <- paste0('org', 1:dim(prob.tbl)[1])
+      dimnames(prob.tbl)[[1]] <- paste0('org',
+                                        stringr::str_pad(string = 1:dim(prob.tbl)[1],
+                                                         width = num.width,
+                                                         side = 'left',
+                                                         pad = '0'))
     }
     dimnames(prob.tbl)[[2]] <- paste0('chr', names(class(x)), '_', dimnames(prob.tbl)[[2]])
     return(as.data.frame.table(prob.tbl, stringsAsFactors = FALSE))
@@ -201,8 +216,12 @@ wrangle.modeling.df_ <- function(cross,
   # get the covariate names that are markers and add them to modeling.df
   mean.marker.covar.names <- mean.covar.names[mean.covar.names %in% colnames(qtl::pull.geno(cross))]
   var.marker.covar.names <- var.covar.names[var.covar.names %in% colnames(qtl::pull.geno(cross))]
+  all.genoprobs <- qtl::pull.genoprob(cross = cross)
   for (marker.covar.name in unique(c(mean.marker.covar.names, var.marker.covar.names))) {
-    modeling.df[[marker.covar.name]] <- qtl::pull.geno(cross = cross)[, marker.covar.name]
+    this.marker.genoprobs <- all.genoprobs[, grep(pattern = marker.covar.name, x = colnames(all.genoprobs))]
+    colnames(this.marker.genoprobs) <- gsub(pattern = ':', replacement = '_', x = colnames(this.marker.genoprobs))
+    modeling.df <- dplyr::bind_cols(modeling.df,
+                                    as.data.frame(this.marker.genoprobs[,-ncol(this.marker.genoprobs)]))
   }
 
 
