@@ -93,7 +93,8 @@ test_that(
   code = {
     test.cross <- qtl::sim.cross(map = qtl::sim.map())
     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
-    info.df <- wrangle.loc.info.df_(cross = test.cross)
+    info.df <- wrangle.loc.info.df_(cross = test.cross,
+                                    chrs = qtl::chrnames(test.cross))
     genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
 
     expect_identical(object = names(x = info.df),
@@ -104,6 +105,12 @@ test_that(
 
     expect_identical(object = unique(info.df[['chr']]),
                      expected = names(test.cross[['geno']]))
+
+    info.df2 <- wrangle.loc.info.df_(cross = test.cross,
+                                     chrs = c('7', '11', 'X'))
+
+    expect_identical(object = unique(info.df2[['chr']]),
+                     expected = c('7', '11', 'X'))
 
     # do more tests if you can think of how to do them
   }
@@ -116,7 +123,8 @@ test_that(
     test.cross <- qtl::sim.cross(map = qtl::sim.map())
     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
     genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
-    info.df <- wrangle.loc.info.df_(cross = test.cross)
+    info.df <- wrangle.loc.info.df_(cross = test.cross,
+                                    chrs = qtl::chrnames(test.cross))
 
     expect_identical(object = names(x = genoprob.df),
                      expected = c('iid', 'loc.name', 'allele', 'genoprob'))

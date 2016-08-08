@@ -23,17 +23,20 @@
 #'
 scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-                       var.formula = ~ var.QTL.add + var.QTL.dom) {
+                       var.formula = ~ var.QTL.add + var.QTL.dom,
+                       chrs = qtl::chrnames(cross = cross)) {
 
-  # gives an informative error message if input is invalid
+  # give an informative error message if input is invalid
   validate.scanonevar.input_(cross = cross,
                              mean.formula = mean.formula,
-                             var.formula = var.formula)
+                             var.formula = var.formula,
+                             chrs = chrs)
 
-  # gets inputs into a format that is easy for scanonevar_ to use
+  # get inputs into a format that is easy for scanonevar_ to use
   wrangled.inputs <- wrangle.scanonevar.input_(cross = cross,
                                                mean.formula = mean.formula,
-                                               var.formula = var.formula)
+                                               var.formula = var.formula,
+                                               chrs = chrs)
 
   # execute the scan(s)
   scanonevar_(modeling.df = wrangled.inputs$modeling.df,

@@ -132,11 +132,11 @@ initialize.scanonevar.result_ <- function(loc.info.df,
                           pos)
 
   if ('mean' %in% scan.types)
-    result[['mean.lod']] <- result[['mean.asymp.p']] <- NA
+    result[['mean.asymp.p']] <- result[['mean.lod']] <- NA
   if ('var' %in% scan.types)
-    result[['var.lod']] <- result[['var.asymp.p']] <- NA
+    result[['var.asymp.p']] <- result[['var.lod']] <- NA
   if ('joint' %in% scan.types)
-    result[['joint.lod']] <- result[['joint.asymp.p']] <- NA
+    result[['joint.asymp.p']] <- result[['joint.lod']] <- NA
 
   return(result)
 }

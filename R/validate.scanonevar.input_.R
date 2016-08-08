@@ -13,9 +13,10 @@
 #'
 validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
-                                       var.formula) {
+                                       var.formula,
+                                       chrs) {
 
-  # todo: rewrite this function using if () { stop(message) }
+  # todo: rewrite this function using if (test) { stop(message) }
   # rather than stopifnot to improve error messages
 
   # 'cross' must be a valid cross object
@@ -56,6 +57,10 @@ validate.scanonevar.input_ <- function(cross,
   # make sure at least one keyword appears in the right formula
   stopifnot(any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars,
                 c('var.QTL.add', 'var.QTL.dom') %in% var.covars))
+
+
+  # make sure all requested chrs are in the cross
+  stopifnot(all(chrs %in% qtl::chrnames(cross = cross)))
 
 
   return(TRUE)

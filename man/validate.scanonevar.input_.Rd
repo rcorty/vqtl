@@ -4,7 +4,7 @@
 \alias{validate.scanonevar.input_}
 \title{validate.scanonevar.input_}
 \usage{
-validate.scanonevar.input_(cross, mean.formula, var.formula)
+validate.scanonevar.input_(cross, mean.formula, var.formula, chrs)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}

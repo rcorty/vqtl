@@ -8,30 +8,49 @@ test_that(
     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
     test.cross[['pheno']][['sex']] <- sample(x = c(0, 1), size = qtl::nind(test.cross), replace = TRUE)
 
+    # the simplest model
     sov_result1 <- scanonevar(cross = test.cross)
+    expect_identical(object = names(sov_result1),
+                     expected = c('loc.name', 'chr', 'pos', 'mean.lod', 'mean.asymp.p', 'var.lod', 'var.asymp.p', 'joint.lod', 'joint.asymp.p'))
     expect_equal_to_reference(object = sov_result1,
                               file = 'z_scanonevar_test_result1.RDS')
 
-
+    # phenotype and marker covars in mean and var submodels
     sov_result2 <- scanonevar(cross = test.cross,
                               mean.formula = phenotype ~ sex + D3M3_add + mean.QTL.add + mean.QTL.dom,
                               var.formula = ~ sex + D2M7_dom + var.QTL.add + var.QTL.dom)
+    expect_identical(object = names(sov_result2),
+                     expected = c('loc.name', 'chr', 'pos', 'mean.lod', 'mean.asymp.p', 'var.lod', 'var.asymp.p', 'joint.lod', 'joint.asymp.p'))
     expect_equal_to_reference(object = sov_result2,
                               file = 'z_scanonevar_test_result2.RDS')
 
-
+    # phenotype and marker covars in both submodels, only doing var testing
     sov_result3 <- scanonevar(cross = test.cross,
                               mean.formula = phenotype ~ sex + D3M3_dom,
                               var.formula = ~ sex + D2M7_add + var.QTL.add + var.QTL.dom)
+    expect_identical(object = names(sov_result3),
+                     expected = c('loc.name', 'chr', 'pos', 'var.lod', 'var.asymp.p'))
     expect_equal_to_reference(object = sov_result3,
                               file = 'z_scanonevar_test_result3.RDS')
 
-
+    # phenotype and marker covars in both submodels, only doing mean testing
     sov_result4 <- scanonevar(cross = test.cross,
                               mean.formula = phenotype ~ sex + D3M3_add + mean.QTL.add + mean.QTL.dom,
                               var.formula = ~ sex + D2M7_add + D2M7_dom)
+    expect_identical(object = names(sov_result4),
+                     expected = c('loc.name', 'chr', 'pos', 'mean.lod', 'mean.asymp.p'))
     expect_equal_to_reference(object = sov_result4,
                               file = 'z_scanonevar_test_result4.RDS')
+
+    # filtering to a subset of chromosomes
+    sov_result5 <- scanonevar(cross = test.cross,
+                              mean.formula = phenotype ~ sex + D3M3_add + mean.QTL.add + mean.QTL.dom,
+                              var.formula = ~ sex + D2M7_add + D2M7_dom + var.QTL.add,
+                              chrs = c('1', 'X'))
+    expect_identical(object = unique(sov_result5[['chr']]),
+                     c('1', 'X'))
+    expect_equal_to_reference(object = sov_result5,
+                              file = 'z_scanonevar_test_result5.RDS')
 
   }
 )

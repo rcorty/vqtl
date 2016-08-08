@@ -5,7 +5,8 @@
 \title{scanonevar}
 \usage{
 scanonevar(cross, mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-  var.formula = ~var.QTL.add + var.QTL.dom)
+  var.formula = ~var.QTL.add + var.QTL.dom, chrs = qtl::chrnames(cross =
+  cross))
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}

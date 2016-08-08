@@ -15,7 +15,8 @@
 #' @export
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
-                                      var.formula) {
+                                      var.formula,
+                                      chrs) {
 
   if (!is.cross.w.genoprobs(x = cross)) {
     message("calculating genoprobs with stepwidth = 2, off.end = 0, error.prob = 1e-4, map.function = 'haldane'")
@@ -24,7 +25,8 @@ wrangle.scanonevar.input_ <- function(cross,
 
   # qtl::pull.geno and qtl::pull.markers don't provide information on pseudomarkers
   # qtl::pull.genoprob doesn't give the position of the pseudomarkers
-  loc.info.df <- wrangle.loc.info.df_(cross = cross)
+  loc.info.df <- wrangle.loc.info.df_(cross = cross,
+                                      chrs = chrs)
 
   # could probably reshape the output from qtl::pull.genoprob to accomplish the same thing
   genoprob.df.long <- wrangle.genoprob.df_(cross = cross)
@@ -53,7 +55,7 @@ wrangle.scanonevar.input_ <- function(cross,
 #'
 #' @inheritParams wrangle.scanonevar.input_
 #' @export
-wrangle.loc.info.df_ <- function (cross) {
+wrangle.loc.info.df_ <- function (cross, chrs) {
 
   loc.info.from.chr <- function(x) {
     chr.name <- names(class(x))
@@ -67,6 +69,7 @@ wrangle.loc.info.df_ <- function (cross) {
                              pos = prob.map))
   }
   # NB: names(class(x)) is the notation to get the name of a chromosome
+  cross[['geno']] <- cross[['geno']][qtl::chrnames(cross = cross) %in% chrs]
   return(dplyr::bind_rows(lapply(X = cross[['geno']],
                                  FUN = loc.info.from.chr)))
 }

@@ -9,9 +9,9 @@
 \alias{wrangle.scanonevar.input_}
 \title{wrangle.scanonevar.input_}
 \usage{
-wrangle.scanonevar.input_(cross, mean.formula, var.formula)
+wrangle.scanonevar.input_(cross, mean.formula, var.formula, chrs)
 
-wrangle.loc.info.df_(cross)
+wrangle.loc.info.df_(cross, chrs)
 
 wrangle.genoprob.df_(cross)
 
