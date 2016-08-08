@@ -4,7 +4,8 @@
 \alias{scanonevar_}
 \title{scanonevar_}
 \usage{
-scanonevar_(modeling.df, genoprob.df, loc.info.df, scan.types, scan.formulae)
+scanonevar_(modeling.df, genoprob.df, loc.info.df, scan.types, scan.formulae,
+  return.covar.effects)
 }
 \arguments{
 \item{modeling.df}{the tbl_df that contains the response, all covariates,

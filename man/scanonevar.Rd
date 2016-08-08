@@ -6,7 +6,7 @@
 \usage{
 scanonevar(cross, mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
   var.formula = ~var.QTL.add + var.QTL.dom, chrs = qtl::chrnames(cross =
-  cross))
+  cross), return.covar.effects = FALSE)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
@@ -28,8 +28,9 @@ cross, accommodating covariate effects in residual variance and identifying
 genetic effects on residual variance.
 }
 \examples{
-x <- 27599
-
+set.seed(27599)
+test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+scanonevar(cross = test.cross)
 
 }
 \author{

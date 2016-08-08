@@ -24,9 +24,13 @@ scanonevar_ <- function(modeling.df,
                         genoprob.df,
                         loc.info.df,
                         scan.types,
-                        scan.formulae) {
+                        scan.formulae,
+                        return.covar.effects) {
 
-  result <- initialize.scanonevar.result_(loc.info.df, scan.types)
+  result <- initialize.scanonevar.result_(loc.info.df,
+                                          scan.types,
+                                          scan.formulae,
+                                          return.covar.effects)
 
   mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(terms(scan.formulae[['mean.alt.formula']]))))
   var.df <- sum(grepl(pattern = 'var.QTL', x = labels(terms(scan.formulae[['var.alt.formula']]))))
@@ -60,6 +64,12 @@ scanonevar_ <- function(modeling.df,
                                 error = function(e) NA,
                                 finally = NA)
 
+    # if requested, save effect estimates
+    # may be safer to do with with name-matching, but this seems to work for now
+    if (all(return.covar.effects, !identical(alternative.fit, NA))) {
+      result[loc.idx, paste0(names(coef(alternative.fit)), '_mef')] <- coef(alternative.fit)
+      result[loc.idx, paste0(names(coef(alternative.fit$dispersion.fit)), '_vef')] <- coef(alternative.fit$dispersion.fit)
+    }
 
     # Fit the appropriate null models at this loc
     # and save LOD score and asymptotic p-value
@@ -94,8 +104,8 @@ scanonevar_ <- function(modeling.df,
 
 
   attr(x = result, which = 'scan.types') <- scan.types
-  attr(x = result, which = 'mean.formula') <- scan.formulae[['mean.formula']]
-  attr(x = result, which = 'var.formula') <- scan.formulae[['var.formula']]
+  attr(x = result, which = 'mean.formula') <- scan.formulae[['mean.alt.formula']]
+  attr(x = result, which = 'var.formula') <- scan.formulae[['var.alt.formula']]
 
   return(result)
 }
@@ -124,7 +134,9 @@ scanonevar_ <- function(modeling.df,
 #'                               scan.types = 'mean')
 #'
 initialize.scanonevar.result_ <- function(loc.info.df,
-                                          scan.types) {
+                                          scan.types,
+                                          scan.formulae,
+                                          return.covar.effects) {
 
   result <- dplyr::select(.data = loc.info.df,
                           loc.name,
@@ -137,6 +149,17 @@ initialize.scanonevar.result_ <- function(loc.info.df,
     result[['var.asymp.p']] <- result[['var.lod']] <- NA
   if ('joint' %in% scan.types)
     result[['joint.asymp.p']] <- result[['joint.lod']] <- NA
+
+  if (return.covar.effects) {
+    result[['(Intercept)_mef']] <- NA
+    for (mean.covar.name in labels(terms(scan.formulae[['mean.alt.formula']]))) {
+      result[[paste0(mean.covar.name, '_mef')]] <- NA
+    }
+    result[['(Intercept)_vef']] <- NA
+    for (var.covar.name in labels(terms(scan.formulae[['var.alt.formula']]))) {
+      result[[paste0(var.covar.name, '_vef')]] <- NA
+    }
+  }
 
   return(result)
 }

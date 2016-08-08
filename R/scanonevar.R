@@ -18,13 +18,15 @@
 #' @export
 #'
 #' @examples
-#' x <- 27599
-#'
+#' set.seed(27599)
+#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+#' scanonevar(cross = test.cross)
 #'
 scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
                        var.formula = ~ var.QTL.add + var.QTL.dom,
-                       chrs = qtl::chrnames(cross = cross)) {
+                       chrs = qtl::chrnames(cross = cross),
+                       return.covar.effects = FALSE) {
 
   # give an informative error message if input is invalid
   validate.scanonevar.input_(cross = cross,
@@ -39,9 +41,13 @@ scanonevar <- function(cross,
                                                chrs = chrs)
 
   # execute the scan(s)
-  scanonevar_(modeling.df = wrangled.inputs$modeling.df,
-              loc.info.df = wrangled.inputs$loc.info.df,
-              genoprob.df = wrangled.inputs$genoprob.df,
-              scan.types = wrangled.inputs$scan.types,
-              scan.formulae = wrangled.inputs$scan.formulae)
+  result <- scanonevar_(modeling.df = wrangled.inputs$modeling.df,
+                        loc.info.df = wrangled.inputs$loc.info.df,
+                        genoprob.df = wrangled.inputs$genoprob.df,
+                        scan.types = wrangled.inputs$scan.types,
+                        scan.formulae = wrangled.inputs$scan.formulae,
+                        return.covar.effects = return.covar.effects)
+
+  class(result) <- c('scanonevar', class(result))
+  return(result)
 }

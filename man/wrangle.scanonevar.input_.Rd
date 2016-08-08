@@ -41,6 +41,7 @@ of scan to do: mqtl, vqtl, and/or mvqtl.
 }
 \examples{
 x <- 27599
+
 }
 \author{
 Robert W. Corty \email{rcorty@gmail.com}

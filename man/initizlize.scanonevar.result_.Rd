@@ -5,7 +5,8 @@
 \alias{initizlize.scanonevar.result_}
 \title{initialize.scanonevar.result_}
 \usage{
-initialize.scanonevar.result_(loc.info.df, scan.types)
+initialize.scanonevar.result_(loc.info.df, scan.types, scan.formulae,
+  return.covar.effects)
 }
 \arguments{
 \item{loc.info.df}{the tbl_df that contains information about the

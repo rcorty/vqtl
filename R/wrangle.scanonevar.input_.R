@@ -10,9 +10,11 @@
 #' 'QTL' variable in the model and 'scan.types', which indicates which types
 #' of scan to do: mqtl, vqtl, and/or mvqtl.
 #'
+#' @export
+#'
 #' @examples
 #' x <- 27599
-#' @export
+#'
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula,
@@ -54,7 +56,7 @@ wrangle.scanonevar.input_ <- function(cross,
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#' @export
+#'
 wrangle.loc.info.df_ <- function (cross, chrs) {
 
   loc.info.from.chr <- function(x) {
@@ -79,7 +81,7 @@ wrangle.loc.info.df_ <- function (cross, chrs) {
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#' @export
+#'
 wrangle.genoprob.df_ <- function(cross) {
 
   genoprobs.from.chr <- function(x) {
@@ -107,7 +109,7 @@ wrangle.genoprob.df_ <- function(cross) {
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#' @export
+#'
 wrangle.scan.types_ <- function(mean.formula,
                                 var.formula) {
 
@@ -129,7 +131,7 @@ wrangle.scan.types_ <- function(mean.formula,
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#' @export
+#'
 wrangle.scan.formulae_ <- function(mean.formula,
                                    var.formula) {
 
@@ -179,7 +181,7 @@ wrangle.scan.formulae_ <- function(mean.formula,
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#' @export
+#'
 wrangle.modeling.df_ <- function(cross,
                                  scan.formulae,
                                  genoprobs) {
