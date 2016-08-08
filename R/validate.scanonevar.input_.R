@@ -39,7 +39,7 @@ validate.scanonevar.input_ <- function(cross,
   phen.names <- names(cross[['pheno']])
   marker.names <- unlist(lapply(X = cross[['geno']],
                                 FUN = function(chr) names(chr[['map']])))
-  allowable.covar.names <- c(phen.names, marker.names)
+  allowable.covar.names <- c(phen.names, paste0(marker.names, '_add'), paste0(marker.names, '_dom'))
   allowable.mean.covar.names <- c(allowable.covar.names, 'mean.QTL.add', 'mean.QTL.dom')
   allowable.var.covar.names <- c(allowable.covar.names, 'var.QTL.add', 'var.QTL.dom')
 
