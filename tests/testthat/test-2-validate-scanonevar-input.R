@@ -5,7 +5,7 @@ test_that(desc = "Testing is.cross, the first check in validate.scanonevar.input
             expect_error(object = validate.scanonevar.input_(cross = 27599,
                                                              mean.formula = 27599,
                                                              var.formula = 27599,
-                                                             chrs = names(test.cross[['geno']])))
+                                                             chrs = 'applesauce'))
           })
 
 test_that(
@@ -92,19 +92,6 @@ test_that(
                                                      var.formula = ~ 1,
                                                      chrs = names(test.cross[['geno']])))
 
-    # mean.formula has a marker with neither '_add' nor '_dom' appended
-    expect_error(object = validate.scanonevar.input_(cross = test.cross,
-                                                     mean.formula = phenotype ~ D1M2 + mean.QTL.add + mean.QTL.dom,
-                                                     var.formula = ~ var.QTL.add + var.QTL.dom,
-                                                     chrs = names(test.cross[['geno']])))
-
-
-    # var.formula has a marker with neither '_add' nor '_dom' appended
-    expect_error(object = validate.scanonevar.input_(cross = test.cross,
-                                                     mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-                                                     var.formula = ~ D1M3 + var.QTL.add + var.QTL.dom,
-                                                     chrs = names(test.cross[['geno']])))
-
 
 
 
@@ -155,6 +142,22 @@ test_that(
                                                     mean.formula = phenotype ~ sex + D1M3_add,
                                                     var.formula = ~ sex + D1M3_dom + var.QTL.add + var.QTL.dom,
                                                     chrs = names(test.cross[['geno']])))
+
+    # mean.formula has a marker with neither '_add' nor '_dom' appended
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ D1M2 + mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ var.QTL.add + var.QTL.dom,
+                                                    chrs = names(test.cross[['geno']])))
+
+
+    # var.formula has a marker with neither '_add' nor '_dom' appended
+    expect_true(object = validate.scanonevar.input_(cross = test.cross,
+                                                    mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                    var.formula = ~ D1M3 + var.QTL.add + var.QTL.dom,
+                                                    chrs = names(test.cross[['geno']])))
+
+
+
   }
 )
 
@@ -171,6 +174,8 @@ test_that(
                                              replace = TRUE)
 
     expect_error(object = validate.scanonevar.input_(cross = test.cross,
+                                                     mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
+                                                     var.formula = ~ var.QTL.add + var.QTL.dom,
                                                      chrs = 'z'))
   }
 )

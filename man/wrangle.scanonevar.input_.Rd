@@ -17,7 +17,7 @@ wrangle.genoprob.df_(cross)
 
 wrangle.scan.types_(mean.formula, var.formula)
 
-wrangle.scan.formulae_(mean.formula, var.formula)
+wrangle.scan.formulae_(cross, mean.formula, var.formula)
 
 wrangle.modeling.df_(cross, scan.formulae, genoprobs)
 }

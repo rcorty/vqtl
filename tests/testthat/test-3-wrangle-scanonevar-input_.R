@@ -1,5 +1,63 @@
 context("Testing wrangle.scanonevar.input_")
 
+
+test_that(
+  desc = 'testing wrangle.loc.info.df_',
+  code = {
+    test.cross <- qtl::sim.cross(map = qtl::sim.map())
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+    info.df <- wrangle.loc.info.df_(cross = test.cross,
+                                    chrs = qtl::chrnames(test.cross))
+    genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
+
+    expect_identical(object = names(x = info.df),
+                     expected = c('loc.name', 'chr', 'pos'))
+
+    expect_identical(object = info.df[['loc.name']],
+                     expected = unique(genoprob.df[['loc.name']]))
+
+    expect_identical(object = unique(info.df[['chr']]),
+                     expected = names(test.cross[['geno']]))
+
+    info.df2 <- wrangle.loc.info.df_(cross = test.cross,
+                                     chrs = c('7', '11', 'X'))
+
+    expect_identical(object = unique(info.df2[['chr']]),
+                     expected = c('7', '11', 'X'))
+
+    # do more tests if you can think of how to do them
+  }
+)
+
+
+
+test_that(
+  desc = 'testing wrangle.genoprob.df_',
+  code = {
+    test.cross <- qtl::sim.cross(map = qtl::sim.map())
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+    genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
+    info.df <- wrangle.loc.info.df_(cross = test.cross,
+                                    chrs = qtl::chrnames(test.cross))
+
+    expect_identical(object = names(x = genoprob.df),
+                     expected = c('iid', 'loc.name', 'allele', 'genoprob'))
+
+    expect_identical(object = unique(genoprob.df[['loc.name']]),
+                     expected = info.df[['loc.name']])
+
+    expect_true(object = all(genoprob.df[['genoprob']] < 1))
+    expect_true(object = all(genoprob.df[['genoprob']] > 0))
+
+    # do more tests if you can think of how to do them
+  }
+)
+
+
+
+
+
+
 test_that(
   desc = 'testing wrangle.scan.types_',
   code = {
@@ -66,78 +124,56 @@ test_that(
 test_that(
   desc = 'testing wrangle.scan.formulae_',
   code = {
-    expect_identical(object = wrangle.scan.formulae_(mean.formula = a ~ b + mean.QTL.add,
+    set.seed(27599)
+    test.cross <- qtl::sim.cross(map = qtl::sim.map())
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+
+    expect_identical(object = wrangle.scan.formulae_(cross = test.cross,
+                                                     mean.formula = a ~ b + mean.QTL.add,
                                                      var.formula = ~ c + var.QTL.add),
                      expected = list(mean.alt.formula = a ~ b + mean.QTL.add,
                                      mean.null.formula = a ~ b,
                                      var.alt.formula = ~ c + var.QTL.add,
                                      var.null.formula = ~ c))
 
-    expect_identical(object = wrangle.scan.formulae_(mean.formula = a ~ b,
+    expect_identical(object = wrangle.scan.formulae_(cross = test.cross,
+                                                     mean.formula = a ~ b,
                                                      var.formula = ~ c + var.QTL.add),
                      expected = list(mean.alt.formula = a ~ b,
                                      var.alt.formula = ~ c + var.QTL.add,
                                      var.null.formula = ~ c))
 
-    expect_identical(object = wrangle.scan.formulae_(mean.formula = a ~ b + mean.QTL.add,
+    expect_identical(object = wrangle.scan.formulae_(cross = test.cross,
+                                                     mean.formula = a ~ b + mean.QTL.add,
                                                      var.formula = ~ c),
                      expected = list(mean.alt.formula = a ~ b + mean.QTL.add,
                                      mean.null.formula = a ~ b,
                                      var.alt.formula = ~ c))
+
+
+    # dealing with non-specific marker covariates
+    # this function should transform chr1M3 into (chr1M3_add + chr1M3_dom), e.g.
+    expect_equal(object = wrangle.scan.formulae_(cross = test.cross,
+                                                 mean.formula = a ~ b + D1M1 + mean.QTL.add,
+                                                 var.formula = ~ c + var.QTL.add),
+                 expected = list(mean.alt.formula = a ~ b + (D1M1_add + D1M1_dom) + mean.QTL.add,
+                                 mean.null.formula = a ~ b + D1M1_add + D1M1_dom,
+                                 var.alt.formula = ~ c + var.QTL.add,
+                                 var.null.formula = ~ c))
+
+    expect_equivalent(object = wrangle.scan.formulae_(cross = test.cross,
+                                                      mean.formula = a ~ b*D1M1 + mean.QTL.add,
+                                                      var.formula = ~ c + var.QTL.add),
+                      expected = list(mean.alt.formula = a ~ b + (D1M1_add + D1M1_dom) + mean.QTL.add + b:(D1M1_add + D1M1_dom),
+                                      mean.null.formula = a ~ b + D1M1_add + D1M1_dom + b:D1M1_add + b:D1M1_dom,
+                                      var.alt.formula = ~ c + var.QTL.add,
+                                      var.null.formula = ~ c))
   }
 )
 
 
-test_that(
-  desc = 'testing wrangle.loc.info.df_',
-  code = {
-    test.cross <- qtl::sim.cross(map = qtl::sim.map())
-    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
-    info.df <- wrangle.loc.info.df_(cross = test.cross,
-                                    chrs = qtl::chrnames(test.cross))
-    genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
-
-    expect_identical(object = names(x = info.df),
-                     expected = c('loc.name', 'chr', 'pos'))
-
-    expect_identical(object = info.df[['loc.name']],
-                     expected = unique(genoprob.df[['loc.name']]))
-
-    expect_identical(object = unique(info.df[['chr']]),
-                     expected = names(test.cross[['geno']]))
-
-    info.df2 <- wrangle.loc.info.df_(cross = test.cross,
-                                     chrs = c('7', '11', 'X'))
-
-    expect_identical(object = unique(info.df2[['chr']]),
-                     expected = c('7', '11', 'X'))
-
-    # do more tests if you can think of how to do them
-  }
-)
 
 
-test_that(
-  desc = 'testing wrangle.genoprob.df_',
-  code = {
-    test.cross <- qtl::sim.cross(map = qtl::sim.map())
-    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
-    genoprob.df <- wrangle.genoprob.df_(cross = test.cross)
-    info.df <- wrangle.loc.info.df_(cross = test.cross,
-                                    chrs = qtl::chrnames(test.cross))
-
-    expect_identical(object = names(x = genoprob.df),
-                     expected = c('iid', 'loc.name', 'allele', 'genoprob'))
-
-    expect_identical(object = unique(genoprob.df[['loc.name']]),
-                     expected = info.df[['loc.name']])
-
-    expect_true(object = all(genoprob.df[['genoprob']] < 1))
-    expect_true(object = all(genoprob.df[['genoprob']] > 0))
-
-    # do more tests if you can think of how to do them
-  }
-)
 
 
 test_that(
@@ -152,7 +188,8 @@ test_that(
 
     # covariates of all three types (keyword, phenotype, and marker) in
     # mean and variance submodels, but no overlap between submodels
-    formulae1 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3_add + D1M3_dom + mean.QTL.add,
+    formulae1 <- wrangle.scan.formulae_(cross = test.cross,
+                                        mean.formula = phenotype ~ bodyweight + D1M3_add + D1M3_dom + mean.QTL.add,
                                         var.formula = ~ D5M4_add + sex + var.QTL.add)
     modeling.df1 <- wrangle.modeling.df_(cross = test.cross,
                                          genoprobs = genoprob.df,
@@ -164,7 +201,8 @@ test_that(
 
     # covariates of all three types (keyword, phenotype, and marker) in
     # mean and variance submodels, with overlap between submodels
-    formulae2 <- wrangle.scan.formulae_(mean.formula = phenotype ~ bodyweight + D1M3_add + mean.QTL.add,
+    formulae2 <- wrangle.scan.formulae_(cross = test.cross,
+                                        mean.formula = phenotype ~ bodyweight + D1M3_add + mean.QTL.add,
                                         var.formula = ~ bodyweight + D1M3_add + var.QTL.add)
     modeling.df2 <- wrangle.modeling.df_(cross = test.cross,
                                          genoprobs = genoprob.df,

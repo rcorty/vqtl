@@ -38,9 +38,8 @@ validate.scanonevar.input_ <- function(cross,
 
   # build up list of allowable covar names for mean and variance sub-models
   phen.names <- names(cross[['pheno']])
-  marker.names <- unlist(lapply(X = cross[['geno']],
-                                FUN = function(chr) names(chr[['map']])))
-  allowable.covar.names <- c(phen.names, paste0(marker.names, '_add'), paste0(marker.names, '_dom'))
+  marker.names <- colnames(qtl::pull.geno(cross = cross))
+  allowable.covar.names <- c(phen.names, marker.names, paste0(marker.names, '_add'), paste0(marker.names, '_dom'))
   allowable.mean.covar.names <- c(allowable.covar.names, 'mean.QTL.add', 'mean.QTL.dom')
   allowable.var.covar.names <- c(allowable.covar.names, 'var.QTL.add', 'var.QTL.dom')
 
@@ -49,7 +48,7 @@ validate.scanonevar.input_ <- function(cross,
   var.covars <- labels(object = terms(x = var.formula))
   # would like to have a less fragile way to extract this information from the formulae
 
-  # all non-keyword covariates must be allowable
+  # all covariates must be allowable
   stopifnot(all(mean.covars %in% allowable.mean.covar.names))
   stopifnot(all(var.covars %in% allowable.var.covar.names))
 

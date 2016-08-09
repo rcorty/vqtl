@@ -35,7 +35,7 @@ wrangle.scanonevar.input_ <- function(cross,
 
   scan.types <- wrangle.scan.types_(mean.formula, var.formula)
 
-  scan.formulae <- wrangle.scan.formulae_(mean.formula, var.formula)
+  scan.formulae <- wrangle.scan.formulae_(cross, mean.formula, var.formula)
 
   modeling.df <- wrangle.modeling.df_(cross = cross,
                                       genoprobs = genoprob.df.long,
@@ -132,12 +132,48 @@ wrangle.scan.types_ <- function(mean.formula,
 #' @rdname wrangle.scanonevar.input_
 #'
 #' @inheritParams wrangle.scanonevar.input_
-#'
-wrangle.scan.formulae_ <- function(mean.formula,
+#' @export
+wrangle.scan.formulae_ <- function(cross,
+                                   mean.formula,
                                    var.formula) {
 
   mean.terms <- labels(terms(mean.formula))
   var.terms <- labels(terms(var.formula))
+
+  # first, replace terms that are simply marker names with marker.name_add + marker.name_dom
+  marker.names <- colnames(qtl::pull.geno(cross = cross))
+  mean.marker.covars <- mean.terms[mean.terms %in% marker.names]
+  var.marker.covars <- var.terms[var.terms %in% marker.names]
+
+  for (mean.marker.covar in mean.marker.covars) {
+    new.terms <- paste0('(',
+                        paste0(mean.marker.covar,
+                               c('_add', '_dom'),
+                               collapse = '+'),
+                        ')')
+    mean.formula <- reformulate(termlabels = gsub(pattern = mean.marker.covar,
+                                                  replacement = new.terms,
+                                                  x = labels(terms(mean.formula))),
+                                response = mean.formula[[2]])
+  }
+
+  for (var.marker.covar in var.marker.covars) {
+    new.terms <- paste0('(',
+                        paste0(var.marker.covar,
+                               c('_add', '_dom'),
+                               collapse = '+'),
+                        ')')
+    var.formula <- reformulate(termlabels = gsub(pattern = var.marker.covar,
+                                                 replacement = new.terms,
+                                                 x = labels(terms(var.formula))),
+                               response = var.formula[[2]])
+  }
+
+
+  # pull the terms anew in case things changed in step one, above
+  mean.terms <- labels(terms(mean.formula))
+  var.terms <- labels(terms(var.formula))
+
 
   # second, identify terms that are 'keywords' and remove them to make the null formulae
   mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = mean.terms)
@@ -215,7 +251,8 @@ wrangle.modeling.df_ <- function(cross,
   }
 
 
-  # get the covariate names that are markers and add them to modeling.df
+  # get the covariate names that are marker.name_add or marker.name_dom and add them to modeling.df
+  # There should be no covariates that are just marker.name at this point
   marker.names <- colnames(qtl::pull.geno(cross))
   add.marker.names <- paste0(marker.names, '_add')
   dom.marker.names <- paste0(marker.names, '_dom')
