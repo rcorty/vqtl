@@ -80,7 +80,7 @@ plot.scanonevar <- function(x,
                    strip.background = ggplot2::element_rect(fill = 'lightgray'))
 
   if (marker.rug) {
-    true.markers <- x %>% filter(pos != round(pos))
+    true.markers <- x %>% dplyr::filter(pos != round(pos))
     p <- p + ggplot2::geom_rug(mapping = ggplot2::aes(x = pos),
                                data = true.markers)
   }
