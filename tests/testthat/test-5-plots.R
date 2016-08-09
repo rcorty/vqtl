@@ -54,13 +54,13 @@ test_that(
   code = {
     set.seed(27599)
     test.cross <- qtl::sim.cross(map = qtl::sim.map(len = sort(round(runif(n = 15, min = 20, max = 50)), decreasing = TRUE)))
-    test.cross[['pheno']][['sex']] <- sample(x = c('red', 'blue'), size = qtl::nind(test.cross), replace = TRUE)
+    test.cross[['pheno']][['sex']] <- factor(sample(x = c('red', 'blue'), size = qtl::nind(test.cross), replace = TRUE))
+    test.cross[['pheno']][['handler']] <- factor(sample(x = c('mark', 'greg', 'amy', 'susie'), size = qtl::nind(test.cross), replace = TRUE))
 
-    predictive.plot(cross = test.cross,
-                    mean.formula = phenotype ~ sex + mean.QTL.add,
-                    var.formula = ~ sex ~ var.QTL.add,
-                    phen.name = 'phenotype',
-                    marker.name = 'D1M2')
+    prediction.ci.plot(cross = test.cross,
+                       mean.formula = phenotype ~ sex + D1M2,
+                       var.formula = ~ sex + D3M1,
+                       group.by = list('sex', 'D2M2'))
     # do more tests
   }
 )

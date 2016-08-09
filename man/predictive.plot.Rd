@@ -4,72 +4,36 @@
 \alias{predictive.plot}
 \title{Plot Predictive Interval for Categorical Genotype/Phenotype Groups}
 \usage{
-predictive.plot(cross, mean.formula, var.formula, marker.name, phen.name,
-  title = paste("Predictive of", response.phen, "from", phen.name, "and",
-  marker.name), title.cex = 1, genotype.plotting.names = c("AA", "AB",
-  "BB"), ribbon.width = 10, xlim = NA, ylim = NA)
+predictive.plot(cross, mean.formula, var.formula, group.by,
+  title = paste("Predictive Mean and Variance Confidence Intervals of",
+  response.phen), xlim = NA, ylim = NA)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
 
-\item{mean.formula}{The formula to describe the mean of the phenotype.
-Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
-components of the QTL effect on the mean.}
+\item{mean.formula}{the mean formula}
 
-\item{var.formula}{The formula to describe the residual variance of the
-phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
-dominance components of the QTL effect on residual phenotype variance.}
-
-\item{marker.name}{The name of the marker the effects of which we want to investigate and visualize.}
-
-\item{phen.name}{The categorical phenotype the effects of which we want to investigate and visualize.}
+\item{var.formula}{the var formula}
 
 \item{title}{Optionally, title for the plot.  Defaults to 'Predictive of [response phenotype] from
 [predictive phenotype (e.g. sex)] and [marker name]}
-
-\item{title.cex}{Optionally, character expansion for title.  Defaults to 1.}
-
-\item{genotype.plotting.names}{Labels for the genotype groups.  Defaults to \code{c('AA', 'AB', 'BB')}.}
-
-\item{ribbon.width}{Optionally, width of ribbon connecting same-phenotype (different genotype) groups.
-Defaults to 10.}
 
 \item{xlim}{Optionally specify x-axis limits.  Defaults to data-dependent.}
 
 \item{ylim}{Optionally specify y-axis limits.  Defaults to data.dependent.}
 }
 \value{
-None.  Only makes plot.
+The plot
 }
 \description{
 \code{predictive.plot} should be used to visually investigate loci identified
   with plot.scanonevar or summary.scanonevar.  The user can specify the same mean and variance
   formulae that were used in the scan, or specify new formulae to investigate interactions.
 }
-\details{
-none
-}
 \examples{
   set.seed(27599)
   my.cross <- sim.cross(map = sim.map(), type = 'f2')
   my.cross <- calc.genoprob(my.cross)
-  my.cross$pheno$phenotype <- rnorm(n = 100,
-                                    mean = my.cross$geno$`1`$data[,5],
-                                    sd = my.cross$geno$`2`$data[,5])
-  my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-  my.cross$pheno$cage <- sample(x = 1:5, size = 100, replace = TRUE)
-
-  predictive.plot(cross = my.cross,
-                  mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-                  var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-                  marker.name = 'D1M5',
-                  phen.name = 'sex')
-
-  predictive.plot(cross = my.cross,
-                  mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-                  var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-                  marker.name = 'D2M5',
-                  phen.name = 'sex')
 
 }
 \author{

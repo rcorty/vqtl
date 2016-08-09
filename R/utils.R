@@ -1,4 +1,3 @@
-
 #' @title additive.component
 #' @rdname scanonevar_
 #'

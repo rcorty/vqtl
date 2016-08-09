@@ -156,7 +156,7 @@ test_that(
     expect_equal(object = wrangle.scan.formulae_(cross = test.cross,
                                                  mean.formula = a ~ b + D1M1 + mean.QTL.add,
                                                  var.formula = ~ c + var.QTL.add),
-                 expected = list(mean.alt.formula = a ~ b + (D1M1_add + D1M1_dom) + mean.QTL.add,
+                 expected = list(mean.alt.formula = a ~ b + mean.QTL.add + D1M1_add + D1M1_dom,
                                  mean.null.formula = a ~ b + D1M1_add + D1M1_dom,
                                  var.alt.formula = ~ c + var.QTL.add,
                                  var.null.formula = ~ c))

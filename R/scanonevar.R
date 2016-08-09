@@ -40,7 +40,7 @@ scanonevar <- function(cross,
                                                var.formula = var.formula,
                                                chrs = chrs)
 
-  # execute the scan(s)
+  # execute the scan
   result <- scanonevar_(modeling.df = wrangled.inputs$modeling.df,
                         loc.info.df = wrangled.inputs$loc.info.df,
                         genoprob.df = wrangled.inputs$genoprob.df,
