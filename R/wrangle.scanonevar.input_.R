@@ -90,7 +90,8 @@ wrangle.genoprob.df_ <- function(cross) {
     if (is.null(dimnames(prob.tbl)[[1]])) {
       dimnames(prob.tbl)[[1]] <- paste0('org',
                                         stringr::str_pad(string = 1:dim(prob.tbl)[1],
-                                                         width = num.width))
+                                                         width = num.width,
+                                                         pad = '0'))
     }
     names.starting.with.loc.idxs <- grep(pattern = '^loc', dimnames(prob.tbl)[[2]])
     dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs] <-
