@@ -5,7 +5,8 @@
 \title{plot.scanonevar}
 \usage{
 \method{plot}{scanonevar}(x, y = NULL, chrs = unique(x[["chr"]]),
-  plotting.units = c("LOD", "asymp.p", "empir.p"))
+  plotting.units = c("LOD", "asymp.p", "empir.p"), plot.title = attr(x = x,
+  which = "mean.formula")[[2]], marker.rug = TRUE)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}
@@ -14,44 +15,16 @@
 
 \item{chrs}{Optionally, the subset of the chromosomes to plot}
 
-\item{units.to.plot}{Optionally, whether to plot 'lods' or 'emp.ps'.}
-
-\item{col}{Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.}
-
-\item{bandcol}{Optionally, a background color for the even-index chromosomes in this scan.}
-
-\item{legends}{Optionally, the name to put for each scan in the legend.  Defaults to \code{c('mean or var', 'mean', 'var', 'scanone for comparison')}.}
-
-\item{legend.pos}{Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.}
-
-\item{gap}{Optionally, The space between chromosomes in Mb.  Defaults to 25.}
+\item{plotting.units}{One of 'LOD', 'asymp.p', or 'empir.p', implying whether
+LOD scores, asymptotic p-values, or empirical p-values should be plotted.
+Defaults to 'LOD'}
 
 \item{incl.markers}{Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.}
 
-\item{ylim}{Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.}
-
 \item{show.equations}{Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.}
-
-\item{legend.ncol}{Optionally, the number of columns in the legend.  Defaults to 2.}
-
-\item{legend.cex}{Optionally, character expansion for the legend.  Defaults to 1.}
-
-\item{title}{Optionally, title for plot.  Defaults to phenotype from scanonevar object.}
-
-\item{title.cex}{Optionally, title character expansion.  Defaults to 1.5}
-
-\item{alpha.side}{Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'}
-
-\item{line.width}{Optionally, width of plotted lines.  Defaults to 1.}
-
-\item{vertical.bar}{Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.}
-
-\item{suppress.chromosome}{Optionally, suppress the word "Chromosome" across the bottom of the plot}
-
-\item{...}{optional graphical parameters}
 }
 \value{
-Returns nothing.  Only makes the plot.
+Returns the plot.
 }
 \description{
 \code{plot.scanonevar} implements the plot generic for objects of class 'scanonevar'.
@@ -63,8 +36,8 @@ If such a strong signal was observed that the empirical p-value underflows R's
    float type, this function produces an error.  The author is open to suggestions on how
    to deal with this situation better.
 
-   These plots look a lot better when both x (the scanonevar object) and y (optional scanone
-   for comparison) are in units of empirical p values than when they are in LOD units.
+   These plots look better when both x (the scanonevar object) and y (optional scanone
+   for comparison) are in units p values than when they are in LOD units.
 
 none
 }
