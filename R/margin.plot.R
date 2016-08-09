@@ -45,8 +45,8 @@ margin.plot <- function(cross,
                         marginal.phen.names = NULL,
                         marginal.marker.names = NULL,
                         genotype.plotting.names = c('A', 'H', 'B'),
-                        subset = 1:nind(cross),
-                        col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
+                        subset = 1:qtl::nind(cross),
+                        col = rep(rgb(0.5, 0.5, 0.5, 0.5), qtl::nind(cross)),
                         pch = 19,
                         xlab.override = NA,
                         ylab.override = NA,
@@ -64,7 +64,7 @@ margin.plot <- function(cross,
   if (num.plots == 0) { stop('Must provide a marginal phenotype or marker.')}
 
   focal.phen <- cross$pheno[[focal.phenotype.name]][subset]
-  if (!missing(col) & length(col) == nind(cross)) {
+  if (!missing(col) & length(col) == qtl::nind(cross)) {
     col <- col[subset]
   }
 
@@ -79,7 +79,7 @@ margin.plot <- function(cross,
          xlab = NA,
          ylab = NA,
          axes = FALSE,
-         col = alpha(col, circle.alpha),
+         col = ggplot2::alpha(col, circle.alpha),
          pch = pch)
 
     # x axis stuff
@@ -114,7 +114,7 @@ margin.plot <- function(cross,
          xlab = NA,
          ylab = NA,
          axes = FALSE,
-         col = alpha(col, circle.alpha),
+         col = ggplot2::alpha(col, circle.alpha),
          pch = pch)
 
     # x axis and labels

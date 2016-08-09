@@ -6,9 +6,9 @@
 \usage{
 margin.plot(cross, focal.phenotype.name, marginal.phen.names = NULL,
   marginal.marker.names = NULL, genotype.plotting.names = c("A", "H", "B"),
-  subset = 1:nind(cross), col = rep(rgb(0.5, 0.5, 0.5, 0.5), nind(cross)),
-  pch = 19, xlab.override = NA, ylab.override = NA, title.override = NA,
-  title.cex = 1.5, circle.alpha = 0.2)
+  subset = 1:qtl::nind(cross), col = rep(rgb(0.5, 0.5, 0.5, 0.5),
+  qtl::nind(cross)), pch = 19, xlab.override = NA, ylab.override = NA,
+  title.override = NA, title.cex = 1.5, circle.alpha = 0.2)
 }
 \arguments{
 \item{cross}{The cross object to be plotted}
