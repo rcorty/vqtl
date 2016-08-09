@@ -56,6 +56,21 @@ scanonevar_ <- function(modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
                                                           model.formulae = scan.formulae)
 
+    # hacky way to accomodate x chromosome...
+    # I'm OK with having 0 for the dominance components.  That feels very R-ish to me
+    # and dglm handles it naturally, ignoring them in the model fitting and
+    # giving an effect estimate of NA.  I don't love adjusting the df this way...
+    if (any(this.loc.modeling.df[['mean.QTL.dom']] != 0)) {
+      this.loc.mean.df <- mean.df
+    } else {
+      this.loc.mean.df <- mean.df - 1
+    }
+    if (any(this.loc.modeling.df[['var.QTL.dom']] != 0)) {
+      this.loc.var.df <- var.df
+    } else {
+      this.loc.var.df <- var.df - 1
+    }
+
     # Fit the alternative model at this loc
     alternative.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.alt.formula']],
                                                   dformula = scan.formulae[['var.alt.formula']],
@@ -81,7 +96,7 @@ scanonevar_ <- function(modeling.df,
                                 error = function(e) NA,
                                 finally = NA)
       result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
-      result[['mean.asymp.p']][loc.idx] <- pchisq(q = result[['mean.lod']][loc.idx], df = mean.df, lower.tail = FALSE)
+      result[['mean.asymp.p']][loc.idx] <- pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
     if ('var' %in% scan.types) {
@@ -92,12 +107,12 @@ scanonevar_ <- function(modeling.df,
                                error = function(e) NA,
                                finally = NA)
       result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
-      result[['var.asymp.p']][loc.idx] <- pchisq(q = result[['var.lod']][loc.idx], df = var.df, lower.tail = FALSE)
+      result[['var.asymp.p']][loc.idx] <- pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
 
     if ('joint' %in% scan.types) {
       result[['joint.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
-      result[['joint.asymp.p']][loc.idx] <- pchisq(q = result[['joint.lod']][loc.idx], df = mean.df + var.df, lower.tail = FALSE)
+      result[['joint.asymp.p']][loc.idx] <- pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
     }
 
   }
@@ -279,7 +294,7 @@ dominance.component <- function(genoprobs.long) {
   if (all(alleles %in% c('AA', 'AB', 'BB'))) {
     return(genoprobs.wide[['AB']])
   } else if (all(alleles %in% c('g1', 'g2'))) {
-    return(NA)
+    return(0)
   } else {
     stop(paste("Can't determine additive component of loc with alleles:", alleles))
   }

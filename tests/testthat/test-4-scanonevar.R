@@ -1,3 +1,4 @@
+
 context("Testing scanonevar")
 
 test_that(
