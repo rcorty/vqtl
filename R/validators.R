@@ -1,10 +1,11 @@
-formulae.are.valid.for.cross_ <- function(cross = cross,
-                                          mean.formula = mean.formula,
-                                          var.formula = var.formula) {
+formulae.is.valid.for.cross_ <- function(cross,
+                                         formulae) {
 
   # the response in 'mean.formula' must be a phenotype in the cross
   phen.names <- names(qtl::pull.pheno(cross = cross))
-  stopifnot(all.vars(mean.formula[[2]]) %in% phen.names)
+  if (!(all.vars(mean.formula[[2]]) %in% phen.names)) {
+    return(FALSE)
+  }
   # see http://stackoverflow.com/questions/13217322/how-to-reliably-get-dependent-variable-name-from-formula-object/13218055#13218055
   # for a long discussion about how to pull response from a formula...
 
@@ -20,20 +21,26 @@ formulae.are.valid.for.cross_ <- function(cross = cross,
   var.covars <- all.vars(var.formula)
 
   # all covariates must be allowable
-  stopifnot(all(mean.covars %in% allowable.mean.covar.names))
-  stopifnot(all(var.covars %in% allowable.var.covar.names))
+  if (!all(mean.covars %in% allowable.mean.covar.names)) {
+    return(FALSE)
+  }
+
+  if (!all(var.covars %in% allowable.var.covar.names)) {
+    return(FALSE)
+  }
+
+  return(TRUE)
 }
 
 
 
 
 
-formulae.are.valid.for.scanonevar_ <- function(mean.formula,
-                                               var.formula) {
+formulae.is.valid.for.scanonevar_ <- function(formulae) {
 
   # make sure a 'QTL' term is used correctly somewhere
-  mean.covars <- all.vars(mean.formula[[3]])
-  var.covars <- all.vars(var.formula)
+  mean.covars <- all.vars(formulae[['mean.formula']][[3]])
+  var.covars <- all.vars(formulae[['var.formula']])
   stopifnot(any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars,
                 c('var.QTL.add', 'var.QTL.dom') %in% var.covars))
 

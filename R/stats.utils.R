@@ -1,5 +1,5 @@
 #' @title LOD
-#' @rdname scanonevar_
+#' @rdname stats.utils
 #'
 #' @param alt alternative DGLM
 #' @param null null DGLM
