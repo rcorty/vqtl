@@ -1,6 +1,9 @@
 formulae.is.valid.for.cross_ <- function(cross,
                                          formulae) {
 
+  mean.formula <- formulae[['mean.formula']]
+  var.formula <- formulae[['var.formula']]
+
   # the response in 'mean.formula' must be a phenotype in the cross
   phen.names <- names(qtl::pull.pheno(cross = cross))
   if (!(all.vars(mean.formula[[2]]) %in% phen.names)) {
@@ -36,18 +39,6 @@ formulae.is.valid.for.cross_ <- function(cross,
 
 
 
-formulae.is.valid.for.scanonevar_ <- function(formulae) {
-
-  # make sure a 'QTL' term is used correctly somewhere
-  mean.covars <- all.vars(formulae[['mean.formula']][[3]])
-  var.covars <- all.vars(formulae[['var.formula']])
-  stopifnot(any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars,
-                c('var.QTL.add', 'var.QTL.dom') %in% var.covars))
-
-}
-
-
-
 
 #' @title is.scanonevar
 #' @rdname utils
@@ -69,19 +60,35 @@ formulae.is.valid.for.scanonevar_ <- function(formulae) {
 #'
 is.scanonevar <- function(x) {
 
-  if (!('scanonevar' %in% class(x)))
+  if (!('scanonevar' %in% class(x))) {
+    return(FALSE)
+  }
+
+  if (!identical(names(x), c('meta', 'result'))) {
+    return(FALSE)
+  }
+
+  meta <- x[['meta']]
+  result <- x[['result']]
+
+  # valid meta
+  if (!identical(names(meta), c('cross', 'formulae', 'scan.types', 'chrs'))) {
+    return(FALSE)
+  }
+
+  if (!(is.cross(meta[['cross']]))) {
+    return(FALSE)
+  }
+
+  # more possible
+
+
+  # valid result
+  if (!all(c('loc.name', 'chr', 'pos') %in% names(result)))
     return(FALSE)
 
-  if (!all(c('loc.name', 'chr', 'pos') %in% names(x)))
-    return(FALSE)
-
-  if (any(is.null(attr(x = x, which = 'scan.types', exact = TRUE)),
-          is.null(attr(x = x, which = 'mean.formula', exact = TRUE)),
-          is.null(attr(x = x, which = 'var.formula', exact = TRUE))))
-    return(FALSE)
-
-  if (all(!all(c('mean.lod', 'mean.asymp.p') %in% names(x)),
-          !all(c('var.lod', 'var.asymp.p') %in% names(x))))
+  if (all(!all(c('mean.lod', 'mean.asymp.p') %in% names(result)),
+          !all(c('var.lod', 'var.asymp.p') %in% names(result))))
     return(FALSE)
 
   # check that LOD scores are greater than 0

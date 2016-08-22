@@ -40,6 +40,11 @@ scanonevar <- function(cross,
                                                var.formula = var.formula,
                                                chrs = chrs)
 
+  # save meta-data on this scan
+  meta <- pull.scanonevar.meta_(cross,
+                                wrangled.inputs,
+                                chrs)
+
   # execute the scan
   result <- scanonevar_(modeling.df = wrangled.inputs$modeling.df,
                         loc.info.df = wrangled.inputs$loc.info.df,
@@ -48,8 +53,11 @@ scanonevar <- function(cross,
                         scan.formulae = wrangled.inputs$scan.formulae,
                         return.covar.effects = return.covar.effects)
 
-  class(result) <- c('scanonevar', class(result))
-  return(result)
+  sov <- list(meta = meta,
+              result = result)
+
+  class(sov) <- c('scanonevar', class(sov))
+  return(sov)
 }
 
 
@@ -71,28 +79,44 @@ scanonevar <- function(cross,
 validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
                                        var.formula,
-                                       chrs = qtl::chrnames(cross)) {
+                                       chrs) {
 
   # each argument must be individually valid
   stopifnot(is.cross(cross))
   stopifnot(is.mean.formula(mean.formula))
   stopifnot(is.var.formula(var.formula))
-  chrs <- match.arg(arg = chrs, several.ok = TRUE)
-  allow.no.qtl <- match.arg(allow.no.qtl)
+  stopifnot(all(chrs %in% qtl::chrnames(cross)))
 
   formulae <- make.formulae_(mean.formula, var.formula)
 
   # formulae must be valid for use in scanonevar
-  stopifnot(formulae.are.valid.for.scanonevar_(formulae = formulae))
+  stopifnot(formulae.is.valid.for.scanonevar_(formulae = formulae))
 
   # formulae must be valid for use with cross
-  stopifnot(formulae.are.valid.for.cross_(cross = cross,
-                                          formulae = formulae))
+  stopifnot(formulae.is.valid.for.cross_(cross = cross,
+                                         formulae = formulae))
 
   return(TRUE)
 }
 
 
+
+formulae.is.valid.for.scanonevar_ <- function(formulae) {
+
+  if (!is.formulae(formulae)) {
+    return(FALSE)
+  }
+
+  # must have at least one QTL term used appropriately
+  mean.covars <- all.vars(formulae[['mean.formula']][[3]])
+  var.covars <- all.vars(formulae[['var.formula']])
+  if (all(!any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars),
+          !any(c('var.QTL.add', 'var.QTL.dom') %in% var.covars))) {
+    return(FALSE)
+  }
+
+  return(TRUE)
+}
 
 
 
@@ -159,12 +183,15 @@ wrangle.scanonevar.types_ <- function(mean.formula,
   mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = labels(terms(mean.formula)))
   var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(terms(var.formula)))
 
-  if (all(mean.qtl.idxs, !var.qtl.idxs))
+  if (all(mean.qtl.idxs, !var.qtl.idxs)) {
     return('mean')
-  if (all(!mean.qtl.idxs, var.qtl.idxs))
+  }
+  if (all(!mean.qtl.idxs, var.qtl.idxs)) {
     return('var')
-  if (all(mean.qtl.idxs, var.qtl.idxs))
+  }
+  if (all(mean.qtl.idxs, var.qtl.idxs)) {
     return(c('mean', 'var', 'joint'))
+  }
 
   stop('Should never get here.')
 }
@@ -185,7 +212,7 @@ wrangle.scanonevar.formulae_ <- function(cross,
                                                 mean.formula,
                                                 var.formula)
 
-  null.formulae <- remove.qtl.terms_(formulae = alt.formulae.with.add.dom)
+  null.formulae <- remove.qtl.terms_(formulae = alt.formulae)
 
   # this way of adding to a list doesn't add anything when RHS is NULL
   scan.formulae <- list()
@@ -219,12 +246,13 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
                                                    formulae = scan.formulae)
 
   genet.covar.model.df <- make.genet.covar.add.dom.model.df_(cross = cross,
-                                                             formulae = scan.formulae)
+                                                             formulae = scan.formulae,
+                                                             genoprobs = genoprobs)
 
-  return(dply::bind_cols(response.model.df,
-                         qtl.covar.model.df,
-                         phen.covar.model.df,
-                         genet.covar.model.df))
+  return(dplyr::bind_cols(response.model.df,
+                          qtl.covar.model.df,
+                          phen.covar.model.df,
+                          genet.covar.model.df))
 }
 
 
@@ -234,7 +262,18 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 
+pull.scanonevar.meta_ <- function(cross,
+                                  wrangled.inputs,
+                                  chrs) {
 
+  meta <- list(cross = cross,
+               formulae = wrangled.inputs$scan.formulae,
+               scan.types = wrangled.inputs$scan.types,
+               chrs = chrs)
+  class(meta) <- c('scanonevar.meta', class(meta))
+
+  return(meta)
+}
 
 #' @title scanonevar_
 #' @name scanonevar_
@@ -265,10 +304,10 @@ scanonevar_ <- function(modeling.df,
                         scan.formulae,
                         return.covar.effects) {
 
-  result <- initialize.scanonevar.result_(loc.info.df,
-                                          scan.types,
-                                          scan.formulae,
-                                          return.covar.effects)
+  result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
+                                          scan.types = scan.types,
+                                          scan.formulae = scan.formulae,
+                                          return.covar.effects = return.covar.effects)
 
   mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(terms(scan.formulae[['mean.alt.formula']]))))
   var.df <- sum(grepl(pattern = 'var.QTL', x = labels(terms(scan.formulae[['var.alt.formula']]))))
@@ -290,32 +329,26 @@ scanonevar_ <- function(modeling.df,
     loc.genoprobs <- dplyr::filter(.data = genoprob.df,
                                    loc.name == this.loc.name)
 
+    # puts a column of 0's for any dominance components if we are on X chromosome
+    # dglm handles this naturally, ignoring it in model fitting and giving effect estimate of NA
     this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
                                                           model.formulae = scan.formulae)
 
-    # hacky way to accomodate x chromosome...
-    # I'm OK with having 0 for the dominance components.  That feels very R-ish to me
-    # and dglm handles it naturally, ignoring them in the model fitting and
-    # giving an effect estimate of NA.  I don't love adjusting the df this way...
-    if (any(this.loc.modeling.df[['mean.QTL.dom']] != 0)) {
-      this.loc.mean.df <- mean.df
-    } else {
+    #  hacky way to adjust the df on the X chr
+    if (all(this.loc.modeling.df[['mean.QTL.dom']] == 0)) {
       this.loc.mean.df <- mean.df - 1
-    }
-    if (any(this.loc.modeling.df[['var.QTL.dom']] != 0)) {
-      this.loc.var.df <- var.df
     } else {
+      this.loc.mean.df <- mean.df
+    }
+    if (all(this.loc.modeling.df[['var.QTL.dom']] == 0)) {
       this.loc.var.df <- var.df - 1
+    } else {
+      this.loc.var.df <- var.df
     }
 
     # Fit the alternative model at this loc
-    alternative.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.alt.formula']],
-                                                  dformula = scan.formulae[['var.alt.formula']],
-                                                  data = this.loc.modeling.df),
-                                warning = function(w) NA,
-                                error = function(e) NA,
-                                finally = NA)
+    alternative.fit <- fit.model.mv_(formulae = scan.formulae, df = this.loc.modeling.df)
 
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
@@ -327,23 +360,13 @@ scanonevar_ <- function(modeling.df,
     # Fit the appropriate null models at this loc
     # and save LOD score and asymptotic p-value
     if ('mean' %in% scan.types) {
-      mean.null.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.null.formula']],
-                                                  dformula = scan.formulae[['var.alt.formula']],
-                                                  data = this.loc.modeling.df),
-                                warning = function(w) NA,
-                                error = function(e) NA,
-                                finally = NA)
+      mean.null.fit <- fit.model.0v_(formulae = scan.formulae, df = this.loc.modeling.df)
       result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
       result[['mean.asymp.p']][loc.idx] <- pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
     if ('var' %in% scan.types) {
-      var.null.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.alt.formula']],
-                                                 dformula = scan.formulae[['var.null.formula']],
-                                                 data = this.loc.modeling.df),
-                               warning = function(w) NA,
-                               error = function(e) NA,
-                               finally = NA)
+      var.null.fit <- fit.model.m0_(formulae = scan.formulae, df = this.loc.modeling.df)
       result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
       result[['var.asymp.p']][loc.idx] <- pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
@@ -356,9 +379,7 @@ scanonevar_ <- function(modeling.df,
   }
 
 
-  attr(x = result, which = 'scan.types') <- scan.types
-  attr(x = result, which = 'mean.formula') <- scan.formulae[['mean.alt.formula']]
-  attr(x = result, which = 'var.formula') <- scan.formulae[['var.alt.formula']]
+  class(result) <- c('scanonevar.result', class(result))
 
   return(result)
 }
@@ -388,7 +409,7 @@ scanonevar_ <- function(modeling.df,
 initialize.scanonevar.result_ <- function(loc.info.df,
                                           scan.types,
                                           scan.formulae,
-                                          return.covar.effects) {
+                                          return.covar.effects = FALSE) {
 
   result <- dplyr::select(.data = loc.info.df,
                           loc.name,

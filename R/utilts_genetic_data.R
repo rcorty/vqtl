@@ -3,7 +3,7 @@
 #'
 #' @inheritParams scanonevar
 #'
-wrangle.loc.info.df_ <- function (cross, chrs) {
+wrangle.loc.info.df_ <- function (cross, chrs = qtl::chrnames(cross)) {
 
   loc.info.from.chr <- function(x) {
     chr.name <- names(class(x))
@@ -54,27 +54,42 @@ wrangle.genoprob.df_ <- function(cross) {
 
 
 
+#' @title make.response.model.df_
+#' @rdname internals
+#'
+#' @inheritParams scanonevar
+#'
+#' @return a tibble of the response in mean.formua
+#' @export
+#'
 make.response.model.df_ <- function(cross,
                                     formulae) {
 
-  stopifnot(is.cross(cross), is.formulae(formulae))
+  stopifnot(is.cross(cross))
 
-  response.name <- all.vars(formulae[['mean.formula']][[2]])
+  response.name <- all.vars(formulae[['mean.alt.formula']][[2]])
 
   # not sure if there's a better way to do this
-  df <- data_frame(placeholder = rep(NA, qtl::nind(cross)))
-  df[[response.name]] <- qtl::pull.pheno(cross = cross, pheno.col = response.name)
-  df[['placeholder']] <- NULL
+  df <- dplyr::as_data_frame(stats::setNames(list(qtl::pull.pheno(cross = cross,
+                                                                  pheno.col = response.name)),
+                                             response.name))
 
   return(df)
 }
 
 
 
-make.qtl.covar.model.df <- function(cross,
-                                    formulae) {
+#' @title make.qtl.covar.model.df
+#' @rdname internals
+#'
+#' @inheritParams scanonevar
+#'
+#' @return a tibble of the qtl keyword in formulae
+#' @export
+make.qtl.covar.model.df_ <- function(cross,
+                                     formulae) {
 
-  stopifnot(is.cross(cross), is.formulae(formulae))
+  stopifnot(is.cross(cross))
 
   # get all covariate names
   mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
@@ -86,9 +101,9 @@ make.qtl.covar.model.df <- function(cross,
   var.keywords <- c('var.QTL.add', 'var.QTL.dom')
   var.keyword.covar.names <- var.covar.names[var.covar.names %in% var.keywords]
 
-  df <- data_frame(placeholder = rep(NA, qtl::nind(cross)))
+  df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
   for (keyword in c(mean.keyword.covar.names, var.keyword.covar.names)) {
-    df[[response.name]] <- rep(NA, qtl::nind(cross))
+    df[[keyword]] <- rep(NA, qtl::nind(cross))
   }
   df[['placeholder']] <- NULL
 
@@ -97,10 +112,10 @@ make.qtl.covar.model.df <- function(cross,
 
 
 
-make.phen.covar.model.df <- function(cross,
-                                     formulae) {
+make.phen.covar.model.df_ <- function(cross,
+                                      formulae) {
 
-  stopifnot(is.cross(cross), is.formulae(formulae))
+  stopifnot(is.cross(cross))
 
   # get all covariate names
   mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
@@ -110,7 +125,7 @@ make.phen.covar.model.df <- function(cross,
   mean.phen.covar.names <- mean.covar.names[mean.covar.names %in% names(cross[['pheno']])]
   var.phen.covar.names <- var.covar.names[var.covar.names %in% names(cross[['pheno']])]
 
-  df <- data_frame(placeholder = rep(NA, qtl::nind(cross)))
+  df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
   for (phen.covar.name in unique(c(mean.phen.covar.names, var.phen.covar.names))) {
     df[[phen.covar.name]] <- cross[['pheno']][[phen.covar.name]]
   }
@@ -125,9 +140,10 @@ make.phen.covar.model.df <- function(cross,
 
 
 make.genet.covar.add.dom.model.df_ <- function(cross,
-                                               formulae) {
+                                               formulae,
+                                               genoprobs) {
 
-  stopifnot(is.cross(cross), is.formulae(formulae))
+  stopifnot(is.cross(cross))
 
   # get all covariate names
   mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
@@ -147,7 +163,7 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
 
 
   # turn it into a tibble
-  df <- data_frame(placeholder = rep(NA, qtl::nind(cross)))
+  df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
   for (add.marker.covar.name in unique(c(mean.add.marker.covar.names, var.add.marker.covar.names))) {
     this.marker.genoprobs <- dplyr::filter(.data = genoprobs,
                                            loc.name == substr(x = add.marker.covar.name,

@@ -10,7 +10,7 @@ scanonevar_(modeling.df, genoprob.df, loc.info.df, scan.types, scan.formulae,
   return.covar.effects)
 
 initialize.scanonevar.result_(loc.info.df, scan.types, scan.formulae,
-  return.covar.effects)
+  return.covar.effects = FALSE)
 
 make.loc.specific.modeling.df(general.modeling.df, loc.genoprobs,
   model.formulae)

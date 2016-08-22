@@ -1,14 +1,11 @@
 #' @title LOD
-#' @rdname stats.utils
+#' @rdname internals
 #'
 #' @param alt alternative DGLM
 #' @param null null DGLM
 #'
-#' @return log( likelihood of alternative model / likelihood of null model)
-#' @export
+#' @return log( likelihood of alternative model / likelihood of null model )
 #'
-#' @examples
-#' x <- 27599
 LOD <- function(alt, null) {
 
   if(any(identical(x = alt, NA), identical(x = null, NA)))

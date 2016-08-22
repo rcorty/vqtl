@@ -61,7 +61,7 @@ is.var.formula <- function(x) {
 #'
 is.formulae <- function(x) {
 
-  if (!identical(names(x), c('mean.formula', 'var.formula')))
+  if (!(all(c('mean.formula', 'var.formula') %in% names(x))))
     return(FALSE)
 
   if (any(!is.mean.formula(x[['mean.formula']]), !is.var.formula(x[['var.formula']])))
@@ -81,8 +81,8 @@ is.formulae <- function(x) {
 #' @return a formulae, a list of length two where the first element is named
 #' 'mean.formula' and is a mean.formula and the second element is named
 #' 'var.formula' and is a var.formula.
-#'
-make.formulae <- function(mean.formula, var.formula) {
+#' @export
+make.formulae_ <- function(mean.formula, var.formula) {
   stopifnot(is.mean.formula(mean.formula), is.var.formula(var.formula))
   return(list(mean.formula = mean.formula,
               var.formula = var.formula))
@@ -112,11 +112,9 @@ replace.markers.with.add.dom_ <- function(cross,
   var.marker.covars <- var.covar.names[var.covar.names %in% marker.names]
 
   for (mean.marker.covar in mean.marker.covars) {
-    new.terms <- paste0('(',
-                        paste0(mean.marker.covar,
-                               c('_add', '_dom'),
-                               collapse = '+'),
-                        ')')
+    new.terms <- paste0('(', paste0(mean.marker.covar,
+                                    c('_add', '_dom'),
+                                    collapse = '+'), ')')
 
     mean.formula <- reformulate(termlabels = gsub(pattern = mean.marker.covar,
                                                   replacement = new.terms,
@@ -125,11 +123,9 @@ replace.markers.with.add.dom_ <- function(cross,
   }
 
   for (var.marker.covar in var.marker.covars) {
-    new.terms <- paste0('(',
-                        paste0(var.marker.covar,
-                               c('_add', '_dom'),
-                               collapse = '+'),
-                        ')')
+    new.terms <- paste0('(', paste0(var.marker.covar,
+                                    c('_add', '_dom'),
+                                    collapse = '+'), ')')
     var.formula <- reformulate(termlabels = gsub(pattern = var.marker.covar,
                                                  replacement = new.terms,
                                                  x = labels(terms(var.formula))))

@@ -37,7 +37,7 @@ test_that(
 
 
 test_that(
-  desc = 'formula utils',
+  desc = 'formulae utils',
   code = {
     expect_false(is.mean.formula(3))
     expect_false(is.mean.formula(~ x))
@@ -57,9 +57,9 @@ test_that(
     expect_false(is.formulae(list(a = x ~ y, b = ~ z)))
     expect_true(is.formulae(list(mean.formula = x ~ y, var.formula = ~ z)))
 
-    expect_error(make.formulae(mean.formula = 3, var.formula = ~z))
-    expect_error(make.formulae(mean.formula = x ~ y, var.formula = 4))
-    expect_true(is.formulae(make.formulae(mean.formula = x ~ y, var.formula = ~ z)))
+    expect_error(make.formulae_(mean.formula = 3, var.formula = ~z))
+    expect_error(make.formulae_(mean.formula = x ~ y, var.formula = 4))
+    expect_true(is.formulae(make.formulae_(mean.formula = x ~ y, var.formula = ~ z)))
 
 
     # simulate cross for testing replace.markers.with.add.dom_
@@ -121,25 +121,25 @@ test_that(
 
 
 
-    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae(mean.formula = x ~ y,
-                                                                          var.formula = ~ z)),
-                      expected = make.formulae(mean.formula = x ~ y,
-                                               var.formula = ~ z))
+    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae_(mean.formula = x ~ y,
+                                                                           var.formula = ~ z)),
+                      expected = make.formulae_(mean.formula = x ~ y,
+                                                var.formula = ~ z))
 
-    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae(mean.formula = x ~ y + mean.QTL.add,
-                                                                          var.formula = ~ z + var.QTL.add)),
-                      expected = make.formulae(mean.formula = x ~ y,
-                                               var.formula = ~ z))
+    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae_(mean.formula = x ~ y + mean.QTL.add,
+                                                                           var.formula = ~ z + var.QTL.add)),
+                      expected = make.formulae_(mean.formula = x ~ y,
+                                                var.formula = ~ z))
 
-    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae(mean.formula = x ~ y + mean.QTL.dom,
-                                                                          var.formula = ~ z + var.QTL.dom)),
-                      expected = make.formulae(mean.formula = x ~ y,
-                                               var.formula = ~ z))
+    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae_(mean.formula = x ~ y + mean.QTL.dom,
+                                                                           var.formula = ~ z + var.QTL.dom)),
+                      expected = make.formulae_(mean.formula = x ~ y,
+                                                var.formula = ~ z))
 
-    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae(mean.formula = x ~ mean.QTL.dom,
-                                                                          var.formula = ~ var.QTL.dom)),
-                      expected = make.formulae(mean.formula = x ~ 1,
-                                               var.formula = ~ 1))
+    expect_equivalent(object = remove.qtl.terms_(formulae = make.formulae_(mean.formula = x ~ mean.QTL.dom,
+                                                                           var.formula = ~ var.QTL.dom)),
+                      expected = make.formulae_(mean.formula = x ~ 1,
+                                                var.formula = ~ 1))
 
   }
 )
@@ -151,73 +151,53 @@ test_that(
     test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5)))
     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
 
+    loc.info <- wrangle.loc.info.df_(cross = test.cross)
+    expect_identical(object = names(loc.info), expected = c('loc.name', 'chr', 'pos'))
+    expect_identical(object = unique(loc.info[['chr']]), expected = qtl::chrnames(test.cross))
+    expect_true(object = all(loc.info[['pos']] >= 0))
+    expect_true(object = all(loc.info[['pos']] <= 20))
+
+    loc.info2 <- wrangle.loc.info.df_(cross = test.cross, chrs = c('1', '3', 'X'))
+    expect_identical(object = names(loc.info2), expected = c('loc.name', 'chr', 'pos'))
+    expect_identical(object = unique(loc.info2[['chr']]), expected = c('1', '3', 'X'))
+    expect_true(object = all(loc.info2[['pos']] >= 0))
+    expect_true(object = all(loc.info2[['pos']] <= 20))
+    expect_true(object = nrow(loc.info2) < nrow(loc.info))
+
+
     genoprobs <- wrangle.genoprob.df_(cross = test.cross)
 
     expect_identical(object = names(genoprobs), expected = c('iid', 'loc.name', 'allele', 'genoprob'))
-    expect_identical(object = unique(genoprobs$iid), expected = paste0('org', stringr::str_pad(string = 1:100, width = 3, pad = '0')))
-    expect_identical(object = unique(genoprobs$allele), expected = c('AA', 'AB', 'BB', 'g1', 'g2'))
-    expect_true(object = all(genoprobs$genoprob > 0))
-    expect_true(object = all(genoprobs$genoprob < 1))
-    expect_true(object = all(colnames(qtl::pull.geno(cross = test.cross)) %in% unique(genoprobs$loc.name)))
+    expect_identical(object = unique(genoprobs[['iid']]), expected = paste0('org', stringr::str_pad(string = 1:100, width = 3, pad = '0')))
+    expect_identical(object = unique(genoprobs[['allele']]), expected = c('AA', 'AB', 'BB', 'g1', 'g2'))
+    expect_true(object = all(genoprobs[['genoprob']] > 0))
+    expect_true(object = all(genoprobs[['genoprob']] < 1))
+    expect_true(object = all(colnames(qtl::pull.geno(cross = test.cross)) %in% unique(genoprobs[['loc.name']])))
+
+
+    # response.df <- make.response.model.df_(cross = test.cross,
+    #                                        formulae = make.formulae_(mean.formula = phenotype ~ apple,
+    #                                                                  var.formula = ~ banana))
+    # expect_identical(object = names(response.df), expected = 'phenotype')
+    # expect_identical(object = nrow(response.df), expected = 100L)
+    # expect_identical(object = response.df[['phenotype']],
+    #                  expected = qtl::pull.pheno(cross = test.cross, pheno.col = 'phenotype'))
+
+
+    # make.qtl.covar.model.df_(cross = test.cross,
+    #                          formulae = make.formulae_(mean.formula = phenotype ~ apple,
+    #                                                    var.formula = ~ banana))
+
+
+    # more
 
   }
 )
 
-#
-# test_that(desc = 'is.cross()',
-#           code = {
-#             x <- 27599
-#
-#             expect_false(object = is.cross(x = x))
-#
-#             class(x) <- 'cross'
-#             expect_false(object = is.cross(x = x))
-#
-#             names(x) <- 'pheno'
-#             expect_false(object = is.cross(x = x))
-#
-#             x <- list(pheno = 1:5, geno = 1:5)
-#             class(x) <- 'cross'
-#             expect_false(object = is.cross(x = x))
-#
-#             y <- qtl::sim.cross(map = qtl::sim.map())
-#             y[['pheno']] <- y[['pheno']][-17,]
-#             expect_false(object = is.cross(x = y))
-#
-#             y <- qtl::sim.cross(map = qtl::sim.map())
-#             y[['geno']][[1]][['map']] <- y[['geno']][[1]][['map']][-1]
-#             expect_false(object = is.cross(x = y))
-#
-#             z <- qtl::sim.cross(map = qtl::sim.map())
-#             expect_true(object = is.cross(x = z))
-#           })
-#
-#
-# test_that(desc = 'is.f2.cross()',
-#           code = {
-#             x <- qtl::sim.cross(map = qtl::sim.map(), type = 'bc')
-#             expect_false(object = is.f2.cross(x = x))
-#
-#             y <- qtl::sim.cross(map = qtl::sim.map(sex.sp = TRUE), type = '4way')
-#             expect_false(object = is.f2.cross(x = y))
-#
-#             z <- qtl::sim.cross(map = qtl::sim.map(), type = 'f2')
-#             expect_true(object = is.f2.cross(x = z))
-#           })
-#
-#
-# test_that(
-#   desc = 'testing scanonevar',
-#   code = {
-#     set.seed(27599)
-#     test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 4), n.mar = 5))
-#     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
-#
-#     # the simplest model
-#     sov_result1 <- scanonevar(cross = test.cross)
-#
-#     expect_false(object = is.scanonevar(x = 3))
-#
-#     expect_true(object = is.scanonevar(x = sov_result1))
-#   }
-# )
+
+test_that(
+  desc = 'validation utils',
+  code = {
+    expect_true(TRUE)
+  }
+)

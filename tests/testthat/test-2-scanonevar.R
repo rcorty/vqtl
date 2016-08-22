@@ -1,3 +1,26 @@
+context("Testing scanonevar")
+
+test_that(
+  desc = 'testing scanonevar',
+  code = {
+    set.seed(27599)
+    test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5)))
+    test.cross[['pheno']][['sex']] <- sample(x = c(0, 1),
+                                             size = qtl::nind(test.cross),
+                                             replace = TRUE)
+
+
+    sov <- scanonevar(cross = test.cross,
+                      mean.formula = phenotype ~ sex + D1M2 + mean.QTL.add + mean.QTL.dom,
+                      var.formula = ~ sex + D2M3 + var.QTL.add + var.QTL.dom)
+
+    expect_true(is.scanonevar(sov))
+
+  }
+)
+
+
+
 # context("Testing validate.scanonevar.input_")
 #
 # test_that(desc = "Testing is.cross, the first check in validate.scanonevar.input_",
