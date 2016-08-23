@@ -25,14 +25,18 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
   }
 
   # turn genoprobs into one big tbl_df
-  all.chr.genoprobs <- NULL
+  all.chr.genoprobs <- chr.by.marker <- pos.by.marker <- marker.names <- list()
   for (this.chr.name in names(cross$geno)) {
+
     # pull out genoprobs and store in tbl_df
     this.chr.probs <- cross$geno[[this.chr.name]]$prob
 
-    # add chr name to pseudomarker names so they don't collide
+    # add chr name to pseudomarker names so they don't collide across chrs
     chr.specific.names <- paste0('chr',
-                                 str_pad(this.chr.name, 2, side = "left", pad = "0"),
+                                 stringr::str_pad(string = this.chr.name,
+                                                  width = 2,
+                                                  side = "left",
+                                                  pad = "0"),
                                  '_',
                                  colnames(this.chr.probs))
 
@@ -40,29 +44,26 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
 
     new.names <- as.vector(outer(dimnames(this.chr.probs)[[2]], dimnames(this.chr.probs)[[3]], paste, sep = '_'))
 
-    this.chr.tbl <- tbl_df(data.frame(this.chr.probs))
+    this.chr.tbl <- dplyr::tbl_df(data.frame(this.chr.probs))
     names(this.chr.tbl) <- new.names
 
     # aggregate
-    if (is.null(all.chr.genoprobs)) {
-      all.chr.genoprobs <- this.chr.tbl
-      chr.by.marker <- rep(this.chr.name, dim(this.chr.probs)[2])
-      pos.by.marker <- attr(this.chr.probs, 'map')
-      marker.names <- colnames(this.chr.probs)
-    } else {
-      all.chr.genoprobs <- bind_cols(all.chr.genoprobs, this.chr.tbl)
-      chr.by.marker <- c(chr.by.marker, rep(this.chr.name, dim(this.chr.probs)[2]))
-      pos.by.marker <- c(pos.by.marker, attr(this.chr.probs, 'map'))
-      marker.names <- c(marker.names, colnames(this.chr.probs))
-    }
+    all.chr.genoprobs[[this.chr.name]] <- this.chr.tbl
+    chr.by.marker[[this.chr.name]] <- rep(this.chr.name, dim(this.chr.probs)[2])
+    pos.by.marker[[this.chr.name]] <- attr(this.chr.probs, 'map')
+    marker.names[[this.chr.name]] <- colnames(this.chr.probs)
   }
 
+  all.chr.genoprobs <- dplyr::bind_rows(all.chr.genoprobs)
+  chr.by.marker <- unlist(chr.by.marker)
+  pos.by.marker <- unlist(pos.by.marker)
+  marker.names <- unlist(marker.names)
 
   # ensure formulae are formulae
-  if (class(mean.formula) != 'formula') {
+  if (!('formula' %in% class(mean.formula))) {
     mean.formula <- formula(mean.formula)
   }
-  if (class(var.formula) != 'formula') {
+  if (!('formula' %in% class(var.formula))) {
     var.formula <- formula(var.formula)
   }
 
@@ -71,7 +72,17 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
   var.var.names <- all.vars(var.formula, unique = TRUE)
 
   # split var names into those that refer to phenotypes and those that refer to markers
-  mean.pheno.vars <- mean.marker.vars <- NULL
+  mean.pheno.var.idxs <- match(x = mean.var.names, table = names(cross$phen))
+  mean.pheno.vars <- names(cross$phen)[mean.pheno.var.idxs]
+  mean.marker.var.idxs <- match(x = mean.var.names, table = marker.names)
+  mean.marker.vars <- marker.names[mean.marker.var.idxs]
+
+  var.idxs.not.found <- (is.na(mean.pheno.var.idxs) & is.na(mean.marker.var.idxs))
+  if (any(var.idxs.not.found)) {
+    stop(paste('Variables not found in phenotypes or genotypes:',
+               mean.var.names[var.idxs.not.found]))
+  }
+
   for (var in mean.var.names) {
     if (var == 'mean.QTL.add' | var == 'mean.QTL.dom') {
       next
@@ -105,9 +116,9 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
   pheno.vars <- c(mean.pheno.vars, var.pheno.vars)
   if (!is.null(pheno.vars))  {
     pheno.vars <- cross$pheno %>%
-      select(matches(paste(pheno.vars,
-                           collapse = '|')))
-    mapping.df <- bind_cols(mapping.df, pheno.vars)
+      dplyr::select(dplyr::matches(paste(pheno.vars,
+                                         collapse = '|')))
+    mapping.df <- dplyr::bind_cols(mapping.df, pheno.vars)
   }
 
   marker.vars <- unique(c(mean.marker.vars, var.marker.vars))
@@ -117,14 +128,14 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
     for (marker.var in marker.vars) {
 
       marker.df <- all.chr.genoprobs %>%
-        select(-matches('loc')) %>%
-        select(matches(marker.var))
+        dplyr::select(-dplyr::matches('loc')) %>%
+        dplyr::select(dplyr::matches(marker.var))
 
       marker.df <- marker.df[,-1]
 
       if (ncol(marker.df) == 1) {
         names(marker.df) <- marker.var
-        mapping.df <- bind_cols(mapping.df, marker.df)
+        mapping.df <- dplyr::bind_cols(mapping.df, marker.df)
       } else {
         if (marker.var %in% mean.var.names) {
           mean.terms <- attr(terms(mean.formula), 'term.labels')
@@ -154,7 +165,7 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
   # now that we have used the whole genome to look for covariates,
   # filter down to the chromosomes of interest for mapping
   all.chr.genoprobs <- dplyr::select(all.chr.genoprobs,
-                                     matches(paste(paste0('chr', str_pad(chrs, 2, side = "left", pad = "0"), collapse = '|'))))
+                                     dplyr::matches(paste(paste0('chr', stringr::str_pad(chrs, 2, side = "left", pad = "0"), collapse = '|'))))
   keeps <- chr.by.marker %in% chrs
   chr.by.marker <- chr.by.marker[keeps]
   pos.by.marker <- pos.by.marker[keeps]

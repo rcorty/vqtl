@@ -274,7 +274,7 @@ scan.via.dglm <- function(mean.alt.formula,
 
   # compile data into return format
   varscan <- data_frame(chr = factor(chr.by.marker,
-                                     levels = mixedsort(unique(chr.by.marker))),
+                                     levels = gtools::mixedsort(unique(chr.by.marker))),
                         chrtype = chrtype,
                         pos = pos.by.marker,
                         marker.name = marker.names,

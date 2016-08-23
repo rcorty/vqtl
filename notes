@@ -1,0 +1,7 @@
+joint:  MV - 00
+mean:   MV - 0V
+var:    MV - M0
+
+joint*: M*V* - 00
+mean*:  M*V - 0V
+var*:   MV* - M0

@@ -1,0 +1,3 @@
+is.cross
+is.f2.cross
+is.cross.with.genoprobs
