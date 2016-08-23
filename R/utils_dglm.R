@@ -45,14 +45,14 @@ fit.model.m.star.v.star_ <- function(formulae, df) {
                           data = permute.QTL.terms_(df))))
 }
 
-fit.model.m.star.0_ <- function(formulae, df) {
+fit.model.m.star.v_ <- function(formulae, df) {
 
   return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
                           dformula = formulae[['var.null.formula']],
                           data = permute.mean.QTL.terms_(df))))
 }
 
-fit.model.0v.star_ <- function(formulae, df) {
+fit.model.m.v.star_ <- function(formulae, df) {
 
   return(tryNA(dglm::dglm(formula = formulae[['mean.null.formula']],
                           dformula = formulae[['var.alt.formula']],

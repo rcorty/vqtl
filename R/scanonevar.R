@@ -41,8 +41,7 @@ scanonevar <- function(cross,
                                                chrs = chrs)
 
   # save meta-data on this scan
-  meta <- pull.scanonevar.meta_(cross,
-                                wrangled.inputs,
+  meta <- pull.scanonevar.meta_(wrangled.inputs,
                                 chrs)
 
   # execute the scan
@@ -159,7 +158,8 @@ wrangle.scanonevar.input_ <- function(cross,
                                                  genoprobs = genoprob.df.long,
                                                  scan.formulae = scan.formulae)
 
-  return(list(scan.types = scan.types,
+  return(list(cross = cross,
+              scan.types = scan.types,
               scan.formulae = scan.formulae,
               modeling.df = modeling.df,
               loc.info.df = loc.info.df,
@@ -262,11 +262,10 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 
-pull.scanonevar.meta_ <- function(cross,
-                                  wrangled.inputs,
+pull.scanonevar.meta_ <- function(wrangled.inputs,
                                   chrs) {
 
-  meta <- list(cross = cross,
+  meta <- list(cross = wrangled.inputs$cross,
                formulae = wrangled.inputs$scan.formulae,
                scan.types = wrangled.inputs$scan.types,
                chrs = chrs)
@@ -313,12 +312,7 @@ scanonevar_ <- function(modeling.df,
   var.df <- sum(grepl(pattern = 'var.QTL', x = labels(terms(scan.formulae[['var.alt.formula']]))))
 
   if ('joint' %in% scan.types) {
-    joint.null.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.null.formula']],
-                                                 dformula = scan.formulae[['var.null.formula']],
-                                                 data = modeling.df),
-                               warning = function(w) NA,
-                               error = function(e) NA,
-                               finally = NA)
+    joint.null.fit <- fit.model.00_(formulae = scan.formulae, df = modeling.df)
   }
 
 
@@ -379,7 +373,7 @@ scanonevar_ <- function(modeling.df,
   }
 
 
-  class(result) <- c('scanonevar.result', class(result))
+  class(result) <- c('scanonevar_result', class(result))
 
   return(result)
 }

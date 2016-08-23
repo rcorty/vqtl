@@ -4,9 +4,11 @@
 \alias{plot.scanonevar}
 \title{plot.scanonevar}
 \usage{
-\method{plot}{scanonevar}(x, y = NULL, chrs = unique(x[["chr"]]),
-  plotting.units = c("LOD", "asymp.p", "empir.p"), plot.title = attr(x = x,
-  which = "mean.formula")[[2]], marker.rug = TRUE)
+\method{plot}{scanonevar}(x, y = NULL,
+  chrs = unique(x[["result"]][["chr"]]), plotting.units = c("LOD",
+  "asymp.p", "empir.p"),
+  plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
+  marker.rug = TRUE)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}

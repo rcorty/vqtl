@@ -34,7 +34,8 @@ scanonevar.perm <- function(sov,
                                                chrs = sov[['meta']][['chrs']])
 
   # execute the scan
-  result <- scanonevar.perm_(modeling.df = wrangled.inputs$modeling.df,
+  result <- scanonevar.perm_(sov = sov[['result']],
+                             modeling.df = wrangled.inputs$modeling.df,
                              loc.info.df = wrangled.inputs$loc.info.df,
                              genoprob.df = wrangled.inputs$genoprob.df,
                              scan.types = wrangled.inputs$scan.types,
@@ -44,47 +45,83 @@ scanonevar.perm <- function(sov,
   sov <- list(meta = sov[['meta']],
               result = result)
 
-  class(sov) <- c('scanonevar.perm', class(sov))
+  class(sov) <- c('scanonevar', class(sov))
   return(sov)
 }
 
 
 
-scanonevar.perm_ <- function(modeling.df,
+scanonevar.perm_ <- function(sov,
+                             modeling.df,
                              loc.info.df,
                              genoprob.df,
                              scan.types,
                              scan.formulae,
                              n.perms) {
 
+  this.context.permutation.max.finder <- function(alt.fitter, null.fitter) {
+    permutation.max.finder(alt.fitter = alt.fitter,
+                           null.fitter = null.fitter,
+                           modeling.df = modeling.df,
+                           loc.info.df = loc.info.df,
+                           genoprob.df = genoprob.df,
+                           scan.formulae = scan.formulae,
+                           n.perms = n.perms)
+  }
+
   if ('mean' %in% scan.types) {
-    scanonevar.meanperm_()
+    message('Starting mean permutations...')
+    mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
+                                                          null.fitter = fit.model.0v_)
+    mean.evd <- evd::fgev(x = mean.lod.maxes)
+    sov[['mean.empir.p']] <- pgev(q = sov[['mean.lod']],
+                                  loc = fitted(mean.evd)[1],
+                                  scale = fitted(mean.evd)[2],
+                                  shape = fitted(mean.evd)[3],
+                                  lower.tail = FALSE)
   }
 
   if ('var' %in% scan.types) {
-    scanonevar.varperm()
+    message('Starting variance permutations...')
+    var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
+                                                         null.fitter = fit.model.m0_)
+    var.evd <- evd::fgev(x = var.lod.maxes)
+    sov[['var.empir.p']] <- pgev(q = sov[['var.lod']],
+                                 loc = fitted(var.evd)[1],
+                                 scale = fitted(var.evd)[2],
+                                 shape = fitted(var.evd)[3],
+                                 lower.tail = FALSE)
   }
 
   if ('joint' %in% scan.types) {
-    scanonevar.jointperm()
+    message('Starting joint mean-variance permutations...')
+    joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
+                                                           null.fitter = fit.model.00_)
+    joint.evd <- evd::fgev(x = joint.lod.maxes)
+    sov[['joint.empir.p']] <- pgev(q = sov[['joint.lod']],
+                                   loc = fitted(joint.evd)[1],
+                                   scale = fitted(joint.evd)[2],
+                                   shape = fitted(joint.evd)[3],
+                                   lower.tail = FALSE)
   }
 
-  return(result)
+  return(sov)
 }
 
 
-scanonevar.meanperm_ <- function(modeling.df,
-                                 loc.info.df,
-                                 genoprob.df,
-                                 scan.types,
-                                 scan.formulae,
-                                 n.perms) {
+permutation.max.finder <- function(alt.fitter,
+                                   null.fitter,
+                                   modeling.df,
+                                   loc.info.df,
+                                   genoprob.df,
+                                   scan.formulae,
+                                   n.perms) {
 
   result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
-                                          scan.types = 'mean',
+                                          scan.types = NA,
                                           scan.formulae = scan.formulae)
+  result[['null.ll']] <- result[['alt.ll']] <- NA
 
-  df <- sum(grepl(pattern = 'mean.QTL', x = labels(terms(scan.formulae[['mean.alt.formula']]))))
 
   # fit the mean null model across the genome
   for (loc.idx in 1:nrow(result)) {
@@ -98,33 +135,42 @@ scanonevar.meanperm_ <- function(modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
                                                           model.formulae = scan.formulae)
 
-    # hacky way to accomodate x chromosome...
-    # I'm OK with having 0 for the dominance components.  That feels very R-ish to me
-    # and dglm handles it naturally, ignoring them in the model fitting and
-    # giving an effect estimate of NA.  I don't love adjusting the df this way...
-    if (any(this.loc.modeling.df[['mean.QTL.dom']] != 0)) {
-      this.loc.mean.df <- mean.df
-    } else {
-      this.loc.mean.df <- mean.df - 1
-    }
-    if (any(this.loc.modeling.df[['var.QTL.dom']] != 0)) {
-      this.loc.var.df <- var.df
-    } else {
-      this.loc.var.df <- var.df - 1
-    }
+    null.fit <- null.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
 
-    mean.null.fit <- tryCatch(expr = dglm::dglm(formula = scan.formulae[['mean.null.formula']],
-                                                dformula = scan.formulae[['var.alt.formula']],
-                                                data = this.loc.modeling.df),
-                              warning = function(w) NA,
-                              error = function(e) NA,
-                              finally = NA)
-    result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
-    result[['mean.asymp.p']][loc.idx] <- pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
-
+    if (!identical(NA, null.fit)) {
+      result[['null.ll']][loc.idx] <- null.fit$m2loglik
+    }
   }
 
   # n. perms times, fit an alternative model with mean permuted
+  # subtract null ll to compute LOD score at each locus
+  # take the max of the LOD scores
+  max.lods <- rep(NA, n.perms)
+  pb <- utils::txtProgressBar(min = 1, max = n.perms, style = 3)
+  for (perm.idx in 1:n.perms) {
 
+    utils::setTxtProgressBar(pb = pb, value = perm.idx)
 
+    for (loc.idx in 1:nrow(result)) {
+
+      # fill modeling.df with the genoprobs at the focal loc
+      this.loc.name <- result[['loc.name']][loc.idx]
+      loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                     loc.name == this.loc.name)
+
+      this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                            loc.genoprobs = loc.genoprobs,
+                                                            model.formulae = scan.formulae)
+
+      alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
+
+      if (!identical(NA, alt.fit)) {
+        result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
+      }
+    }
+
+    max.lods[perm.idx] <- max(0.5*(result[['null.ll']] - result[['alt.ll']]), na.rm = TRUE)
+  }
+
+  return(max.lods)
 }

@@ -211,7 +211,7 @@ is.cross.w.genoprobs <- function(x) {
       return(FALSE)
     if (array.dim[2] < ncol(chr[['data']]))
       return(FALSE)
-    if (array.dim[3] != 3)
+    if (!(array.dim[3] %in% c(2, 3)))
       return(FALSE)
     return(TRUE)
   }

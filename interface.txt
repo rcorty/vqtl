@@ -9,8 +9,8 @@ Objects
 {scanonevar.result}: data_frame with [loc.name, {loc.type}, chr, {chr.type}, (mean|var|joint).LOD, (mean|var|joint).asymp.p, and optionally (mean|var|joint).empir.p]
 {scanonevar.meta: [{cross}, {formulae}, chrs]
 {scanonevar}: [{scanonevar.meta}, {scanonevar.result}]
-{scanonevar.perm.result}: data_frame with [{chr.type}, max.(mean|var|joint).LOD, max.(mean|var|joint).asymp.p]
-{scanonevar.perm}: [{scanonevar.meta}, {scanonevar.perm.result}]
+{scanonevar.result}: data_frame with [{chr.type}, max.(mean|var|joint).LOD, max.(mean|var|joint).asymp.p]
+{scanonevar.perm}: [{scanonevar.meta}, {scanonevar.result}]
 
 
 Genome Scans

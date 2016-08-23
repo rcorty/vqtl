@@ -39,9 +39,9 @@
 #'
 plot.scanonevar <- function(x,
                             y = NULL,
-                            chrs = unique(x[['chr']]),
+                            chrs = unique(x[['result']][['chr']]),
                             plotting.units = c('LOD', 'asymp.p', 'empir.p'),
-                            plot.title = attr(x = x, which = 'mean.formula')[[2]],
+                            plot.title = x[['meta']][['formulae']][['mean.alt.formula']][[2]],
                             marker.rug = TRUE)
 {
 
@@ -54,7 +54,7 @@ plot.scanonevar <- function(x,
   }
 
   # filter down to requested chromosomes, and make y a tbl_df
-  x <- dplyr::filter(.data = x, chr %in% chrs)
+  x <- dplyr::filter(.data = x[['result']], chr %in% chrs)
   if (!is.null(y)) {
     y <- dplyr::filter(.data = dplyr::tbl_df(y), chr %in% chrs)
   }
@@ -134,13 +134,22 @@ pull.plotting.columns_ <- function(sov, so, plotting.units) {
   }
 
   if (plotting.units == 'empir.p') {
-    to.plot[['mean.to.plot']] <- -log10(sov[['mean.empir.p']])
-    to.plot[['var.to.plot']] <- -log10(sov[['var.empir.p']])
-    to.plot[['joint.to.plot']] <- -log10(sov[['joint.empir.p']])
-    if (is.null(so)) {
-      to.plot[['so.to.plot']] <- NA
-    } else {
-      to.plot[['so.to.plot']] <- -log10(so[['empir.p']])
+
+    to.plot <- dplyr::bind_rows(dplyr::mutate(.data = base.to.plot,
+                                              test = 'mQTL',
+                                              val = -log10(sov[['mean.empir.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'vQTL',
+                                              val = -log10(sov[['var.empir.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'mvQTL',
+                                              val = -log10(sov[['joint.empir.p']])))
+
+    if (!is.null(so)) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'traditional',
+                                                val = -log10(lod2pval(so[['lod']], df = 2))))
     }
   }
 
