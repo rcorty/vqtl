@@ -406,8 +406,9 @@ initialize.scanonevar.result_ <- function(loc.info.df,
                                           return.covar.effects = FALSE) {
 
   result <- dplyr::select(.data = loc.info.df,
-                          loc.name,
+                          chr.type,
                           chr,
+                          loc.name,
                           pos)
 
   if ('mean' %in% scan.types)
