@@ -40,12 +40,9 @@
 plot.scanonevar <- function(x,
                             y = NULL,
                             chrs = unique(x[['result']][['chr']]),
-                            plotting.units = c('LOD', 'asymp.p', 'empir.p'),
+                            plotting.units = if(any(grepl(pattern = 'empir.p', x = names(x[['result']])))) { 'empir.p' } else { 'LOD' },
                             plot.title = x[['meta']][['formulae']][['mean.alt.formula']][[2]],
-                            marker.rug = TRUE)
-{
-
-  plotting.units <- match.arg(plotting.units)
+                            marker.rug = TRUE) {
 
   # can only plot if x is a scanonevar and y, if present, is a scanone
   stopifnot(is.scanonevar(x))
@@ -54,13 +51,13 @@ plot.scanonevar <- function(x,
   }
 
   # filter down to requested chromosomes, and make y a tbl_df
-  x <- dplyr::filter(.data = x[['result']], chr %in% chrs)
+  result <- dplyr::filter(.data = x[['result']], chr %in% chrs)
   if (!is.null(y)) {
     y <- dplyr::filter(.data = dplyr::tbl_df(y), chr %in% chrs)
   }
 
   # pull necessary columns into to.plot
-  to.plot <- pull.plotting.columns_(sov = x, so = y, plotting.units = plotting.units)
+  to.plot <- pull.plotting.columns_(sov = result, so = y, plotting.units = plotting.units)
 
   p <- ggplot2::ggplot(data = to.plot) +
     ggplot2::geom_line(ggplot2::aes(x = pos, y = val, col = test)) +
@@ -80,7 +77,7 @@ plot.scanonevar <- function(x,
                    strip.background = ggplot2::element_rect(fill = 'lightgray'))
 
   if (marker.rug) {
-    true.markers <- x %>% dplyr::filter(pos != round(pos))
+    true.markers <- result %>% dplyr::filter(pos != round(pos))
     p <- p + ggplot2::geom_rug(mapping = ggplot2::aes(x = pos),
                                data = true.markers)
   }

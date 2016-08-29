@@ -5,8 +5,9 @@
 \title{plot.scanonevar}
 \usage{
 \method{plot}{scanonevar}(x, y = NULL,
-  chrs = unique(x[["result"]][["chr"]]), plotting.units = c("LOD",
-  "asymp.p", "empir.p"),
+  chrs = unique(x[["result"]][["chr"]]), plotting.units = if
+  (any(grepl(pattern = "empir.p", x = names(x[["result"]])))) {     "empir.p" }
+  else {     "LOD" },
   plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
   marker.rug = TRUE)
 }
