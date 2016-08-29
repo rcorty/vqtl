@@ -64,7 +64,7 @@ is.scanonevar <- function(x) {
     return(FALSE)
   }
 
-  if (!identical(names(x), c('meta', 'result'))) {
+  if (!all(c('meta', 'result') %in% names(x))) {
     return(FALSE)
   }
 
@@ -98,6 +98,31 @@ is.scanonevar <- function(x) {
   return(TRUE)
 }
 
+
+#' @title is.scanonevar.w.perms
+#' @rdname utils
+#'
+#' @param x object being tested whether it is a scanonevar with perms
+#'
+#' @return TRUE if x is a scanone var with perms (typically,
+#' outputted from scanonevar.perm), and FALSE otherwise.
+#'
+is.scanonevar.w.perms <- function(x) {
+
+  if (!('perms' %in% names(x))) {
+    return(FALSE)
+  }
+
+  if (!is.scanonevar(x)) {
+    return(FALSE)
+  }
+
+  if (!any(grep(pattern = 'empir.p', names(x[['result']])))) {
+    return(FALSE)
+  }
+
+  return(TRUE)
+}
 
 #' @title is.cross
 #' @rdname utils

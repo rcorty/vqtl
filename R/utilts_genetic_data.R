@@ -5,18 +5,21 @@
 #'
 wrangle.loc.info.df_ <- function (cross, chrs = qtl::chrnames(cross)) {
 
+  # NB: names(class(x)) is the notation to get the name of a chromosome
   loc.info.from.chr <- function(x) {
+    chr.type <- class(x)
     chr.name <- names(class(x))
     prob.map <- attr(x = x[['prob']], which = 'map')
     names.starting.with.loc.idxs <- grep(pattern = '^loc', names(prob.map))
     names(prob.map)[names.starting.with.loc.idxs] <-
       paste0('chr', chr.name, '_', names(prob.map)[names.starting.with.loc.idxs])
 
-    return(dplyr::data_frame(loc.name = names(prob.map),
+    return(dplyr::data_frame(chr.type = chr.type,
                              chr = chr.name,
+                             loc.name = names(prob.map),
                              pos = prob.map))
   }
-  # NB: names(class(x)) is the notation to get the name of a chromosome
+
   cross[['geno']] <- cross[['geno']][qtl::chrnames(cross = cross) %in% chrs]
   return(dplyr::bind_rows(lapply(X = cross[['geno']],
                                  FUN = loc.info.from.chr)))

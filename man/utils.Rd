@@ -3,19 +3,27 @@
 \name{is.scanonevar}
 \alias{is.cross}
 \alias{is.scanonevar}
+\alias{is.scanonevar.w.perms}
 \title{is.scanonevar}
 \usage{
 is.scanonevar(x)
+
+is.scanonevar.w.perms(x)
 
 is.cross(x)
 }
 \arguments{
 \item{x}{The object being tested for whether or not is is a scanonevar.}
 
+\item{x}{object being tested whether it is a scanonevar with perms}
+
 \item{x}{The object being tested for whether or not is is a cross.}
 }
 \value{
 TRUE is X is a scanonevar object, FALSE otherwise.
+
+TRUE if x is a scanone var with perms (typically,
+outputted from scanonevar.perm), and FALSE otherwise.
 
 TRUE if x is a cross object, FALSE otherwise.
 }
