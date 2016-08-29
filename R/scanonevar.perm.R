@@ -1,18 +1,13 @@
-#' @title scanonevar
-#' @name scanonevar
+#' @title scanonevar.perm
+#' @name scanonevar.perm
 #' @author Robert W. Corty \email{rcorty@@gmail.com}
 #'
-#' @description \code{scanonevar} conducts a genome scan in an experimental
-#' cross, accommodating covariate effects in residual variance and identifying
-#' genetic effects on residual variance.
+#' @description \code{scanonevar.perm} conducts many permuted forms of
+#' the \code{scanonevar} inputted, to assess the statistical significance of the results
+#' in the inputted scanonevar in a FWER-controlling manner.
 #'
-#' @param cross The \code{cross}, built by \pkg{qtl} to be used in mapping
-#' @param mean.formula The formula to describe the mean of the phenotype.
-#' Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
-#' components of the QTL effect on the mean.
-#' @param var.formula The formula to describe the residual variance of the
-#' phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
-#' dominance components of the QTL effect on residual phenotype variance.
+#' @param sov the scanonevar whose significance should be assessed empirically in an FWER-controlling method
+#' @param n.perms the number of permutations to do
 #'
 #' @return 27599
 #' @export
@@ -43,7 +38,8 @@ scanonevar.perm <- function(sov,
                              n.perms = n.perms)
 
   sov <- list(meta = sov[['meta']],
-              result = result)
+              result = result[['sov']],
+              perms = result[['perms']])
 
   class(sov) <- c('scanonevar', class(sov))
   return(sov)
@@ -69,43 +65,38 @@ scanonevar.perm_ <- function(sov,
                            n.perms = n.perms)
   }
 
+  perms <- list()
+
   if ('mean' %in% scan.types) {
     message('Starting mean permutations...')
     mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
                                                           null.fitter = fit.model.0v_)
-    mean.evd <- evd::fgev(x = mean.lod.maxes)
-    sov[['mean.empir.p']] <- pgev(q = sov[['mean.lod']],
-                                  loc = fitted(mean.evd)[1],
-                                  scale = fitted(mean.evd)[2],
-                                  shape = fitted(mean.evd)[3],
-                                  lower.tail = FALSE)
+    perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
+                                             mean.lod.maxes)
   }
 
   if ('var' %in% scan.types) {
     message('Starting variance permutations...')
     var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
                                                          null.fitter = fit.model.m0_)
-    var.evd <- evd::fgev(x = var.lod.maxes)
-    sov[['var.empir.p']] <- pgev(q = sov[['var.lod']],
-                                 loc = fitted(var.evd)[1],
-                                 scale = fitted(var.evd)[2],
-                                 shape = fitted(var.evd)[3],
-                                 lower.tail = FALSE)
+    perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
+                                       var.lod.maxes)
   }
 
   if ('joint' %in% scan.types) {
     message('Starting joint mean-variance permutations...')
     joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
                                                            null.fitter = fit.model.00_)
-    joint.evd <- evd::fgev(x = joint.lod.maxes)
-    sov[['joint.empir.p']] <- pgev(q = sov[['joint.lod']],
-                                   loc = fitted(joint.evd)[1],
-                                   scale = fitted(joint.evd)[2],
-                                   shape = fitted(joint.evd)[3],
-                                   lower.tail = FALSE)
+    perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
+                                         joint.lod.maxes)
   }
 
-  return(sov)
+  # calc empir ps here rather than in the mean, var, and joint 'ifs'
+  perms <- dplyr::bind_rows(perms)
+  sov <- calc.empir.ps(sov, perms)
+
+  return(list(sov = sov,
+              perms = perms))
 }
 
 
@@ -145,8 +136,8 @@ permutation.max.finder <- function(alt.fitter,
   # n. perms times, fit an alternative model with mean permuted
   # subtract null ll to compute LOD score at each locus
   # take the max of the LOD scores
-  max.lods <- rep(NA, n.perms)
-  pb <- utils::txtProgressBar(min = 1, max = n.perms, style = 3)
+  max.lods <- list()
+  pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)  # +1 here makes n.perms = 10 give, 10%, 20%, etc as progress updates
   for (perm.idx in 1:n.perms) {
 
     utils::setTxtProgressBar(pb = pb, value = perm.idx)
@@ -169,8 +160,38 @@ permutation.max.finder <- function(alt.fitter,
       }
     }
 
-    max.lods[perm.idx] <- max(0.5*(result[['null.ll']] - result[['alt.ll']]), na.rm = TRUE)
+    maxes <- result %>%
+      dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
+      dplyr::group_by(chr.type) %>%
+      dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE))
+
+    max.lods[[perm.idx]] <- maxes
   }
 
-  return(max.lods)
+  return(dplyr::bind_rows(max.lods))
 }
+
+
+
+calc.empir.ps <- function(sov, perms) {
+
+  tests <- unique(perms[['test']])
+  chr.types <- unique(perms[['chr.type']])
+
+  for (this.test in tests) {
+
+    for (this.chr.type in chr.types) {
+      the.evd <- evd::fgev(x = perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% .[['max.lod']])
+      idxs <- sov[['chr.type']] == this.chr.type
+
+      sov[[paste0(this.test, '.empir.p')]][idxs] <- evd::pgev(q = sov[[paste0(this.test, '.lod')]][idxs],
+                                                              loc = fitted(the.evd)[1],
+                                                              scale = fitted(the.evd)[2],
+                                                              shape = fitted(the.evd)[3],
+                                                              lower.tail = FALSE)
+    }
+  }
+
+  return(sov)
+}
+
