@@ -1,5 +1,5 @@
 tryNA <- function(expr) {
-  suppressMessages(tryCatch(expr = expr,
+  suppressWarnings(tryCatch(expr = expr,
                             error = function(e) NA,
                             finally = NA))
 }
