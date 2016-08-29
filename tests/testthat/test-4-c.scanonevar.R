@@ -1,7 +1,7 @@
-context("Testing scanonevar.perm")
+context("Testing c.scanonevar")
 
 test_that(
-  desc = 'testing scanonevar.perm',
+  desc = 'testing c.scanonevar',
   code = {
     set.seed(27599)
     test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE),
@@ -24,5 +24,16 @@ test_that(
 
     y1 <- scanonevar.perm(sov = x, n.perms = 10)
     plot(y1)
+
+    y2 <- scanonevar.perm(sov = x, n.perms = 12)
+    plot(y2)
+
+    y3 <- scanonevar.perm(sov = x, n.perms = 14)
+    plot(y3)
+
+
+    y4 <- c(y1, y2, y3)
+    y4[['perms']]
+    plot(y4)
   }
 )
