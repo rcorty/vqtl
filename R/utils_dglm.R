@@ -1,8 +1,7 @@
 tryNA <- function(expr) {
-  tryCatch(expr = expr,
-           warning = function(w) NA,
-           error = function(e) NA,
-           finally = NA)
+  suppressMessages(tryCatch(expr = expr,
+                            error = function(e) NA,
+                            finally = NA))
 }
 
 # the alternative model
