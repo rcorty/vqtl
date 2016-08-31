@@ -266,6 +266,7 @@ pull.scanonevar.meta_ <- function(wrangled.inputs,
                                   chrs) {
 
   meta <- list(cross = wrangled.inputs$cross,
+               modeling.df = wrangled.inputs$modeling.df,
                formulae = wrangled.inputs$scan.formulae,
                scan.types = wrangled.inputs$scan.types,
                chrs = chrs)

@@ -40,7 +40,8 @@ wrangle.loc.info.df_(cross, chrs = qtl::chrnames(cross))
 
 wrangle.genoprob.df_(cross)
 
-make.response.model.df_(cross, formulae)
+make.response.model.df_(cross, formulae = NULL,
+  response.name = all.vars(formulae[["mean.alt.formula"]][[2]]))
 
 make.qtl.covar.model.df_(cross, formulae)
 

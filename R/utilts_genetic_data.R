@@ -66,11 +66,10 @@ wrangle.genoprob.df_ <- function(cross) {
 #' @export
 #'
 make.response.model.df_ <- function(cross,
-                                    formulae) {
+                                    formulae = NULL,
+                                    response.name = all.vars(formulae[['mean.alt.formula']][[2]])) {
 
   stopifnot(is.cross(cross))
-
-  response.name <- all.vars(formulae[['mean.alt.formula']][[2]])
 
   # not sure if there's a better way to do this
   df <- dplyr::as_data_frame(stats::setNames(list(qtl::pull.pheno(cross = cross,
@@ -116,20 +115,25 @@ make.qtl.covar.model.df_ <- function(cross,
 
 
 make.phen.covar.model.df_ <- function(cross,
-                                      formulae) {
+                                      formulae,
+                                      phen.names = NULL) {
 
   stopifnot(is.cross(cross))
 
-  # get all covariate names
-  mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
-  var.covar.names <- labels(terms(formulae[['var.alt.formula']]))
+  if (is.null(phen.names)) {
+    # get all covariate names
+    mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
+    var.covar.names <- labels(terms(formulae[['var.alt.formula']]))
 
-  # get the phenotype names
-  mean.phen.covar.names <- mean.covar.names[mean.covar.names %in% names(cross[['pheno']])]
-  var.phen.covar.names <- var.covar.names[var.covar.names %in% names(cross[['pheno']])]
+    # get the phenotype names
+    mean.phen.covar.names <- mean.covar.names[mean.covar.names %in% names(cross[['pheno']])]
+    var.phen.covar.names <- var.covar.names[var.covar.names %in% names(cross[['pheno']])]
+
+    phen.names <- unique(c(mean.phen.covar.names, var.phen.covar.names))
+  }
 
   df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
-  for (phen.covar.name in unique(c(mean.phen.covar.names, var.phen.covar.names))) {
+  for (phen.covar.name in phen.names) {
     df[[phen.covar.name]] <- cross[['pheno']][[phen.covar.name]]
   }
   df[['placeholder']] <- NULL
@@ -248,4 +252,23 @@ dominance.component <- function(genoprobs.long) {
   } else {
     stop(paste("Can't determine additive component of loc with alleles:", alleles))
   }
+}
+
+
+
+
+make.genet.marker.model.df_ <- function(cross,
+                                        marker.names) {
+
+  stopifnot(is.cross(cross))
+
+  # turn it into a tibble
+  df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
+  for (marker.name in marker.names) {
+    df[[marker.name]] <- qtl::pull.geno(cross = cross)[,marker.name]
+  }
+
+  df[['placeholder']] <- NULL
+
+  return(df)
 }
