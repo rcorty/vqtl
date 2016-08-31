@@ -32,7 +32,7 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
 
     # add chr name to pseudomarker names so they don't collide
     chr.specific.names <- paste0('chr',
-                                 str_pad(this.chr.name, 2, side = "left", pad = "0"),
+                                 stringr::str_pad(this.chr.name, 2, side = "left", pad = "0"),
                                  '_',
                                  colnames(this.chr.probs))
 
@@ -154,7 +154,7 @@ validate.input.scanonevar <- function(cross, mean.formula, var.formula, chrs = n
   # now that we have used the whole genome to look for covariates,
   # filter down to the chromosomes of interest for mapping
   all.chr.genoprobs <- dplyr::select(all.chr.genoprobs,
-                                     matches(paste(paste0('chr', str_pad(chrs, 2, side = "left", pad = "0"), collapse = '|'))))
+                                     matches(paste(paste0('chr', stringr::str_pad(chrs, 2, side = "left", pad = "0"), collapse = '|'))))
   keeps <- chr.by.marker %in% chrs
   chr.by.marker <- chr.by.marker[keeps]
   pos.by.marker <- pos.by.marker[keeps]
