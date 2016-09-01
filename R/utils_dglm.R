@@ -47,13 +47,13 @@ fit.model.m.star.v.star_ <- function(formulae, df) {
 fit.model.m.star.v_ <- function(formulae, df) {
 
   return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.null.formula']],
+                          dformula = formulae[['var.alt.formula']],
                           data = permute.mean.QTL.terms_(df))))
 }
 
 fit.model.m.v.star_ <- function(formulae, df) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.null.formula']],
+  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
                           dformula = formulae[['var.alt.formula']],
                           data = permute.var.QTL.terms_(df))))
 }

@@ -137,7 +137,7 @@ permutation.max.finder <- function(alt.fitter,
   # subtract null ll to compute LOD score at each locus
   # take the max of the LOD scores
   max.lods <- list()
-  pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)  # +1 here makes n.perms = 10 give, 10%, 20%, etc as progress updates
+  pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)
   for (perm.idx in 1:n.perms) {
 
     utils::setTxtProgressBar(pb = pb, value = perm.idx)

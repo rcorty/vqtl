@@ -9,7 +9,7 @@
   (any(grepl(pattern = "empir.p", x = names(x[["result"]])))) {     "empir.p" }
   else {     "LOD" },
   plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
-  marker.rug = TRUE)
+  marker.rug = TRUE, ylim = NULL)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}

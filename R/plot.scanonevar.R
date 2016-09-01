@@ -42,7 +42,8 @@ plot.scanonevar <- function(x,
                             chrs = unique(x[['result']][['chr']]),
                             plotting.units = if(any(grepl(pattern = 'empir.p', x = names(x[['result']])))) { 'empir.p' } else { 'LOD' },
                             plot.title = x[['meta']][['formulae']][['mean.alt.formula']][[2]],
-                            marker.rug = TRUE) {
+                            marker.rug = TRUE,
+                            ylim = NULL) {
 
   # can only plot if x is a scanonevar and y, if present, is a scanone
   stopifnot(is.scanonevar(x))
@@ -68,7 +69,8 @@ plot.scanonevar <- function(x,
     ggplot2::scale_color_manual(name = c('mQTL', 'vQTL', 'mvQTL', 'traditional'),
                                 values = c('blue', 'red', 'black', 'darkgreen')) +
     ggplot2::ggtitle(label = plot.title) +
-    ggplot2::theme(axis.title = ggplot2::element_blank(),
+    ggplot2::ylab(label = plotting.units) +
+    ggplot2::theme(axis.title.x = ggplot2::element_blank(),
                    axis.text.x = ggplot2::element_blank(),
                    axis.ticks.x = ggplot2::element_blank(),
                    panel.background = ggplot2::element_rect(fill = 'white'),
@@ -82,6 +84,10 @@ plot.scanonevar <- function(x,
                                data = true.markers)
   }
 
+  if (!is.null(ylim)) {
+    p <- p + ggplot2::coord_cartesian(ylim = ylim)
+  }
+
   return(p)
 }
 
@@ -90,7 +96,7 @@ plot.scanonevar <- function(x,
 pull.plotting.columns_ <- function(sov, so, plotting.units) {
 
   base.to.plot <- dplyr::select(.data = sov,
-                           loc.name, chr, pos)
+                                loc.name, chr, pos)
 
   # pull appropriate data into plotting columns
   if (plotting.units == 'LOD') {
