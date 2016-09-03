@@ -7,8 +7,8 @@
 \usage{
 sample_stats_mean_var_plot(cross, phenotype.name, grouping.factor.names)
 
-modeled_effects_mean_var_plot(cross, phenotype.name, focal.covariate.names,
-  nuisance.covariate.names)
+modeled_effects_mean_var_plot(cross, phenotype.name,
+  focal.covariate.names = NULL, nuisance.covariate.names = NULL)
 }
 \arguments{
 \item{cross}{the cross object from which phenotypes and genotypes are drawn}

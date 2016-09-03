@@ -152,13 +152,13 @@ test_that(
     test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
 
     loc.info <- wrangle.loc.info.df_(cross = test.cross)
-    expect_identical(object = names(loc.info), expected = c('loc.name', 'chr', 'pos'))
+    expect_identical(object = names(loc.info), expected = c('chr.type', 'chr', 'loc.name', 'pos'))
     expect_identical(object = unique(loc.info[['chr']]), expected = qtl::chrnames(test.cross))
     expect_true(object = all(loc.info[['pos']] >= 0))
     expect_true(object = all(loc.info[['pos']] <= 20))
 
     loc.info2 <- wrangle.loc.info.df_(cross = test.cross, chrs = c('1', '3', 'X'))
-    expect_identical(object = names(loc.info2), expected = c('loc.name', 'chr', 'pos'))
+    expect_identical(object = names(loc.info2), expected = c('chr.type', 'chr', 'loc.name', 'pos'))
     expect_identical(object = unique(loc.info2[['chr']]), expected = c('1', '3', 'X'))
     expect_true(object = all(loc.info2[['pos']] >= 0))
     expect_true(object = all(loc.info2[['pos']] <= 20))

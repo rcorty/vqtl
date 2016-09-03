@@ -1,22 +1,22 @@
 context('Testing plots')
 
+set.seed(27599)
+test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE),
+                             n.ind = 400,
+                             type = 'f2')
+test.cross[['pheno']][['sex']] <- factor(sample(x = c('female', 'male'),
+                                                size = qtl::nind(test.cross),
+                                                replace = TRUE))
+test.cross[['pheno']][['phenotype1']] <- rnorm(n = qtl::nind(test.cross))
+test.cross[['pheno']][['phenotype2']] <- rnorm(n = qtl::nind(test.cross),
+                                               mean = 0.2*as.numeric(test.cross$pheno$sex) + 0.5*test.cross$geno$`2`$data[,3],
+                                               sd = exp(0.5*as.numeric(test.cross$pheno$sex) + 0.8*test.cross$geno$`3`$data[,3] - 3))
+
 test_that(
   desc = 'mean_var_sample_plot',
   code = {
-    set.seed(27599)
-    test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE),
-                                 n.ind = 400,
-                                 type = 'f2')
-    test.cross[['pheno']][['sex']] <- factor(sample(x = c('female', 'male'),
-                                                    size = qtl::nind(test.cross),
-                                                    replace = TRUE))
-    test.cross[['pheno']][['phenotype1']] <- rnorm(n = qtl::nind(test.cross))
-    test.cross[['pheno']][['phenotype2']] <- rnorm(n = qtl::nind(test.cross),
-                                                   mean = 0.2*as.numeric(test.cross$pheno$sex) + 0.5*test.cross$geno$`2`$data[,3],
-                                                   sd = exp(0.5*as.numeric(test.cross$pheno$sex) + 0.8*test.cross$geno$`3`$data[,3] - 3))
-
     sample_stats_mean_var_plot(cross = test.cross,
-                               phenotype.name = 'phenotype2',
+                               phenotype.name = 'phenotype1',
                                grouping.factor.names = c('sex', 'D3M3'))
   }
 )
@@ -25,28 +25,27 @@ test_that(
 test_that(
   desc = 'mean_var_predictive_plot',
   code = {
-    set.seed(27599)
-    test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE),
-                                 n.ind = 400,
-                                 type = 'f2')
-    test.cross[['pheno']][['sex']] <- factor(sample(x = c('female', 'male'),
-                                                    size = qtl::nind(test.cross),
-                                                    replace = TRUE))
-    test.cross[['pheno']][['phenotype1']] <- rnorm(n = qtl::nind(test.cross))
-    test.cross[['pheno']][['phenotype2']] <- rnorm(n = qtl::nind(test.cross),
-                                                   mean = 0.2*as.numeric(test.cross$pheno$sex) + 0.5*test.cross$geno$`2`$data[,3],
-                                                   sd = exp(0.5*as.numeric(test.cross$pheno$sex) + 0.8*test.cross$geno$`3`$data[,3] - 3))
-
-    x <- scanonevar(cross = test.cross,
-                    mean.formula = phenotype1 ~ sex + D1M2 + mean.QTL.add + mean.QTL.dom,
-                    var.formula = ~ sex + D2M3 + var.QTL.add + var.QTL.dom)
-
-
-    modeled_effects_mean_var_plot(sov = x,
-                                  cross = test.cross,
-                                  grouping.factor.names =  c('sex', 'D3M3'))
+    modeled_effects_mean_var_plot(cross = test.cross,
+                                  phenotype.name = 'phenotype1',
+                                  focal.covariate.names =  c('sex', 'D3M3'))
   }
 )
+
+
+
+test_that(
+  desc = 'effects_plot',
+  code = {
+
+    x <- scanonevar(cross = test.cross,
+                    mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
+                    var.formula = ~ sex + var.QTL.add + var.QTL.dom,
+                    return.covar.effects = TRUE)
+
+    effects_plot
+  }
+)
+
 
 #
 # test_that(
