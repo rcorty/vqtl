@@ -14,5 +14,5 @@ LOD <- function(alt, null) {
   stopifnot('dglm' %in% class(alt))
   stopifnot('dglm' %in% class(null))
 
-  return(0.5*(null$m2loglik - alt$m2loglik ))
+  return(0.5*(null$m2loglik - alt$m2loglik )/log(10))
 }
