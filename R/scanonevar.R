@@ -312,11 +312,12 @@ scanonevar_ <- function(modeling.df,
   mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(terms(scan.formulae[['mean.alt.formula']]))))
   var.df <- sum(grepl(pattern = 'var.QTL', x = labels(terms(scan.formulae[['var.alt.formula']]))))
 
+  # do this outside the loop because it doesn't change with locus, so only needs to be done once
   if ('joint' %in% scan.types) {
     joint.null.fit <- fit.model.00_(formulae = scan.formulae, df = modeling.df)
   }
 
-
+  # loop over loci
   for (loc.idx in 1:nrow(result)) {
 
     # fill modeling.df with the genoprobs at the focal loc
@@ -348,8 +349,8 @@ scanonevar_ <- function(modeling.df,
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
     if (all(return.covar.effects, !identical(alternative.fit, NA))) {
-      result[loc.idx, paste0(names(coef(alternative.fit)), '_mef')] <- coef(alternative.fit)
-      result[loc.idx, paste0(names(coef(alternative.fit$dispersion.fit)), '_vef')] <- coef(alternative.fit$dispersion.fit)
+      result[loc.idx, paste0(c('(Intercept)', labels(terms(scan.formulae[['mean.alt.formula']]))), '_mef')] <- coef(alternative.fit)
+      result[loc.idx, paste0(c('(Intercept)', labels(terms(scan.formulae[['var.alt.formula']]))), '_vef')] <- coef(alternative.fit$dispersion.fit)
     }
 
     # Fit the appropriate null models at this loc
