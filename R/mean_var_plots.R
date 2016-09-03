@@ -12,7 +12,7 @@ sample_stats_mean_var_plot <- function(cross,
                                        phenotype.name,
                                        grouping.factor.names) {
 
-  validate.mean.var.sample.plot.input(cross, phenotype.name, grouping.factor.names)
+  validate.sample_stats_mean_var_plot.input(cross, phenotype.name, grouping.factor.names)
 
   marker.names <- grouping.factor.names[grouping.factor.names %in% colnames(qtl::pull.geno(cross))]
   phen.names <- grouping.factor.names[grouping.factor.names %in% names(qtl::pull.pheno(cross))]
@@ -80,8 +80,8 @@ validate.sample_stats_mean_var_plot.input <- function(cross,
 #'
 modeled_effects_mean_var_plot <- function(cross,
                                           phenotype.name,
-                                          focal.covariate.names,
-                                          nuisance.covariate.names) {
+                                          focal.covariate.names = NULL,
+                                          nuisance.covariate.names = NULL) {
 
   validate.modeled_effects_mean_var_plot.input(cross = cross,
                                                phenotype.name = phenotype.name,
@@ -90,6 +90,8 @@ modeled_effects_mean_var_plot <- function(cross,
 
   # use modeling.df from sov, and add in phen names and marker names
   modeling.df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
+
+  modeling.df[[phenotype.name]] <- cross[['pheno']][[phenotype.name]]
 
   marker.names <- c(focal.covariate.names[focal.covariate.names %in% colnames(qtl::pull.geno(cross = cross))],
                     nuisance.covariate.names[nuisance.covariate.names %in% colnames(qtl::pull.geno(cross = cross))])
@@ -103,21 +105,31 @@ modeled_effects_mean_var_plot <- function(cross,
     modeling.df[[phen.name]] <- factor(qtl::pull.pheno(cross = cross)[,phen.name])
   }
 
-  modeling.df[[placeholder]] <- NULL
+  modeling.df[['placeholder']] <- NULL
 
-  modeling.df <- dplyr::bind_cols(response.df,
-                                  marker.df,
-                                  phen.df)
+  # modeling.df <- dplyr::bind_cols(response.df,
+  #                                 marker.df,
+  #                                 phen.df)
 
 
 
-  # use null formulae bc they dont have QTL terms, and add in loci
-  mean.form <- deparse(sov[['meta']][['formulae']][['mean.null.formula']])
-  var.form <- deparse(sov[['meta']][['formulae']][['var.null.formula']])
-  for (marker.name in marker.names) {
-    mean.form <- paste(mean.form, '+', marker.name)
-    var.form <- paste(var.form, '+', marker.name)
+  # make formulae from covariate names and cross
+  # problem with nuisance is NULL -- todo
+  covar.form <- paste(focal.covariate.names, collapse = '+')
+  if (!is.null(nuisance.covariate.names)) {
+    covar.form <- paste(covar.form, '+', paste(nuisance.covariate.names, collapse = '+'))
   }
+  mean.form <- paste(phenotype.name, '~', covar.form)
+  var.form <- paste('~', covar.form)
+
+  # pull formulae from sov and adapt
+  # use null formulae bc they dont have QTL terms, and add in loci
+  # mean.form <- deparse(sov[['meta']][['formulae']][['mean.null.formula']])
+  # var.form <- deparse(sov[['meta']][['formulae']][['var.null.formula']])
+  # for (marker.name in marker.names) {
+  #   mean.form <- paste(mean.form, '+', marker.name)
+  #   var.form <- paste(var.form, '+', marker.name)
+  # }
 
   dglm.fit <- dglm::dglm(formula = formula(mean.form),
                     dformula = formula(var.form),
@@ -127,31 +139,50 @@ modeled_effects_mean_var_plot <- function(cross,
   mean.estim <- mean.pred$fit
   mean.se <- mean.pred$se.fit
 
-  var.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
-  var.estim <- var.pred$fit/var.pred$residual.scale
-  var.se <- var.pred$se.fit/var.pred$residual.scale
+  sd.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
+  sd.estim <- sd.pred$fit/sd.pred$residual.scale
+  sd.se <- sd.pred$se.fit/sd.pred$residual.scale
 
-  prediction.tbl <- dplyr::bind_cols(modeling.df,
-                                     data_frame(indiv.mean.estim = mean.estim,
-                                                indiv.mean.lb = mean.estim - mean.se,
-                                                indiv.mean.ub = mean.estim + mean.se,
-                                                indiv.var.estim = exp(var.estim),
-                                                indiv.var.lb = exp(var.estim - var.se),
-                                                indiv.var.ub = exp(var.estim + var.se)))
+  indiv.prediction.tbl <- dplyr::bind_cols(modeling.df,
+                                           dplyr::data_frame(indiv.mean.estim = mean.estim,
+                                                             indiv.mean.lb = mean.estim - mean.se,
+                                                             indiv.mean.ub = mean.estim + mean.se,
+                                                             indiv.sd.estim = exp(sd.estim),
+                                                             indiv.sd.lb = exp(sd.estim - sd.se),
+                                                             indiv.sd.ub = exp(sd.estim + sd.se)))
 
-  prediction.tbl %>%
-    dplyr::group_by_(.dots = grouping.factor.names) %>%
+  group.prediction.tbl <- indiv.prediction.tbl %>%
+    dplyr::group_by_(.dots = c(focal.covariate.names, nuisance.covariate.names)) %>%
+    dplyr::summarise(group.mean.estim = mean(indiv.mean.estim),
+                     group.mean.lb = mean(indiv.mean.lb),
+                     group.mean.ub = mean(indiv.mean.ub),
+                     group.sd.estim = mean(indiv.sd.estim),
+                     group.sd.lb = mean(indiv.sd.lb),
+                     group.sd.ub = mean(indiv.sd.ub))
 
 
+  p <- ggplot2::ggplot(data = group.prediction.tbl,
+                  mapping = ggplot2::aes_string(color = focal.covariate.names[1])) +
+    ggplot2::geom_point(mapping = ggplot2::aes(x = group.mean.estim, y = group.sd.estim)) +
+    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim)) +
+    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub)) +
+    ggplot2::xlab('mean estimate +/- 1 SE') +
+    ggplot2::ylab('SD estimate +/- 1 SE')
 
-  return(3)
+  if (length(focal.covariate.names) > 1) {
+    p <- p + ggplot2::geom_point(mapping = ggplot2::aes_string(x = 'group.mean.estim',
+                                                               y = 'group.sd.estim',
+                                                               shape = focal.covariate.names[2]),
+                                 size = 3)
+  }
+  return(p)
 }
 
 
 validate.modeled_effects_mean_var_plot.input <- function(cross,
                                                          phenotype.name,
                                                          focal.covariate.names,
-                                                         nuisance.covariates.names) {
+                                                         nuisance.covariate.names) {
 
   return(TRUE)
 }
