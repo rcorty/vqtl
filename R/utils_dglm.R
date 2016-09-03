@@ -4,58 +4,65 @@ tryNA <- function(expr) {
                             finally = NA))
 }
 
+dglm.ml <- function(mf, df, data) {
+  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml')
+}
+
 # the alternative model
 fit.model.mv_ <- function(formulae, df) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.alt.formula']],
-                          data = df)))
+  return(tryNA(dglm.ml(mf = formulae[['mean.alt.formula']],
+                       df =  formulae[['var.alt.formula']],
+                       data = df)))
 }
 
 
 # the three null models
 fit.model.m0_ <- function(formulae, df) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.null.formula']],
-                          data = df)))
+  return(tryNA(dglm.ml(mf = formulae[['mean.alt.formula']],
+                       df = formulae[['var.null.formula']],
+                       data = df)))
 }
 
 fit.model.0v_ <- function(formulae, df) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.null.formula']],
-                          dformula = formulae[['var.alt.formula']],
-                          data = df)))
+  return(tryNA(dglm.ml(mf = formulae[['mean.null.formula']],
+                       df = formulae[['var.alt.formula']],
+                       data = df)))
 }
 
 fit.model.00_ <- function(formulae, df) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.null.formula']],
-                          dformula = formulae[['var.null.formula']],
-                          data = df)))
+  return(tryNA(dglm.ml(mf = formulae[['mean.null.formula']],
+                       df = formulae[['var.null.formula']],
+                       data = df)))
 }
 
 
 # the three permuted alternative models
-fit.model.m.star.v.star_ <- function(formulae, df) {
+fit.model.m.star.v.star_ <- function(formulae, df, the.perm) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.alt.formula']],
-                          data = permute.QTL.terms_(df))))
+  return(tryNA(dglm.ml(mf = formulae[['mean.alt.formula']],
+                       df = formulae[['var.alt.formula']],
+                       data = permute.QTL.terms_(df = df,
+                                                 the.perm = the.perm))))
 }
 
-fit.model.m.star.v_ <- function(formulae, df) {
+fit.model.m.star.v_ <- function(formulae, df, the.perm) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.alt.formula']],
-                          data = permute.mean.QTL.terms_(df))))
+  return(tryNA(dglm.ml(mf = formulae[['mean.alt.formula']],
+                       df = formulae[['var.alt.formula']],
+                       data = permute.mean.QTL.terms_(df = df,
+                                                      the.perm = the.perm))))
 }
 
-fit.model.m.v.star_ <- function(formulae, df) {
+fit.model.m.v.star_ <- function(formulae, df, the.perm) {
 
-  return(tryNA(dglm::dglm(formula = formulae[['mean.alt.formula']],
-                          dformula = formulae[['var.alt.formula']],
-                          data = permute.var.QTL.terms_(df))))
+  return(tryNA(dglm.ml(mf = formulae[['mean.alt.formula']],
+                       df = formulae[['var.alt.formula']],
+                       data = permute.var.QTL.terms_(df = df,
+                                                     the.perm = the.perm))))
 }
 
 
@@ -79,9 +86,8 @@ permute.var.QTL.terms_ <- function(df, the.perm = sample(x = nrow(df))) {
   return(df)
 }
 
-permute.QTL.terms_ <- function(df) {
+permute.QTL.terms_ <- function(df, the.perm = sample(x = nrow(df))) {
 
-  the.perm <- sample(x = nrow(df))
   df2 <- permute.var.QTL.terms_(df = df, the.perm = the.perm)
   df3 <- permute.mean.QTL.terms_(df = df2, the.perm = the.perm)
   return(df3)

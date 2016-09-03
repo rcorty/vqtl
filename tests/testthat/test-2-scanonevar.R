@@ -14,7 +14,12 @@ test_that(
                       mean.formula = phenotype ~ sex + D1M2 + mean.QTL.add + mean.QTL.dom,
                       var.formula = ~ sex + D2M3 + var.QTL.add + var.QTL.dom)
 
+    # should be a scanonevar object
     expect_true(is.scanonevar(sov))
+
+    # joint lods should be pointwise higher than mean and variance lods
+    expect_true(all(sov$result %>% .[['joint.lod']] >= sov$result %>% .[['mean.lod']]))
+    expect_true(all(sov$result %>% .[['joint.lod']] >= sov$result %>% .[['var.lod']]))
 
   }
 )

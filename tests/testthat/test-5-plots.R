@@ -33,18 +33,18 @@ test_that(
 
 
 
-test_that(
-  desc = 'effects_plot',
-  code = {
-
-    x <- scanonevar(cross = test.cross,
-                    mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
-                    var.formula = ~ sex + var.QTL.add + var.QTL.dom,
-                    return.covar.effects = TRUE)
-
-    effects_plot
-  }
-)
+# test_that(
+#   desc = 'effects_plot',
+#   code = {
+#
+#     x <- scanonevar(cross = test.cross,
+#                     mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
+#                     var.formula = ~ sex + var.QTL.add + var.QTL.dom,
+#                     return.covar.effects = TRUE)
+#
+#     effects_plot
+#   }
+# )
 
 
 #
