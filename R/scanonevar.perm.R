@@ -87,7 +87,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting mean permutations...')
     mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
                                                           null.fitter = fit.model.0v_)
-    message('Finished mean permutations...')
+    message('\nFinished mean permutations...')
     perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
                                              mean.lod.maxes)
   }
@@ -96,7 +96,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting variance permutations...')
     var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
                                                          null.fitter = fit.model.m0_)
-    message('Finished variance permutations...')
+    message('\nFinished variance permutations...')
     perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
@@ -105,7 +105,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting joint mean-variance permutations...')
     joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
                                                            null.fitter = fit.model.00_)
-    message('Finished joint mean-variance permutations...')
+    message('\nFinished joint mean-variance permutations...')
     perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
   }
@@ -165,9 +165,11 @@ permutation.max.finder <- function(alt.fitter,
   if (n.cores == 1) {
 
     max.lods <- list()
+    pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)
 
     for (perm.idx in 1:n.perms) {
 
+      utils::setTxtProgressBar(pb = pb, value = perm.idx)
       set.seed(seed = seed + perm.idx)
 
       for (loc.idx in 1:nrow(result)) {
