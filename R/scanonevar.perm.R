@@ -12,9 +12,6 @@
 #' @return 27599
 #' @export
 #'
-#' @importFrom doRNG %dorng%
-#' @importFrom foreach %dopar%
-#'
 #' @examples
 #' set.seed(27599)
 #' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
@@ -22,8 +19,7 @@
 #'
 scanonevar.perm <- function(sov,
                             n.perms,
-                            random.seed = 27599,
-                            n.cores = 1) {
+                            random.seed = 27599) {
 
   stopifnot(is.scanonevar(sov))
 
@@ -41,8 +37,7 @@ scanonevar.perm <- function(sov,
                              scan.types = wrangled.inputs$scan.types,
                              scan.formulae = wrangled.inputs$scan.formulae,
                              n.perms = n.perms,
-                             seed = random.seed,
-                             n.cores = n.cores)
+                             seed = random.seed)
 
   sov <- list(meta = sov[['meta']],
               result = result[['sov']],
@@ -61,10 +56,9 @@ scanonevar.perm_ <- function(sov,
                              scan.types,
                              scan.formulae,
                              n.perms,
-                             seed,
-                             n.cores) {
+                             seed) {
 
-  this.context.permutation.max.finder <- function(alt.fitter, null.fitter) {
+  this.context.permutation.max.finder <- function(alt.fitter, null.fitter, seed) {
     permutation.max.finder(alt.fitter = alt.fitter,
                            null.fitter = null.fitter,
                            modeling.df = modeling.df,
@@ -72,13 +66,7 @@ scanonevar.perm_ <- function(sov,
                            genoprob.df = genoprob.df,
                            scan.formulae = scan.formulae,
                            n.perms = n.perms,
-                           seed = seed,
-                           n.cores = n.cores)
-  }
-
-  if (n.cores != 1) {
-    cl <- parallel::makeCluster(n.cores)
-    doParallel::registerDoParallel(cl = cl)
+                           seed = seed)
   }
 
   perms <- list()
@@ -86,7 +74,8 @@ scanonevar.perm_ <- function(sov,
   if ('mean' %in% scan.types) {
     message('Starting mean permutations...')
     mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
-                                                          null.fitter = fit.model.0v_)
+                                                          null.fitter = fit.model.0v_,
+                                                          seed = seed)
     message('\nFinished mean permutations...')
     perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
                                              mean.lod.maxes)
@@ -95,8 +84,9 @@ scanonevar.perm_ <- function(sov,
   if ('var' %in% scan.types) {
     message('Starting variance permutations...')
     var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
-                                                         null.fitter = fit.model.m0_)
-    message('\nFinished variance permutations...')
+                                                         null.fitter = fit.model.m0_,
+                                                         seed = seed)
+    message('Finished mean permutations...')
     perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
@@ -104,14 +94,11 @@ scanonevar.perm_ <- function(sov,
   if ('joint' %in% scan.types) {
     message('Starting joint mean-variance permutations...')
     joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
-                                                           null.fitter = fit.model.00_)
-    message('\nFinished joint mean-variance permutations...')
+                                                           null.fitter = fit.model.00_,
+                                                           seed = seed)
+    message('Finished joint permutations...')
     perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
-  }
-
-  if (n.cores != 1) {
-    parallel::stopCluster(cl)
   }
 
   perms <- dplyr::bind_rows(perms)
@@ -129,9 +116,9 @@ permutation.max.finder <- function(alt.fitter,
                                    genoprob.df,
                                    scan.formulae,
                                    n.perms,
-                                   seed,
-                                   n.cores) {
+                                   seed) {
 
+  set.seed(seed)
   result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
                                           scan.types = NA,
                                           scan.formulae = scan.formulae)
@@ -160,77 +147,37 @@ permutation.max.finder <- function(alt.fitter,
   # n.perms times, fit the alternative model with the focal locus permuted
   # subtract null ll to compute LOD score at each locus
   # take the max of the LOD scores
+  max.lods <- list()
+  pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)
+  for (perm.idx in 1:n.perms) {
 
-  # single core version
-  if (n.cores == 1) {
+    utils::setTxtProgressBar(pb = pb, value = perm.idx)
 
-    max.lods <- list()
+    for (loc.idx in 1:nrow(result)) {
     pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)
 
-    for (perm.idx in 1:n.perms) {
+      # fill modeling.df with the genoprobs at the focal loc
+      this.loc.name <- result[['loc.name']][loc.idx]
+      loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                     loc.name == this.loc.name)
 
-      utils::setTxtProgressBar(pb = pb, value = perm.idx)
-      set.seed(seed = seed + perm.idx)
+      this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                            loc.genoprobs = loc.genoprobs,
+                                                            model.formulae = scan.formulae)
 
-      for (loc.idx in 1:nrow(result)) {
+      alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
 
-        # fill modeling.df with the genoprobs at the focal loc
-        this.loc.name <- result[['loc.name']][loc.idx]
-        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
-                                       loc.name == this.loc.name)
-
-        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
-                                                              loc.genoprobs = loc.genoprobs,
-                                                              model.formulae = scan.formulae)
-
-        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = sample(x = nrow(this.loc.modeling.df)))
-
-        if (!identical(NA, alt.fit)) {
-          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
-        }
+      if (!identical(NA, alt.fit)) {
+        result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
       }
-
-      maxes <- result %>%
-        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
-        dplyr::group_by(chr.type) %>%
-        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
-
-      max.lods[[perm.idx]] <- maxes
     }
-  }
 
-  # multi-core version
-  if (n.cores != 1) {
+    maxes <- result %>%
+      dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
+      dplyr::group_by(chr.type) %>%
+      dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
 
-    max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dorng% {
-
-      set.seed(seed = seed + perm.idx)
-
-      for (loc.idx in 1:nrow(result)) {
-
-        # fill modeling.df with the genoprobs at the focal loc
-        this.loc.name <- result[['loc.name']][loc.idx]
-        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
-                                       loc.name == this.loc.name)
-
-        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
-                                                              loc.genoprobs = loc.genoprobs,
-                                                              model.formulae = scan.formulae)
-
-        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
-
-        if (!identical(NA, alt.fit)) {
-          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
-        }
-      }
-
-      maxes <- result %>%
-        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
-        dplyr::group_by(chr.type) %>%
-        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
-
-      maxes
-    }
+    max.lods[[perm.idx]] <- maxes
   }
 
   return(dplyr::bind_rows(max.lods))
