@@ -202,9 +202,12 @@ permutation.max.finder <- function(alt.fitter,
   # multi-core version
   if (n.cores != 1) {
 
+    # set.seed(seed = seed)
+
     max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dorng% {
 
       set.seed(seed = seed + perm.idx)
+      the.perm <- sample(x = nrow(this.loc.modeling.df))
 
       for (loc.idx in 1:nrow(result)) {
 
@@ -217,7 +220,7 @@ permutation.max.finder <- function(alt.fitter,
                                                               loc.genoprobs = loc.genoprobs,
                                                               model.formulae = scan.formulae)
 
-        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
+        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
         if (!identical(NA, alt.fit)) {
           result[['alt.ll']][loc.idx] <- alt.fit$m2loglik

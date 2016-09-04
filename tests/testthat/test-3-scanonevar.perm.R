@@ -54,6 +54,21 @@ test_that(
 
     expect_true(all.joint.lod.maxes.greater.than.x(y1d, 'mean'))
     expect_true(all.joint.lod.maxes.greater.than.x(y1d, 'var'))
+
+
+    # it should not be the case that all the perms of a give type are the same
+    all.lod.maxes.same <- function(sov, type) {
+      max.lods <- sov$perms %>% filter(test == type) %>% .[['max.lod']]
+      return(min(max.lods) == max(max.lods))
+    }
+
+    expect_false(all.lod.maxes.same(sov = y1a, 'mean'))
+    expect_false(all.lod.maxes.same(sov = y1a, 'var'))
+    expect_false(all.lod.maxes.same(sov = y1a, 'joint'))
+
+    expect_false(all.lod.maxes.same(sov = y1c, 'mean'))
+    expect_false(all.lod.maxes.same(sov = y1c, 'var'))
+    expect_false(all.lod.maxes.same(sov = y1c, 'joint'))
   }
 )
 
