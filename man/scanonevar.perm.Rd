@@ -4,7 +4,7 @@
 \alias{scanonevar.perm}
 \title{scanonevar.perm}
 \usage{
-scanonevar.perm(sov, n.perms, random.seed = 27599)
+scanonevar.perm(sov, n.perms, random.seed = 27599, n.cores = 1)
 }
 \arguments{
 \item{sov}{the scanonevar whose significance should be assessed empirically in an FWER-controlling method}

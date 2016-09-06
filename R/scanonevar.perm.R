@@ -86,7 +86,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting mean permutations...')
     mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
                                                           null.fitter = fit.model.0v_)
-    message('\nFinished mean permutations...')
+    message('Finished mean permutations...')
     perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
                                              mean.lod.maxes)
   }
@@ -95,7 +95,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting variance permutations...')
     var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
                                                          null.fitter = fit.model.m0_)
-    message('\nFinished variance permutations...')
+    message('Finished variance permutations...')
     perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
@@ -104,7 +104,7 @@ scanonevar.perm_ <- function(sov,
     message('Starting joint mean-variance permutations...')
     joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
                                                            null.fitter = fit.model.00_)
-    message('\nFinished joint mean-variance permutations...')
+    message('Finished joint mean-variance permutations...')
     perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
   }
