@@ -12,7 +12,6 @@
 #' @return 27599
 #' @export
 #'
-#' @importFrom doRNG %dorng%
 #' @importFrom foreach %dopar%
 #'
 #' @examples
@@ -171,42 +170,6 @@ permutation.max.finder <- function(alt.fitter,
 
       utils::setTxtProgressBar(pb = pb, value = perm.idx)
       set.seed(seed = seed + perm.idx)
-
-      for (loc.idx in 1:nrow(result)) {
-
-        # fill modeling.df with the genoprobs at the focal loc
-        this.loc.name <- result[['loc.name']][loc.idx]
-        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
-                                       loc.name == this.loc.name)
-
-        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
-                                                              loc.genoprobs = loc.genoprobs,
-                                                              model.formulae = scan.formulae)
-
-        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = sample(x = nrow(this.loc.modeling.df)))
-
-        if (!identical(NA, alt.fit)) {
-          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
-        }
-      }
-
-      maxes <- result %>%
-        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
-        dplyr::group_by(chr.type) %>%
-        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
-
-      max.lods[[perm.idx]] <- maxes
-    }
-  }
-
-  # multi-core version
-  if (n.cores != 1) {
-
-    # set.seed(seed = seed)
-
-    max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dorng% {
-
-      set.seed(seed = seed + perm.idx)
       the.perm <- sample(x = nrow(this.loc.modeling.df))
 
       for (loc.idx in 1:nrow(result)) {
@@ -231,6 +194,41 @@ permutation.max.finder <- function(alt.fitter,
         dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
         dplyr::group_by(chr.type) %>%
         dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
+
+      max.lods[[perm.idx]] <- maxes
+    }
+  }
+
+  # multi-core version
+  if (n.cores != 1) {
+
+    max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dopar% {
+
+      set.seed(seed = seed + perm.idx)
+      the.perm <- sample(x = nrow(this.loc.modeling.df))
+
+      for (loc.idx in 1:nrow(result)) {
+
+        # fill modeling.df with the genoprobs at the focal loc
+        this.loc.name <- result[['loc.name']][loc.idx]
+        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                       loc.name == this.loc.name)
+
+        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                              loc.genoprobs = loc.genoprobs,
+                                                              model.formulae = scan.formulae)
+
+        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
+
+        if (!identical(NA, alt.fit)) {
+          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
+        }
+      }
+
+      maxes <- result %>%
+        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)/log(10)) %>%
+        dplyr::group_by(chr.type) %>%
+        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE))
 
       maxes
     }
