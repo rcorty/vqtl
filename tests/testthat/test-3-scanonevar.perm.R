@@ -20,6 +20,8 @@ x <- scanonevar(cross = test.cross,
 
 y1a <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599)
 y1b <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599)
+y1c <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3)
+y1d <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3)
 
 
 test_that(
@@ -29,31 +31,45 @@ test_that(
     # all the results should be scanones
     expect_true(is.scanonevar(y1a))
     expect_true(is.scanonevar(y1b))
+    expect_true(is.scanonevar(y1c))
+    expect_true(is.scanonevar(y1d))
 
-    # perms done with the same seed should be identical
+    # perms done with the same number of cores should be identical
     expect_true(identical(y1a$perms, y1b$perms))
+    expect_true(identical(y1c$perms, y1d$perms))
 
-    # joint lods should be pointwise be higher than mean and var lods over the genome, so its max should be higher too
-    all.joint.lod.maxes.greater.than.x <- function(sov, x) {
-      all(sov$perms %>% dplyr::filter(test == 'joint') %>% .[['max.lod']] > sov$perms %>% dplyr::filter(test == x) %>% .[['max.lod']])
+    # # joint lods should be pointwise be higher than mean and var lods over the genome, so its max should be higher too
+    # # I no longer think this is true -- the models are not nested
+    # all.joint.lod.maxes.greater.than.x <- function(sov, x) {
+    #   all(sov$perms %>% dplyr::filter(test == 'joint') %>% .[['max.lod']] > sov$perms %>% dplyr::filter(test == x) %>% .[['max.lod']])
+    # }
+    #
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1a, 'mean'))
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1a, 'var'))
+    #
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1b, 'mean'))
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1b, 'var'))
+    #
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1c, 'mean'))
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1c, 'var'))
+    #
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1d, 'mean'))
+    # expect_true(all.joint.lod.maxes.greater.than.x(y1d, 'var'))
+
+
+    # it should not be the case that all the perms of a give type are the same
+    all.lod.maxes.same <- function(sov, type) {
+      max.lods <- sov$perms %>% dplyr::filter(test == type) %>% .[['max.lod']]
+      return(min(max.lods, na.rm = TRUE) == max(max.lods, na.rm = TRUE))
     }
 
-    expect_true(all.joint.lod.maxes.greater.than.x(y1a, 'mean'))
-    expect_true(all.joint.lod.maxes.greater.than.x(y1a, 'var'))
+    expect_false(all.lod.maxes.same(sov = y1a, 'mean'))
+    expect_false(all.lod.maxes.same(sov = y1a, 'var'))
+    expect_false(all.lod.maxes.same(sov = y1a, 'joint'))
 
-    expect_true(all.joint.lod.maxes.greater.than.x(y1b, 'mean'))
-    expect_true(all.joint.lod.maxes.greater.than.x(y1b, 'var'))
-
-
-    # it should not be the case that all perms of a type are the same
-    all.perm.maxes.of.type.same <- function(sov, type) {
-      max.lods <- sov$perms %>% filter(test == type) %>% .[['max.lod']]
-      return(min(max.lods) == max(max.lods))
-    }
-
-    all.perm.maxes.of.type.same(sov = y1a, type = 'mean')
-    all.perm.maxes.of.type.same(sov = y1a, type = 'var')
-    all.perm.maxes.of.type.same(sov = y1a, type = 'joint')
+    expect_false(all.lod.maxes.same(sov = y1c, 'mean'))
+    expect_false(all.lod.maxes.same(sov = y1c, 'var'))
+    expect_false(all.lod.maxes.same(sov = y1c, 'joint'))
   }
 )
 
