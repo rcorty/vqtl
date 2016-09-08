@@ -151,9 +151,7 @@ permutation.max.finder <- function(alt.fitter,
 
     null.fit <- null.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
 
-    if (!identical(NA, null.fit)) {
-      result[['null.ll']][loc.idx] <- null.fit$m2loglik
-    }
+    result[['null.ll']][loc.idx] <- tryNA(null.fit$m2loglik)
   }
 
   # n.perms times, fit the alternative model with the focal locus permuted
@@ -185,9 +183,7 @@ permutation.max.finder <- function(alt.fitter,
 
         alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
-        if (!identical(NA, alt.fit)) {
-          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
-        }
+        result[['alt.ll']][loc.idx] <- tryNA(alt.fit$m2loglik)
       }
 
       maxes <- result %>%
