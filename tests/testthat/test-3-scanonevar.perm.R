@@ -90,3 +90,33 @@ test_that(
     expect_true(is.scanonevar(c(y1a, y1b, y1c, y1d)))
   }
 )
+
+
+test_that(
+  desc = 'summary.scanonevar',
+  code = {
+
+    a <- summary(object = y1a, units = 'empir.p')
+    b <- summary(object = y1b, units = 'empir.p')
+    c <- summary(object = y1c, units = 'empir.p')
+    d <- summary(object = y1d, units = 'empir.p')
+
+    # summaries should be the same if the objects are the same
+    expect_identical(object = a, expected = b)
+    expect_identical(object = d, expected = d)
+
+    # components of summary
+    expect_true(all(c('intro', 'mean.peaks', 'var.peaks', 'joint.peaks') %in% names(a)))
+    expect_true(all(c('intro', 'mean.peaks', 'var.peaks', 'joint.peaks') %in% names(c)))
+
+    # size of summary
+    expect_true(nrow(a$mean.peaks) <= nrow(y1a$result))
+    expect_true(nrow(a$var.peaks) <= nrow(y1a$result))
+    expect_true(nrow(a$joint.peaks) <= nrow(y1a$result))
+
+    expect_true(nrow(c$mean.peaks) <= nrow(y1c$result))
+    expect_true(nrow(c$var.peaks) <= nrow(y1c$result))
+    expect_true(nrow(c$joint.peaks) <= nrow(y1c$result))
+
+  }
+)
