@@ -81,7 +81,11 @@ validate.sample_stats_mean_var_plot.input <- function(cross,
 modeled_effects_mean_var_plot <- function(cross,
                                           phenotype.name,
                                           focal.covariate.names = NULL,
-                                          nuisance.covariate.names = NULL) {
+                                          nuisance.covariate.names = NULL,
+                                          genotype.names = c('AA', 'AB', 'BB'),
+                                          xlim = NULL,
+                                          ylim = NULL,
+                                          title = paste(phenotype.name, 'by', paste(focal.covariate.names, collapse = ', '))) {
 
   validate.modeled_effects_mean_var_plot.input(cross = cross,
                                                phenotype.name = phenotype.name,
@@ -99,7 +103,7 @@ modeled_effects_mean_var_plot <- function(cross,
                   nuisance.covariate.names[nuisance.covariate.names %in% colnames(qtl::pull.pheno(cross = cross))])
 
   for (marker.name in marker.names) {
-    modeling.df[[marker.name]] <- factor(qtl::pull.geno(cross = cross)[,marker.name])
+    modeling.df[[marker.name]] <- factor(x = qtl::pull.geno(cross = cross)[,marker.name], labels = genotype.names)
   }
   for (phen.name in phen.names) {
     modeling.df[[phen.name]] <- factor(qtl::pull.pheno(cross = cross)[,phen.name])
@@ -141,7 +145,7 @@ modeled_effects_mean_var_plot <- function(cross,
 
   sd.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
   sd.estim <- sd.pred$fit/sd.pred$residual.scale
-  sd.se <- sd.pred$se.fit/sd.pred$residual.scale
+  sd.se <- sd.pred$se.fit
 
   indiv.prediction.tbl <- dplyr::bind_cols(modeling.df,
                                            dplyr::data_frame(indiv.mean.estim = mean.estim,
@@ -167,7 +171,8 @@ modeled_effects_mean_var_plot <- function(cross,
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim)) +
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub)) +
     ggplot2::xlab('mean estimate +/- 1 SE') +
-    ggplot2::ylab('SD estimate +/- 1 SE')
+    ggplot2::ylab('SD estimate +/- 1 SE') +
+    ggplot2::ggtitle(title)
 
   if (length(focal.covariate.names) > 1) {
     p <- p + ggplot2::geom_point(mapping = ggplot2::aes_string(x = 'group.mean.estim',
@@ -175,6 +180,16 @@ modeled_effects_mean_var_plot <- function(cross,
                                                                shape = focal.covariate.names[2]),
                                  size = 3)
   }
+
+  if (!is.null(xlim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = xlim)
+  }
+
+  if (!is.null(ylim)) {
+    p <- p + ggplot2::coord_cartesian(ylim = ylim)
+  }
+
+
   return(p)
 }
 
