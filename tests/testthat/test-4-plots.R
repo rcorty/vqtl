@@ -15,9 +15,9 @@ test.cross[['pheno']][['phenotype2']] <- rnorm(n = qtl::nind(test.cross),
 test_that(
   desc = 'mean_var_sample_plot',
   code = {
-    sample_stats_mean_var_plot(cross = test.cross,
-                               phenotype.name = 'phenotype1',
-                               grouping.factor.names = c('sex', 'D3M3'))
+    mean_var_plot_model_free(cross = test.cross,
+                             phenotype.name = 'phenotype1',
+                             grouping.factor.names = c('sex', 'D3M3'))
   }
 )
 
@@ -25,13 +25,38 @@ test_that(
 test_that(
   desc = 'mean_var_predictive_plot',
   code = {
-    modeled_effects_mean_var_plot(cross = test.cross,
-                                  phenotype.name = 'phenotype1',
-                                  focal.covariate.names =  c('sex', 'D3M3'))
+    mean_var_plot_model_based(cross = test.cross,
+                              phenotype.name = 'phenotype1',
+                              focal.covariate.names =  c('sex', 'D3M3'))
   }
 )
 
 
+
+test_that(
+  desc = 'effects_plot',
+  code = {
+    sov <- scanonevar(cross = test.cross,
+                      mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
+                      var.formula = ~ sex + var.QTL.add + var.QTL.dom,
+                      return.covar.effects = TRUE)
+
+
+    effects_plot(sov = sov, effect.names = 'sex')
+    effects_plot(sov = sov, effect.names = 'mean.QTL')
+    effects_plot(sov = sov, effect.names = 'var.QTL')
+    effects_plot(sov = sov, effect.names = 'QTL.add')
+    effects_plot(sov = sov, effect.names = 'QTL.dom')
+    effects_plot(sov = sov, effect.names = 'QTL')
+    effects_plot(sov = sov)
+
+    effects_plot(sov = sov, effect.names = 'sex', mean.or.var = 'mean')
+    effects_plot(sov = sov, effect.names = 'QTL.add', mean.or.var = 'var')
+    effects_plot(sov = sov, effect.names = 'QTL.dom', mean.or.var = 'mean')
+    effects_plot(sov = sov, effect.names = 'QTL', mean.or.var = 'var')
+    effects_plot(sov = sov, mean.or.var = 'mean')
+  }
+)
 
 # test_that(
 #   desc = 'effects_plot',

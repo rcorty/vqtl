@@ -1,4 +1,4 @@
-#' @title sample_stats_mean_var_plot
+#' @title mean_var_plot_model_free
 #' @rdname mean_var_plots
 #'
 #' @param cross the cross object from which phenotypes and genotypes are drawn
@@ -8,11 +8,11 @@
 #' @return Nothing, just plot.
 #' @export
 #'
-sample_stats_mean_var_plot <- function(cross,
-                                       phenotype.name,
-                                       grouping.factor.names) {
+mean_var_plot_model_free <- function(cross,
+                                     phenotype.name,
+                                     grouping.factor.names) {
 
-  validate.sample_stats_mean_var_plot.input(cross, phenotype.name, grouping.factor.names)
+  validate.mean_var_plot_model_free.input(cross, phenotype.name, grouping.factor.names)
 
   marker.names <- grouping.factor.names[grouping.factor.names %in% colnames(qtl::pull.geno(cross))]
   phen.names <- grouping.factor.names[grouping.factor.names %in% names(qtl::pull.pheno(cross))]
@@ -50,9 +50,9 @@ sample_stats_mean_var_plot <- function(cross,
 
 
 
-validate.sample_stats_mean_var_plot.input <- function(cross,
-                                                      phenotype.name,
-                                                      grouping.factor.names) {
+validate.mean_var_plot_model_free.input <- function(cross,
+                                                    phenotype.name,
+                                                    grouping.factor.names) {
 
   stopifnot(is.cross(cross))
 
@@ -67,7 +67,7 @@ validate.sample_stats_mean_var_plot.input <- function(cross,
 
 
 
-#' @title modeled_effects_mean_var_plot
+#' @title mean_var_plot_model_based
 #' @rdname mean_var_plots
 #'
 #' @param cross the cross
@@ -78,16 +78,16 @@ validate.sample_stats_mean_var_plot.input <- function(cross,
 #' @return nothing, just the plot.
 #' @export
 #'
-modeled_effects_mean_var_plot <- function(cross,
-                                          phenotype.name,
-                                          focal.covariate.names = NULL,
-                                          nuisance.covariate.names = NULL,
-                                          genotype.names = c('AA', 'AB', 'BB'),
-                                          xlim = NULL,
-                                          ylim = NULL,
-                                          title = paste(phenotype.name, 'by', paste(focal.covariate.names, collapse = ', '))) {
+mean_var_plot_model_based <- function(cross,
+                                      phenotype.name,
+                                      focal.covariate.names = NULL,
+                                      nuisance.covariate.names = NULL,
+                                      genotype.names = c('AA', 'AB', 'BB'),
+                                      xlim = NULL,
+                                      ylim = NULL,
+                                      title = paste(phenotype.name, 'by', paste(focal.covariate.names, collapse = ', '))) {
 
-  validate.modeled_effects_mean_var_plot.input(cross = cross,
+  validate.mean_var_plot_model_based.input(cross = cross,
                                                phenotype.name = phenotype.name,
                                                focal.covariate.names = focal.covariate.names,
                                                nuisance.covariate.names = nuisance.covariate.names)
@@ -136,8 +136,8 @@ modeled_effects_mean_var_plot <- function(cross,
   # }
 
   dglm.fit <- dglm::dglm(formula = formula(mean.form),
-                    dformula = formula(var.form),
-                    data = modeling.df)
+                         dformula = formula(var.form),
+                         data = modeling.df)
 
   mean.pred <- predict(dglm.fit, se.fit = TRUE)
   mean.estim <- mean.pred$fit
@@ -166,7 +166,7 @@ modeled_effects_mean_var_plot <- function(cross,
 
 
   p <- ggplot2::ggplot(data = group.prediction.tbl,
-                  mapping = ggplot2::aes_string(color = focal.covariate.names[1])) +
+                       mapping = ggplot2::aes_string(color = focal.covariate.names[1])) +
     ggplot2::geom_point(mapping = ggplot2::aes(x = group.mean.estim, y = group.sd.estim)) +
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim)) +
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub)) +
@@ -181,11 +181,13 @@ modeled_effects_mean_var_plot <- function(cross,
                                  size = 3)
   }
 
-  if (!is.null(xlim)) {
+  if (!is.null(xlim) & !is.null(ylim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+  }
+  if (!is.null(xlim) & is.null(ylim)) {
     p <- p + ggplot2::coord_cartesian(xlim = xlim)
   }
-
-  if (!is.null(ylim)) {
+  if (is.null(xlim) & !is.null(ylim)) {
     p <- p + ggplot2::coord_cartesian(ylim = ylim)
   }
 
@@ -194,10 +196,10 @@ modeled_effects_mean_var_plot <- function(cross,
 }
 
 
-validate.modeled_effects_mean_var_plot.input <- function(cross,
-                                                         phenotype.name,
-                                                         focal.covariate.names,
-                                                         nuisance.covariate.names) {
+validate.mean_var_plot_model_based.input <- function(cross,
+                                                     phenotype.name,
+                                                     focal.covariate.names,
+                                                     nuisance.covariate.names) {
 
   return(TRUE)
 }
