@@ -7,10 +7,10 @@
 \usage{
 mean_var_plot_model_free(cross, phenotype.name, grouping.factor.names)
 
-mean_var_plot_model_based(cross, phenotype.name, focal.covariate.names = NULL,
-  nuisance.covariate.names = NULL, genotype.names = c("AA", "AB", "BB"),
+mean_var_plot_model_based(cross, phenotype.name, focal.groups = NULL,
+  nuisance.groups = NULL, genotype.names = c("AA", "AB", "BB"),
   xlim = NULL, ylim = NULL, title = paste(phenotype.name, "by",
-  paste(focal.covariate.names, collapse = ", ")))
+  paste(focal.groups, collapse = ", ")))
 }
 \arguments{
 \item{cross}{the cross object from which phenotypes and genotypes are drawn}
@@ -19,9 +19,9 @@ mean_var_plot_model_based(cross, phenotype.name, focal.covariate.names = NULL,
 
 \item{grouping.factor.names}{the factors to group individuals by}
 
-\item{focal.covariate.names}{the focal covariates, whose effects will be plotted.  Markers or phenotypes.}
+\item{focal.groups}{the focal covariates, whose effects will be plotted.  Markers or phenotypes.}
 
-\item{nuisance.covariate.names}{the nuisance covariates, whose effects will be modeled, then marginalized over.  Markers or phenotypes.}
+\item{nuisance.groups}{the nuisance covariates, whose effects will be modeled, then marginalized over.  Markers or phenotypes.}
 
 \item{cross}{the cross}
 

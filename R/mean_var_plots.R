@@ -72,35 +72,35 @@ validate.mean_var_plot_model_free.input <- function(cross,
 #'
 #' @param cross the cross
 #' @param phenotype.name the name of the phenotype of interest
-#' @param focal.covariate.names the focal covariates, whose effects will be plotted.  Markers or phenotypes.
-#' @param nuisance.covariate.names the nuisance covariates, whose effects will be modeled, then marginalized over.  Markers or phenotypes.
+#' @param focal.groups the focal covariates, whose effects will be plotted.  Markers or phenotypes.
+#' @param nuisance.groups the nuisance covariates, whose effects will be modeled, then marginalized over.  Markers or phenotypes.
 #'
 #' @return nothing, just the plot.
 #' @export
 #'
 mean_var_plot_model_based <- function(cross,
                                       phenotype.name,
-                                      focal.covariate.names = NULL,
-                                      nuisance.covariate.names = NULL,
+                                      focal.groups = NULL,
+                                      nuisance.groups = NULL,
                                       genotype.names = c('AA', 'AB', 'BB'),
                                       xlim = NULL,
                                       ylim = NULL,
-                                      title = paste(phenotype.name, 'by', paste(focal.covariate.names, collapse = ', '))) {
+                                      title = paste(phenotype.name, 'by', paste(focal.groups, collapse = ', '))) {
 
   validate.mean_var_plot_model_based.input(cross = cross,
                                                phenotype.name = phenotype.name,
-                                               focal.covariate.names = focal.covariate.names,
-                                               nuisance.covariate.names = nuisance.covariate.names)
+                                               focal.groups = focal.groups,
+                                               nuisance.groups = nuisance.groups)
 
   # use modeling.df from sov, and add in phen names and marker names
   modeling.df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
 
   modeling.df[[phenotype.name]] <- cross[['pheno']][[phenotype.name]]
 
-  marker.names <- c(focal.covariate.names[focal.covariate.names %in% colnames(qtl::pull.geno(cross = cross))],
-                    nuisance.covariate.names[nuisance.covariate.names %in% colnames(qtl::pull.geno(cross = cross))])
-  phen.names <- c(focal.covariate.names[focal.covariate.names %in% colnames(qtl::pull.pheno(cross = cross))],
-                  nuisance.covariate.names[nuisance.covariate.names %in% colnames(qtl::pull.pheno(cross = cross))])
+  marker.names <- c(focal.groups[focal.groups %in% colnames(qtl::pull.geno(cross = cross))],
+                    nuisance.groups[nuisance.groups %in% colnames(qtl::pull.geno(cross = cross))])
+  phen.names <- c(focal.groups[focal.groups %in% colnames(qtl::pull.pheno(cross = cross))],
+                  nuisance.groups[nuisance.groups %in% colnames(qtl::pull.pheno(cross = cross))])
 
   for (marker.name in marker.names) {
     modeling.df[[marker.name]] <- factor(x = qtl::pull.geno(cross = cross)[,marker.name], labels = genotype.names)
@@ -119,9 +119,9 @@ mean_var_plot_model_based <- function(cross,
 
   # make formulae from covariate names and cross
   # problem with nuisance is NULL -- todo
-  covar.form <- paste(focal.covariate.names, collapse = '+')
-  if (!is.null(nuisance.covariate.names)) {
-    covar.form <- paste(covar.form, '+', paste(nuisance.covariate.names, collapse = '+'))
+  covar.form <- paste(focal.groups, collapse = '+')
+  if (!is.null(nuisance.groups)) {
+    covar.form <- paste(covar.form, '+', paste(nuisance.groups, collapse = '+'))
   }
   mean.form <- paste(phenotype.name, '~', covar.form)
   var.form <- paste('~', covar.form)
@@ -156,7 +156,7 @@ mean_var_plot_model_based <- function(cross,
                                                              indiv.sd.ub = exp(sd.estim + sd.se)))
 
   group.prediction.tbl <- indiv.prediction.tbl %>%
-    dplyr::group_by_(.dots = c(focal.covariate.names, nuisance.covariate.names)) %>%
+    dplyr::group_by_(.dots = c(focal.groups)) %>%
     dplyr::summarise(group.mean.estim = mean(indiv.mean.estim),
                      group.mean.lb = mean(indiv.mean.lb),
                      group.mean.ub = mean(indiv.mean.ub),
@@ -166,7 +166,7 @@ mean_var_plot_model_based <- function(cross,
 
 
   p <- ggplot2::ggplot(data = group.prediction.tbl,
-                       mapping = ggplot2::aes_string(color = focal.covariate.names[1])) +
+                       mapping = ggplot2::aes_string(color = focal.groups[1])) +
     ggplot2::geom_point(mapping = ggplot2::aes(x = group.mean.estim, y = group.sd.estim)) +
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim)) +
     ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub)) +
@@ -174,10 +174,10 @@ mean_var_plot_model_based <- function(cross,
     ggplot2::ylab('SD estimate +/- 1 SE') +
     ggplot2::ggtitle(title)
 
-  if (length(focal.covariate.names) > 1) {
+  if (length(focal.groups) > 1) {
     p <- p + ggplot2::geom_point(mapping = ggplot2::aes_string(x = 'group.mean.estim',
                                                                y = 'group.sd.estim',
-                                                               shape = focal.covariate.names[2]),
+                                                               shape = focal.groups[2]),
                                  size = 3)
   }
 
@@ -198,8 +198,8 @@ mean_var_plot_model_based <- function(cross,
 
 validate.mean_var_plot_model_based.input <- function(cross,
                                                      phenotype.name,
-                                                     focal.covariate.names,
-                                                     nuisance.covariate.names) {
+                                                     focal.groups,
+                                                     nuisance.groups) {
 
   return(TRUE)
 }
