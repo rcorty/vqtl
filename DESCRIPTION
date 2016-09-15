@@ -20,6 +20,5 @@ Imports: doParallel,
     foreach,
     iterators,
     parallel,
-    doRNG,
     knitr,
     dplyr
