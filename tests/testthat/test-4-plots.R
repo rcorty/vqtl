@@ -1,7 +1,7 @@
 context('Testing plots')
 
 set.seed(27599)
-test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE),
+test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(40, 5), n.mar = 10, eq.spacing = TRUE, include.x = FALSE),
                              n.ind = 400,
                              type = 'f2')
 test.cross[['pheno']][['sex']] <- factor(sample(x = c('female', 'male'),
@@ -11,6 +11,42 @@ test.cross[['pheno']][['phenotype1']] <- rnorm(n = qtl::nind(test.cross))
 test.cross[['pheno']][['phenotype2']] <- rnorm(n = qtl::nind(test.cross),
                                                mean = 0.2*as.numeric(test.cross$pheno$sex) + 0.5*test.cross$geno$`2`$data[,3],
                                                sd = exp(0.5*as.numeric(test.cross$pheno$sex) + 0.8*test.cross$geno$`3`$data[,3] - 3))
+
+test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+
+sov <- vqtl::scanonevar(cross = test.cross,
+                  mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
+                  var.formula = ~ sex + var.QTL.add + var.QTL.dom,
+                  return.covar.effects = TRUE)
+
+sovp <-vqtl::scanonevar.perm(sov = sov,
+                       n.perms = 100,
+                       n.cores = 3)
+
+so <- scanone(cross = test.cross,
+              pheno.col = 'phenotype2',
+              addcovar = as.numeric(test.cross$pheno$sex))
+
+sop <- scanone(cross = test.cross,
+               pheno.col = 'phenotype2',
+               addcovar = as.numeric(test.cross$pheno$sex),
+               n.perm = 100)
+
+the.evd <- evd::fgev(x = sop)
+
+so$empir.p <- evd::pgev(q = so$lod,
+                        loc = fitted(the.evd)[1],
+                        scale = fitted(the.evd)[2],
+                        shape = fitted(the.evd)[3],
+                        lower.tail = FALSE)
+
+
+test_that(
+  desc = 'plot.scanonevar',
+  code = {
+    plot(x = sovp, y = so)
+  }
+)
 
 test_that(
   desc = 'mean_var_sample_plot',
@@ -27,7 +63,8 @@ test_that(
   code = {
     mean_var_plot_model_based(cross = test.cross,
                               phenotype.name = 'phenotype1',
-                              focal.covariate.names =  c('sex', 'D3M3'))
+                              focal.groups = c('D3M3'),
+                              nuisance.groups = 'sex')
   }
 )
 
@@ -36,12 +73,6 @@ test_that(
 test_that(
   desc = 'effects_plot',
   code = {
-    sov <- scanonevar(cross = test.cross,
-                      mean.formula = phenotype2 ~ sex + mean.QTL.add + mean.QTL.dom,
-                      var.formula = ~ sex + var.QTL.add + var.QTL.dom,
-                      return.covar.effects = TRUE)
-
-
     effects_plot(sov = sov, effect.names = 'sex')
     effects_plot(sov = sov, effect.names = 'mean.QTL')
     effects_plot(sov = sov, effect.names = 'var.QTL')
