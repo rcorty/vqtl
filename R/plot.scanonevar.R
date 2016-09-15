@@ -69,7 +69,6 @@ plot.scanonevar <- function(x,
     ggplot2::scale_color_manual(name = c('mQTL', 'vQTL', 'mvQTL', 'traditional'),
                                 values = c('blue', 'red', 'black', 'darkgreen')) +
     ggplot2::ggtitle(label = plot.title) +
-    ggplot2::ylab(label = plotting.units) +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(),
                    axis.text.x = ggplot2::element_blank(),
                    axis.ticks.x = ggplot2::element_blank(),
@@ -78,8 +77,15 @@ plot.scanonevar <- function(x,
                    panel.grid.major.y = ggplot2::element_line(colour = 'lightgray'),
                    strip.background = ggplot2::element_rect(fill = 'lightgray'))
 
+  if (plotting.units == 'LOD') {
+    p <- p + ggplot2::ylab(label = 'LOD')
+  } else {
+    p <- p + ggplot2::ylab(label = '-log10(p)')
+  }
+
   if (marker.rug) {
-    true.markers <- result %>% dplyr::filter(pos != round(pos))
+    # true.markers <- result %>% dplyr::filter(pos != round(pos))
+    true.markers <- result %>% dplyr::filter(!grepl(pattern = '^chr[0-9]*_loc[0-9]*$', x = loc.name))
     p <- p + ggplot2::geom_rug(mapping = ggplot2::aes(x = pos),
                                data = true.markers)
   }
@@ -149,10 +155,17 @@ pull.plotting.columns_ <- function(sov, so, plotting.units) {
                                               val = -log10(sov[['joint.empir.p']])))
 
     if (!is.null(so)) {
-      to.plot <- dplyr::bind_rows(to.plot,
-                                  dplyr::mutate(.data = base.to.plot,
-                                                test = 'traditional',
-                                                val = -log10(lod2pval(so[['lod']], df = 2))))
+      if ('empir.p' %in% names(so)) {
+        to.plot <- dplyr::bind_rows(to.plot,
+                                    dplyr::mutate(.data = base.to.plot,
+                                                  test = 'traditional',
+                                                  val = -log10(so[['empir.p']])))
+      } else {
+        to.plot <- dplyr::bind_rows(to.plot,
+                                    dplyr::mutate(.data = base.to.plot,
+                                                  test = 'traditional',
+                                                  val = -log10(lod2pval(so[['lod']], df = 2))))
+      }
     }
   }
 
