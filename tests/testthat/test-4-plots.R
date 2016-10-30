@@ -23,14 +23,14 @@ sovp <-vqtl::scanonevar.perm(sov = sov,
                        n.perms = 100,
                        n.cores = 3)
 
-so <- scanone(cross = test.cross,
-              pheno.col = 'phenotype2',
-              addcovar = as.numeric(test.cross$pheno$sex))
+so <- qtl::scanone(cross = test.cross,
+                   pheno.col = 'phenotype2',
+                   addcovar = as.numeric(test.cross$pheno$sex))
 
-sop <- scanone(cross = test.cross,
-               pheno.col = 'phenotype2',
-               addcovar = as.numeric(test.cross$pheno$sex),
-               n.perm = 100)
+sop <- qtl::scanone(cross = test.cross,
+                    pheno.col = 'phenotype2',
+                    addcovar = as.numeric(test.cross$pheno$sex),
+                    n.perm = 100)
 
 the.evd <- evd::fgev(x = sop)
 

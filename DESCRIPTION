@@ -21,4 +21,5 @@ Imports: doParallel,
     iterators,
     parallel,
     knitr,
-    dplyr
+    dplyr,
+    qtl
