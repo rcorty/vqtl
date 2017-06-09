@@ -1,7 +1,7 @@
 Package: vqtl
 Title: Genome Scans to Accommodate and Target Genetic and Non-Genetic Effects on
     Trait Variance in Test Crosses
-Version: 0.0.0.9000
+Version: 1.1.2000
 Authors@R: person("Robert", "Corty", email = "rcorty@gmail.com", role = c("aut", "cre"))
 Description: In recognition that there are many factors (genetic loci, macro-
     genetic factors such as sex, and environmental factors) that influence the
@@ -14,5 +14,20 @@ Depends:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr
+Imports: doParallel,
+    foreach,
+    iterators,
+    parallel,
+    knitr,
+    dplyr,
+    qtl,
+    dglm,
+    evd,
+    ggplot2,
+    gtools,
+    lazyeval,
+    stringr,
+    tidyr,
+    testthat

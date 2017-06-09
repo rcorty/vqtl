@@ -2,58 +2,36 @@
 % Please edit documentation in R/scanonevar.perm.R
 \name{scanonevar.perm}
 \alias{scanonevar.perm}
-\title{Conduct Scanonevars on Permuted Genotype Data}
+\title{scanonevar.perm}
 \usage{
-scanonevar.perm(cross, mean.formula, var.formula, n.perms,
-  chrs = unique(names(cross$geno)), verbose.return = FALSE)
+scanonevar.perm(sov, n.perms, random.seed = 27599, n.cores = 1,
+  silent = TRUE)
 }
 \arguments{
-\item{cross}{The cross on which the scanonevar will be conducted.}
+\item{sov}{the scanonevar whose significance should be assessed empirically in an FWER-controlling method}
 
-\item{mean.formula}{The formula that describes the response, and the covariates and genetic effects that influence it.
-The left hand side of the ~ must be a single phenotype that is in the cross.
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: mean.QTL.add (additive effect on the mean) and mean.QTL.dom (dominance deviation from additive on the mean).}
+\item{n.perms}{the number of permutations to do}
 
-\item{var.formula}{The formula that describes the covariates and the genetic effects that influence residual (environmental) variation.
-There should be nothing on the left of the ~ (Inferred to be residual variation).
-The right hand side must use only phenotypes thata are in the cross, markers that are in the cross,
-and the special terms: var.QTL.add (additive effect on the variance) and var.QTL.dom (dominance deviation from additive on the variance).}
+\item{random.seed}{value to start the random number generator at, for reproducibility}
 
-\item{n.perms}{the number of permutations to conduct}
+\item{n.cores}{number of cores to use for the permutations}
 
-\item{chrs}{The subset of chromosomes to scan (defaults to all chromosomes).}
+\item{silent}{Should all messaging be suppressed?}
 }
 \value{
-Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
+27599
 }
 \description{
-\code{scanonevar.perm} conducts many \code{scanonevar}s on permuted data
-  and returns the maximum observed LOD score for each chromosome type in each scan.
-  The results should be put into \code{convert.scanonevar.to.empirical.ps} with a scan in LODs
-  to convert that scan to empirical p-values.  It's important that all the parameters used in
-  \code{scanonevar.perm} are the same as the parameters that were used in the \code{scanonevar}
-  that they will be used to convert to empirical ps.
-}
-\details{
-It is recommended to use approximately 1000 permuted scans to produce highly-replicable,
-  publication-quality empirial p-values.  For this purpose, users are recommended to dispatch this
-  function to many computers in parallel, carefully setting the seed on each computer to insure
-  pseudo-randomness.
-
-none
+\code{scanonevar.perm} conducts many permuted forms of
+the \code{scanonevar} inputted, to assess the statistical significance of the results
+in the inputted scanonevar in a FWER-controlling manner.
 }
 \examples{
-\dontrun{
-  my.perms <- scanonevar.perm(cross = my.cross,
-                              n.perms = 10))
+set.seed(27599)
+test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+scanonevar(cross = test.cross)
 
-}
 }
 \author{
-Robert Corty \email{rcorty@gmail.com}
+Robert W. Corty \email{rcorty@gmail.com}
 }
-\seealso{
-\code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
-}
-

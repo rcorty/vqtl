@@ -9,317 +9,270 @@
 #' @param x the \code{scanonevar} object to be plotted
 #' @param y Optionally, a \code{scanone} object to be plotting for comparison to the \code{scanonevar} object.
 #' @param chrs Optionally, the subset of the chromosomes to plot
-#' @param units.to.plot Optionally, whether to plot 'lods' or 'emp.ps'.
-#' @param col Optionally, a vector specifying the colors of the scan lines.  Defaults to \code{c("black", "blue", "red", "darkgreen")}.
-#' @param bandcol Optionally, a background color for the even-index chromosomes in this scan.
-#' @param legends Optionally, the name to put for each scan in the legend.  Defaults to \code{c('mean or var', 'mean', 'var', 'scanone for comparison')}.
-#' @param legend.pos Optionally, the corner/edge where the legend should be drawn.  Defaults to \code{'top'}.
-#' @param gap Optionally, The space between chromosomes in Mb.  Defaults to 25.
-#' @param incl.markers Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.
-#' @param ylim Optionally, the y limits for the plot.  Defaults to \code{c(0, 1.05 * highest.point)}.
-#' @param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.
-#' @param legend.ncol Optionally, the number of columns in the legend.  Defaults to 2.
-#' @param legend.cex Optionally, character expansion for the legend.  Defaults to 1.
-#' @param title Optionally, title for plot.  Defaults to phenotype from scanonevar object.
-#' @param title.cex Optionally, title character expansion.  Defaults to 1.5
-#' @param alpha.side Optionally, side to print 'alpha=0.05' and 'alpha=0.01' on the thresholds.  Defaults to 'left'.  Other option is 'right'
-#' @param line.width Optionally, width of plotted lines.  Defaults to 1.
-#' @param vertical.bar Optionally, location to plot vertical line to draw attention to one peak.  Defaults to NA.
-#' @param suppress.chromosome Optionally, suppress the word "Chromosome" across the bottom of the plot
-#' @param ... optional graphical parameters
+#' @param tests_to_plot which one or ones of the three possible tests to plot ('mQTL', 'vQTL', and 'mvQTL')
+#' @param plotting.units One of 'LOD', 'asymp.p', or 'empir.p', implying whether
+#' LOD scores, asymptotic p-values, or empirical p-values should be plotted.
+#' Defaults to 'LOD'
+#' @param plot.title the title of the plot
+#' @param marker.rug Should a marker rug be plotted? Defaults to TRUE.
+#' @param ymax the top of the y axis
+#' @param legend_pos the position of the legend
+#' @param alpha_pos the position of the alpha values (false positive rate)
+#' #@param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE
+#' @param ... additional plotting arguments
 #'
-#' @return Returns nothing.  Only makes the plot.
+#' @return Returns the plot.
 #'
 #' @details If such a strong signal was observed that the empirical p-value underflows R's
 #'    float type, this function produces an error.  The author is open to suggestions on how
 #'    to deal with this situation better.
 #'
-#'    These plots look a lot better when both x (the scanone.var object) and y (optional scanone
-#'    for comparison) are in units of empirical p values than when they are in LOD units.
+#'    These plots look better when both x (the scanonevar object) and y (optional scanone
+#'    for comparison) are in units p values than when they are in LOD units.
 #'
-#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
-#'
+#' @importFrom dplyr %>%
 #' @export
 #'
 #' @details none
 #'
 #' @examples
-#'   set.seed(27599)
-#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'   my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                     mean = my.cross$geno$`1`$data[,5],
-#'                                     sd = my.cross$geno$`2`$data[,5])
-#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'   my.cross <- calc.genoprob(my.cross)
+#' set.seed(27599)
+#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+#' test.sov <- scanonevar(cross = test.cross)
+#' plot(x = test.sov)
 #'
-#'   my.scanonevar <- scanonevar(cross = my.cross,
-#'                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
-#'                               chrs = 1:3)
-#'
-#'   summary(my.scanonevar)
-#'
-#'   plot(my.scanonevar)
-#'
-#'
-#'
-
 plot.scanonevar <- function(x,
                             y = NULL,
-                            chrs = unique(x$chr),
-                            units.to.plot,
-                            col = c("black", "blue", "red", "forestgreen"),
-                            bandcol = 'lightgray',
-                            legends = if (is.null(y)) {
-                              c('DGLM-joint', 'DGLM-mean', 'DGLM-var')
+                            chrs = unique(x[['result']][['chr']]),
+                            tests_to_plot = c('mQTL', 'vQTL', 'mvQTL'),
+                            plotting.units = if(any(grepl(pattern = 'empir.p', x = names(x[['result']])))) {
+                              'empir.p'
                             } else {
-                              c('DGLM-joint', 'DGLM-mean', 'DGLM-var', 'LM')
+                              'LOD'
                             },
-                            legend.pos = 'top',
-                            legend.ncol = 2,
-                            legend.cex = 1,
-                            gap = 25,
-                            incl.markers = TRUE,
-                            title = attr(x, 'pheno'),
-                            title.cex = 1.5,
-                            ylim = c(0, 1.05*max(coords.y.locus, na.rm = TRUE)),
-                            show.equations = (length(chrs) != 1),
-                            alpha.side = 'left',
-                            line.width = 1,
-                            vertical.bar = NA,
-                            suppress.chromosome = FALSE,
-                            ...)
-{
+                            plot.title = x[['meta']][['formulae']][['mean.alt.formula']][[2]],
+                            marker.rug = TRUE,
+                            ymax = NULL,
+                            legend_pos = NULL,
+                            alpha_pos = c('left', 'right'),
+                            ...) {
 
-  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
-  chr <- pos <- len <- matches <- 'fake.global'
-  full.lod <- mean.lod <- var.lod <- 'fake.global'
-  emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake.global'
+  chr <- lab <- pos <- val <- test <- loc.name <- 'fake_global_for_CRAN'
 
-  par(mgp = c(3, 0.5, 0))
+  alpha_pos <- match.arg(arg = alpha_pos)
 
-  # validate scanonevar object
-  if (!is.scanonevar(x)) {
-    stop(paste('scanonevar argument is not a valid scanonevar object:', attr(is.scanonevar(x), 'why.not')))
+  # can only plot if x is a scanonevar and y, if present, is a scanone
+  stopifnot(is.scanonevar(x))
+  if (!is.null(y)) {
+    stopifnot('scanone' %in% class(y))
   }
 
-  # convert scanone.for.comparison to tbl_df if needed
-  if (!any(is.null(y), is.tbl(y))) {
-    y <- tbl_df(y)
+  # filter down to requested chromosomes, and make y a tbl_df
+  result <- dplyr::filter(.data = x[['result']], chr %in% chrs)
+  if (!is.null(y)) {
+    y <- dplyr::filter(.data = dplyr::tbl_df(y), chr %in% chrs)
   }
 
-  # subset scanonevar to necessary chrs only
-  # needs to be triggered in another way...consider that x and y may have diff chrs?
-  if (!identical(chrs, unique(x$chr))) {
+  # pull necessary columns into to.plot
+  to.plot <- pull.plotting.columns_(sov = result,
+                                    so = y,
+                                    tests_to_plot = tests_to_plot,
+                                    plotting.units = plotting.units)
+  to.plot <- dplyr::mutate(.data = to.plot,
+                           chr = factor(x = chr, levels = gtools::mixedsort(unique(chr))))
 
-    temp <- dplyr::filter(x, chr %in% chrs)
-    y <- dplyr::filter(y, chr %in% chrs)
+  p <- ggplot2::ggplot(data = to.plot)
 
-    class(temp) <- class(x)
-    attr(temp, 'method') <- attr(x, 'method')
-    attr(temp, 'type') <- attr(x, 'type')
-    attr(temp, 'model') <- attr(x, 'model')
-    attr(temp, 'mean.null.formula') <- attr(x, 'mean.null.formula')
-    attr(temp, 'mean.alt.formula') <- attr(x, 'mean.alt.formula')
-    attr(temp, 'var.null.formula') <- attr(x, 'var.null.formula')
-    attr(temp, 'var.alt.formula') <- attr(x, 'var.alt.formula')
-    attr(temp, 'pheno') <- attr(x, 'pheno')
-    attr(temp, 'null.effects') <- attr(x, 'null.effects')
-    attr(temp, 'units') <- attr(x, 'units')
-    attr(temp, 'null.fit') <- attr(x, 'null.fit')
-    temp$chr <- factor(temp$chr)
-
-    x <- temp
-  }
-
-  # x coordinates for plotting
-  x$chr <- factor(x$chr)
-  levels(x$chr) <- mixedsort(levels(x$chr))
-  coords.x.chr <- x %>%
-    group_by(chr) %>%
-    summarise(len = max(pos) - min(pos)) %>%
-    mutate(start = cumsum(dplyr::lag(len + gap, default = 0))) %>%
-    mutate(end = start + len) %>%
-    mutate(middle = (start + end)/2)
-
-  coords.x.locus <- left_join(coords.x.chr, x, by = 'chr') %>%
-    mutate(coord.x = start + pos)
-
-  # set up units if missing
-  if (missing(units.to.plot)) {
-    if (attr(x, 'units') == 'lods') {
-      units.to.plot <- 'lods'
-    }
-    if (attr(x, 'units') == 'emp.ps') {
-      units.to.plot <- 'emp.ps'
-    }
-  }
-
-  # y coordinates for plotting
-  if (units.to.plot == 'lods') {
-    coords.y.locus <- x %>% select(full.lod, mean.lod, var.lod)
-    ylab <- 'LOD'
-  } else if (units.to.plot == 'emp.ps') {
-    coords.y.locus <- -log10(x %>% select(emp.p.full.lod, emp.p.mean.lod, emp.p.var.lod))
-    ylab = '-log10(p)'
+  if (plotting.units == 'LOD') {
+    p <- p +
+      ggplot2::ylab(label = 'LOD') +
+      ggplot2::theme(panel.grid.major.y = ggplot2::element_line(colour = 'lightgray'))
   } else {
-    stop("units.to.plot must be 'lods' or 'emp.ps'")
+    p <- p +
+      ggplot2::ylab(label = '-log10(p)') +
+      ggplot2::geom_hline(yintercept = -log10(c(0.05, 0.01)), color = 'gray') +
+      ggplot2::geom_text(mapping = ggplot2::aes(x = x,
+                                                y = y,
+                                                label = lab),
+                         data = data.frame(x = switch(EXPR = alpha_pos,
+                                                      left = 0,
+                                                      right = max(to.plot$pos[to.plot$chr == chrs[1]])),
+                                           y = -log10(c(0.05, 0.01)),
+                                           lab = c("alpha == 0.05",
+                                                   "alpha == 0.01"),
+                                           chr = chrs[1]),
+                         vjust = 0,
+                         hjust = switch(EXPR = alpha_pos,
+                                        left = 0,
+                                        right = 1),
+                         parse = TRUE)
+      ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
+                     axis.text.y = ggplot2::element_blank(),
+                     axis.ticks.y = ggplot2::element_blank())
   }
 
+  p <- p +
+    ggplot2::geom_line(ggplot2::aes(x = pos, y = val, col = test)) +
+    ggplot2::scale_color_manual(name = 'test',
+                                breaks = c('mQTL', 'vQTL', 'mvQTL', 'traditional'),
+                                values = c('blue', 'red', 'black', 'darkgreen'),
+                                drop = FALSE) +
+    ggplot2::ggtitle(label = plot.title) +
+    ggplot2::theme(axis.text.x = ggplot2::element_blank(),
+                   axis.ticks.x = ggplot2::element_blank(),
+                   panel.background = ggplot2::element_rect(fill = 'white'),
+                   panel.grid.major.x = ggplot2::element_blank(),
+                   strip.background = ggplot2::element_rect(fill = 'lightgray'),
+                   plot.title = ggplot2::element_text(hjust = 0.5),
+                   legend.title = ggplot2::element_blank())
 
-  # make plotting area
-  xlim <- c(-gap/2, max(coords.x.chr$end) + gap/2)
-  plot(-42, -42, xlim = xlim, ylim = ylim,
-       type = 'n', xaxs = 'i', main = NA,
-       xlab = NA, ylab = NA, axes = FALSE)
-
-  # shade in bg for every other chr
-  if (!is.null(bandcol) & length(chrs) > 1) {
-    names.chrs.even <- chrs[seq(from = 2, to = length(chrs), by = 2)]
-    xs.chrs.even <- dplyr::filter(coords.x.chr, chr %in% names.chrs.even)
-
-    rect(xleft = xs.chrs.even$start - gap/2,
-         xright = xs.chrs.even$end + gap/2,
-         ybottom = ylim[1],
-         ytop = ylim[2],
-         border = bandcol, col = bandcol)
-  }
-
-  # draw x axis and label chrs
-#   segments(x0 = xlim[1], x1 = xlim[2],
-#            y0 = 0, y1 = 0)
   if (length(chrs) == 1) {
-    mtext(side = 1, text = paste('Chromosome', chrs), at = mean(xlim), line = 1)
+    p <- p +
+      ggplot2::xlab(label = paste('Chromosome', chrs))
+      # ggplot2::facet_grid(facets = ~chr,
+      #                     scales = 'free_x', space = 'free_x', switch = 'x',
+      #                     labeller = function(labels) ggplot2::label_both(labels = labels,
+      #                                                                     sep = ''))
   } else {
-    mtext(side = 1, text = chrs, at = coords.x.chr$middle, line = 0)
-    if (!suppress.chromosome) { mtext(side = 1, text = 'Chromosome', at = mean(xlim), line = 1) }
-  }
-
-
-  # draw y axis and label chrs
-  axis(side = 2)
-  mtext(side = 2, text = ylab, line = 1.5, at = mean(ylim))
-
-  # plot lines
-  for (test.idx in 1:ncol(coords.y.locus)) {
-    test.name <- names(coords.y.locus)[test.idx]
-
-    for (this.chr in unique(coords.x.locus$chr)) {
-
-      this.chr.loci <- coords.x.locus$chr == this.chr
-      lines(x = coords.x.locus[this.chr.loci, ][['coord.x']],
-            y = coords.y.locus[this.chr.loci,][[test.name]],
-            col = col[test.idx],
-            lwd = line.width)
-    }
+    p <- p +
+      ggplot2::facet_grid(facets = ~chr,
+                          scales = 'free_x', space = 'free_x', switch = 'x') +
+      ggplot2::theme(axis.title.x = ggplot2::element_blank())
 
   }
 
-  # plot scanone for comparison
-  if (attr(x, 'units') == 'lods') {
-    if (!is.null(y)) {
-      segments(x0 = coords.x.locus$coord.x,
-               x1 = lead(coords.x.locus$coord.x),
-               y0 = y$lod,
-               y1 = lead(y$lod),
-               lwd = line.width*with(coords.x.locus, pos != len),
-               col = col[length(col)])
-    }
-  }
-  if (attr(x, 'units') == 'emp.ps') {
-    if (!is.null(y)) {
 
-      for (this.chr in unique(coords.x.locus$chr)) {
 
-        this.chr.loci <- coords.x.locus$chr == this.chr
-        lines(x = coords.x.locus[this.chr.loci, ][['coord.x']],
-              y = -log10(y$emp.p.scanone[this.chr.loci]),
-              col = col[length(col)],
-              lwd = line.width)
-#
-#         segments(x0 = coords.x.locus$coord.x,
-#                  x1 = lead(coords.x.locus$coord.x),
-#                  y0 = -log10(y$emp.p.scanone),
-#                  y1 = -log10(lead(y$emp.p.scanone)),
-#                  lwd = line.width*with(coords.x.locus, pos != len),
-#                  col = col[length(col)])
-
-      }
-    }
+  if (marker.rug) {
+    # true.markers <- result %>% dplyr::filter(pos != round(pos))
+    true.markers <- result %>%
+      dplyr::filter(!grepl(pattern = '^chr[0-9]*_loc[0-9]*$', x = loc.name)) %>%
+      dplyr::mutate(chr = factor(x = chr, levels = gtools::mixedsort(unique(chr))))
+      #dplyr::mutate(chr = stringr::str_pad(string = chr, width = 2, pad = '0'))
+    p <- p + ggplot2::geom_rug(mapping = ggplot2::aes(x = pos),
+                               data = true.markers)
   }
 
-  # note: I got rid of thresholds on the LOD scale, because it is visually confusing to
-  # look at 3 or 4 different alpha05 thresholds and/or 3 or 4 different alpha 01's  -RWC
-
-  # add thresholds on p-value scale
-  if (attr(x, 'units') == 'emp.ps') {
-    abline(h = -log10(c(0.05, 0.01)), lty = c(1, 3))
-    if (!any(is.null(alpha.side), is.na(alpha.side))) {
-      if (alpha.side == 'left') {
-        text(x = coords.x.locus$coord.x[1], y = -log10(0.05),
-             labels = expression(paste(alpha, "=0.05")), adj = c(0, -0.2))
-        text(x = coords.x.locus$coord.x[1], y = -log10(0.01),
-             labels = expression(paste(alpha, "=0.01")), adj = c(0, -0.2))
-      } else if (alpha.side == 'right') {
-        text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.05),
-             labels = expression(paste(alpha, "=0.05")), adj = c(1, -0.2))
-        text(x = coords.x.locus$coord.x[nrow(coords.x.locus)], y = -log10(0.01),
-             labels = expression(paste(alpha, "=0.01")), adj = c(1, -0.2))
-      } else {
-        stop("alpha.side must be 'left' or 'right'.")
-      }
-    }
+  if (!is.null(ymax)) {
+    p <- p + ggplot2::coord_cartesian(ylim = c(0, ymax))
   }
 
-  # plot lines at marker positions (rug plot)
-  if (incl.markers) {
-    marker.idxs <- !grepl(pattern = 'loc', x = x$marker.name)
-    segments(x0 = coords.x.locus$coord.x[marker.idxs],
-             x1 = coords.x.locus$coord.x[marker.idxs],
-             y0 = 0,
-             y1 = ylim[2]*0.03,
-             col = 'gray50')
+  if (!is.null(legend_pos)) {
+    p <- p + ggplot2::theme(legend.position = legend_pos)
   }
 
-  if (!is.na(vertical.bar)) {
-    segments(x0 = vertical.bar, y0 = ylim[1], x1 = vertical.bar, y1 = ylim[2])
-  }
-
-
-  # draw the legend
-  if (!any(is.null(legends), is.na(legends))) {
-    if (length(legend.pos) == 1) {
-      legend(x = legend.pos,
-             legend = legends,
-             fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
-             x.intersp = 0.3, y.intersp = 1, xjust = 1, yjust = 0)
-    }
-    if (length(legend.pos) == 2) {
-      legend(x = legend.pos[1],
-             y = legend.pos[2],
-             legend = legends,
-             fill = col, cex = legend.cex, bty = 'n', ncol = legend.ncol,
-             x.intersp = 0.3, y.intersp = 1, xjust = 1, yjust = 0)
-    }
-
-  }
-
-  # add the title
-  if (show.equations) {
-    title <- paste(title,
-                   '\n', 'mean null:',
-                   paste(as.character(attr(x, 'mean.null.formula'))[c(2,1,3)], collapse = ' '),
-                   '\n', 'mean alt:',
-                   paste(as.character(attr(x, 'mean.alt.formula'))[c(2,1,3)], collapse = ' '),
-                   '\n', 'var null:',
-                   paste(as.character(attr(x, 'var.null.formula')), collapse = ' '),
-                   '\n', 'var alt:',
-                   paste(as.character(attr(x, 'var.alt.formula')), collapse = ' '))
-    mtext(text = title, side = 3, line = 1, cex = title.cex)
-  } else {
-    mtext(text = title, side = 3, line = 1, cex = title.cex)
-  }
-
-  # return nothing
-  invisible()
+  return(p)
 }
+
+
+
+pull.plotting.columns_ <- function(sov, so, tests_to_plot, plotting.units) {
+
+  loc.name <- chr <- pos <- 'fake_global_for_CRAN'
+
+  base.to.plot <- dplyr::select(.data = sov,
+                                loc.name, chr, pos)
+
+  to.plot <- dplyr::data_frame(test = NA, val = NA)
+
+  # pull appropriate data into plotting columns
+  if (plotting.units == 'LOD') {
+
+    if (!is.null(sov[['mean.lod']]) & 'mQTL' %in% tests_to_plot) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'mQTL',
+                                                val = sov[['mean.lod']]))
+    }
+
+    if (!is.null(sov[['var.lod']]) & 'vQTL' %in% tests_to_plot) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'vQTL',
+                                                val = sov[['var.lod']]))
+    }
+
+    if (!is.null(sov[['joint.lod']]) & 'mvQTL' %in% tests_to_plot) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'mvQTL',
+                                                val = sov[['joint.lod']]))
+    }
+
+    if (!is.null(so)) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'traditional',
+                                                val = so[['lod']]))
+    }
+  }
+
+  if (plotting.units == 'asymp.p') {
+
+    to.plot <- dplyr::bind_rows(dplyr::mutate(.data = base.to.plot,
+                                              test = 'mQTL',
+                                              val = -log10(sov[['mean.asymp.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'vQTL',
+                                              val = -log10(sov[['var.asymp.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'mvQTL',
+                                              val = -log10(sov[['joint.asymp.p']])))
+    if (!is.null(so)) {
+      to.plot <- dplyr::bind_rows(to.plot,
+                                  dplyr::mutate(.data = base.to.plot,
+                                                test = 'traditional',
+                                                val = -log10(lod2pval(so[['lod']], df = 2))))
+    }
+  }
+
+  if (plotting.units == 'empir.p') {
+
+    to.plot <- dplyr::bind_rows(dplyr::mutate(.data = base.to.plot,
+                                              test = 'mQTL',
+                                              val = -log10(sov[['mean.empir.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'vQTL',
+                                              val = -log10(sov[['var.empir.p']])),
+                                dplyr::mutate(.data = base.to.plot,
+                                              test = 'mvQTL',
+                                              val = -log10(sov[['joint.empir.p']])))
+
+    if (!is.null(so)) {
+      if ('empir.p' %in% names(so)) {
+        to.plot <- dplyr::bind_rows(to.plot,
+                                    dplyr::mutate(.data = base.to.plot,
+                                                  test = 'traditional',
+                                                  val = -log10(so[['empir.p']])))
+      } else {
+        stop('Plotting unit is empir.p, but provided scanone doesnt have empir.p')
+      }
+    }
+  }
+
+  # remove the top NA (placeholder) row
+  to.plot <- to.plot[-1,]
+
+  # straighten up factors
+  to.plot$chr <- factor(to.plot$chr, levels = gtools::mixedsort(unique(to.plot$chr)))
+  vqtl.test.names <- c('mQTL', 'vQTL', 'mvQTL')
+  if (all(unique(to.plot$test) %in% vqtl.test.names)) {
+    to.plot$test <- factor(to.plot$test, levels = vqtl.test.names)
+  } else if (all(unique(to.plot$test) %in% c(vqtl.test.names, 'traditional'))) {
+    to.plot$test <- factor(x = to.plot$test,
+                           levels = c(vqtl.test.names, 'traditional'),
+                           labels = c(vqtl.test.names, 'traditional'))
+  } else {
+    stop('unrecognized test type')
+  }
+
+
+  return(to.plot)
+}
+
+
+
+lod2pval <- function(lod, df) {
+  return(stats::pchisq(q = lod, df = df, lower.tail = FALSE))
+}
+

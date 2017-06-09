@@ -1,90 +1,272 @@
-#' @title Conduct Scanonevars on Permuted Genotype Data
+#' @title scanonevar.perm
+#' @name scanonevar.perm
+#' @author Robert W. Corty \email{rcorty@@gmail.com}
 #'
-#' @author Robert Corty \email{rcorty@@gmail.com}
+#' @description \code{scanonevar.perm} conducts many permuted forms of
+#' the \code{scanonevar} inputted, to assess the statistical significance of the results
+#' in the inputted scanonevar in a FWER-controlling manner.
 #'
-#' @description \code{scanonevar.perm} conducts many \code{scanonevar}s on permuted data
-#'   and returns the maximum observed LOD score for each chromosome type in each scan.
-#'   The results should be put into \code{convert.scanonevar.to.empirical.ps} with a scan in LODs
-#'   to convert that scan to empirical p-values.  It's important that all the parameters used in
-#'   \code{scanonevar.perm} are the same as the parameters that were used in the \code{scanonevar}
-#'   that they will be used to convert to empirical ps.
+#' @param sov the scanonevar whose significance should be assessed empirically in an FWER-controlling method
+#' @param n.perms the number of permutations to do
+#' @param random.seed value to start the random number generator at, for reproducibility
+#' @param n.cores number of cores to use for the permutations
+#' @param silent Should all messaging be suppressed?
 #'
-#' @param n.perms the number of permutations to conduct
-#' @inheritParams scanonevar
+#' @return 27599
+#' @export
 #'
-#' @return Returns a tbl_df of maximum LOD score observed in each genome scan for each chromosome type.
-#'
-#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
-#'
-#' @details It is recommended to use approximately 1000 permuted scans to produce highly-replicable,
-#'   publication-quality empirial p-values.  For this purpose, users are recommended to dispatch this
-#'   function to many computers in parallel, carefully setting the seed on each computer to insure
-#'   pseudo-randomness.
-#'
-#' @details none
+#' @importFrom foreach %dopar%
 #'
 #' @examples
-#' \dontrun{
-#'   my.perms <- scanonevar.perm(cross = my.cross,
-#                                mean.formula = 'my.phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#                                var.formula = '~ sex + var.QTL.add + var.QTL.dom',
-#'                               n.perms = 10))
+#' set.seed(27599)
+#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+#' scanonevar(cross = test.cross)
 #'
-#' }
-#
-scanonevar.perm <- function(cross,
-                            mean.formula,
-                            var.formula,
+scanonevar.perm <- function(sov,
                             n.perms,
-                            chrs = unique(names(cross$geno)),
-                            verbose.return = FALSE)
-{
+                            random.seed = 27599,
+                            n.cores = 1,
+                            silent = TRUE) {
 
-  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
-  chrtype <- full.lod <- mean.lod <- var.lod <- 'fake.global'
+  stopifnot(is.scanonevar(sov))
+
+  # get inputs into a format that is easy for scanonevar_ to use
+  wrangled.inputs <- wrangle.scanonevar.input_(cross = sov[['meta']][['cross']],
+                                               mean.formula = sov[['meta']][['formulae']][['mean.alt.formula']],
+                                               var.formula = sov[['meta']][['formulae']][['var.alt.formula']],
+                                               chrs = sov[['meta']][['chrs']])
+
+  # execute the scan
+  result <- scanonevar.perm_(sov = sov[['result']],
+                             modeling.df = wrangled.inputs$modeling.df,
+                             loc.info.df = wrangled.inputs$loc.info.df,
+                             genoprob.df = wrangled.inputs$genoprob.df,
+                             scan.types = wrangled.inputs$scan.types,
+                             scan.formulae = wrangled.inputs$scan.formulae,
+                             n.perms = n.perms,
+                             seed = random.seed,
+                             n.cores = n.cores,
+                             silent = silent)
+
+  sov <- list(meta = sov[['meta']],
+              result = result[['sov']],
+              perms = result[['perms']])
+
+  class(sov) <- c('scanonevar', class(sov))
+  return(sov)
+}
 
 
-  validated.input <- validate.input.scanonevar(cross = cross,
-                                               mean.formula = mean.formula,
-                                               var.formula = var.formula,
-                                               chrs = chrs)
-  genoprobs <- validated.input$genoprobs
-  mapping.df <- validated.input$mapping.df
-  chr.by.marker <- validated.input$chr.by.marker
-  pos.by.marker <- validated.input$pos.by.marker
-  marker.names <- validated.input$marker.names
-  mean.formula <- validated.input$mean.formula
-  var.formula <- validated.input$var.formula
 
-  all.perms <- NULL
-  for (perm.idx in 1:n.perms) {
-    perm.scan <- scan.via.dglm(mean.alt.formula = mean.formula,
-                               var.alt.formula = var.formula,
-                               genoprobs = genoprobs,
-                               mapping.df = mapping.df,
-                               chr.by.marker = chr.by.marker,
-                               pos.by.marker = pos.by.marker,
-                               marker.names = marker.names,
-                               perm = sample(nrow(genoprobs)))
+scanonevar.perm_ <- function(sov,
+                             modeling.df,
+                             loc.info.df,
+                             genoprob.df,
+                             scan.types,
+                             scan.formulae,
+                             n.perms,
+                             seed,
+                             n.cores,
+                             silent) {
 
-    if (!verbose.return) {
-      max.for.cran <- function(x) { max(x, na.rm = TRUE) }
-      perm.scan <- perm.scan %>%
-        group_by(chrtype) %>%
-        select(full.lod, mean.lod, var.lod) %>%
-        summarise_each(funs(max.for.cran))
-    } else {
-      perm.scan$perm <- perm.idx
-    }
-
-    if (is.null(all.perms)) {
-      all.perms <- perm.scan
-    } else {
-      all.perms <- rbind(all.perms, perm.scan)
-    }
-
+  this.context.permutation.max.finder <- function(alt.fitter, null.fitter) {
+    permutation.max.finder(alt.fitter = alt.fitter,
+                           null.fitter = null.fitter,
+                           modeling.df = modeling.df,
+                           loc.info.df = loc.info.df,
+                           genoprob.df = genoprob.df,
+                           scan.formulae = scan.formulae,
+                           n.perms = n.perms,
+                           seed = seed,
+                           n.cores = n.cores)
   }
 
-  return(all.perms)
+  if (!is.numeric(n.cores)) {
+    stop('n.cores must be numeric')
+  }
+  if (n.cores != 1) {
+    cl <- parallel::makeCluster(spec = n.cores)
+    doParallel::registerDoParallel(cl = cl)
+  }
 
+  perms <- list()
+
+  if ('mean' %in% scan.types) {
+    if (!silent) { message('Starting mean permutations...') }
+    mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
+                                                          null.fitter = fit.model.0v_)
+    if (!silent) { message('Finished mean permutations...') }
+    perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
+                                        mean.lod.maxes)
+  }
+
+  if ('var' %in% scan.types) {
+    if (!silent) {  message('Starting variance permutations...') }
+    var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
+                                                         null.fitter = fit.model.m0_)
+    if (!silent) { message('Finished variance permutations...') }
+    perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
+                                       var.lod.maxes)
+  }
+
+  if ('joint' %in% scan.types) {
+    if (!silent) { message('Starting joint mean-variance permutations...') }
+    joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
+                                                           null.fitter = fit.model.00_)
+    if (!silent) {  message('Finished joint mean-variance permutations...') }
+    perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
+                                         joint.lod.maxes)
+  }
+
+  if (n.cores != 1) {
+    parallel::stopCluster(cl)
+  }
+
+  perms <- dplyr::bind_rows(perms)
+  sov <- calc.empir.ps(sov, perms)
+
+  return(list(sov = sov,
+              perms = perms))
 }
+
+
+permutation.max.finder <- function(alt.fitter,
+                                   null.fitter,
+                                   modeling.df,
+                                   loc.info.df,
+                                   genoprob.df,
+                                   scan.formulae,
+                                   n.perms,
+                                   seed,
+                                   n.cores) {
+
+  loc.name <- null.ll <- alt.ll <- chr.type <- LOD.score <- 'fake_global_for_CRAN'
+
+  result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
+                                          scan.types = NA,
+                                          scan.formulae = scan.formulae)
+  result[['null.ll']] <- result[['alt.ll']] <- NA
+
+
+  # fit the null model across the genome
+  for (loc.idx in 1:nrow(result)) {
+
+    # fill modeling.df with the genoprobs at the focal loc
+    this.loc.name <- result[['loc.name']][loc.idx]
+    loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                   loc.name == this.loc.name)
+
+    this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                          loc.genoprobs = loc.genoprobs,
+                                                          model.formulae = scan.formulae)
+
+    null.fit <- null.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
+
+    result[['null.ll']][loc.idx] <- tryNA(null.fit$m2loglik)
+  }
+
+  # n.perms times, fit the alternative model with the focal locus permuted
+  # subtract null ll to compute LOD score at each locus
+  # take the max of the LOD scores
+
+  # single core version
+  if (n.cores == 1) {
+
+    max.lods <- list()
+    pb <- utils::txtProgressBar(min = 0, max = n.perms, style = 3)
+
+    for (perm.idx in 1:n.perms) {
+
+      utils::setTxtProgressBar(pb = pb, value = perm.idx)
+      set.seed(seed = seed + perm.idx)
+      the.perm <- sample(x = nrow(this.loc.modeling.df))
+
+      for (loc.idx in 1:nrow(result)) {
+
+        # fill modeling.df with the genoprobs at the focal loc
+        this.loc.name <- result[['loc.name']][loc.idx]
+        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                       loc.name == this.loc.name)
+
+        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                              loc.genoprobs = loc.genoprobs,
+                                                              model.formulae = scan.formulae)
+
+        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
+
+        result[['alt.ll']][loc.idx] <- tryNA(alt.fit$m2loglik)
+      }
+
+      maxes <- result %>%
+        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
+        dplyr::group_by(chr.type) %>%
+        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
+
+      max.lods[[perm.idx]] <- maxes
+    }
+  }
+
+  # multi-core version
+  if (n.cores != 1) {
+
+    max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dopar% {
+
+      set.seed(seed = seed + perm.idx)
+      the.perm <- sample(x = nrow(this.loc.modeling.df))
+
+      for (loc.idx in 1:nrow(result)) {
+
+        # fill modeling.df with the genoprobs at the focal loc
+        this.loc.name <- result[['loc.name']][loc.idx]
+        loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+                                       loc.name == this.loc.name)
+
+        this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+                                                              loc.genoprobs = loc.genoprobs,
+                                                              model.formulae = scan.formulae)
+
+        alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
+
+        if (!identical(NA, alt.fit)) {
+          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
+        }
+      }
+
+      maxes <- result %>%
+        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)/log(10)) %>%
+        dplyr::group_by(chr.type) %>%
+        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE))
+
+      maxes
+    }
+  }
+
+  return(dplyr::bind_rows(max.lods))
+}
+
+
+
+calc.empir.ps <- function(sov, perms) {
+
+  test <- chr.type <- fitted <- max.lod <- 'fake_global_for_CRAN'
+
+  tests <- unique(perms[['test']])
+  chr.types <- unique(perms[['chr.type']])
+
+  for (this.test in tests) {
+
+    for (this.chr.type in chr.types) {
+      the.evd <- perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% dplyr::pull(max.lod) %>% evd::fgev(std.err = FALSE)
+      idxs <- sov[['chr.type']] == this.chr.type
+
+      sov[[paste0(this.test, '.empir.p')]][idxs] <- evd::pgev(q = sov[[paste0(this.test, '.lod')]][idxs],
+                                                              loc = fitted(the.evd)[1],
+                                                              scale = fitted(the.evd)[2],
+                                                              shape = fitted(the.evd)[3],
+                                                              lower.tail = FALSE)
+    }
+  }
+
+  return(sov)
+}
+

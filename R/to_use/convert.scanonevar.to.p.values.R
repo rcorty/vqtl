@@ -2,7 +2,7 @@
 #'
 #' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#' @description \code{scanonevar.to.p.values} takes a scanonevar with LODs as units
+#' @description \code{convert_lods_to_p_values} takes a scanonevar with LODs as units
 #'   and maxes from permutation scans, estimates an extreme value distribution for the maxes,
 #'   and returns the probability of observing the LOD scores in those EVDs.
 #'
@@ -11,8 +11,6 @@
 #'   observed on a per-scan, per-chromosome-type basis in permutation scans.
 #'
 #' @return Returns a scanonevar object in terms of p-values, with \code{attr(x, 'units') = 'emp.ps'}.
-#'
-#' @seealso  \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
 #' @details none
 #' @export
@@ -32,13 +30,12 @@
 #'                          perm.scan.maxes = my.perms)
 #' }
 #
-
-scanonevar.to.p.values <- function(scanonevar, perm.scan.maxes) {
+convert_lods_to_p_values <- function(scanonevar, perm.scan.maxes) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   chrtype <- 'fake.global'
 
-  validate.convert.scanonevar.to.p.values(scanonevar, perm.scan.maxes)
+  validate_convert_lods_to_p_values(scanonevar, perm.scan.maxes)
 
   lod.columns <- grep(pattern = 'lod', names(scanonevar), value = TRUE)
   chr.types <- unique(scanonevar$chrtype)
