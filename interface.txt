@@ -1,0 +1,30 @@
+Objects
+--------------------------------------------------------------------------
+{cross} (from R/qtl): [phenotypes, genotypes, map, and genoprobs from an experimental cross]
+{mean.formula}: a two-sided formula
+{var.formula}: a one-sided formula (LHS is impliciply the residuals from mean.formula)
+{formulae}: [mean.formula, var.formula]
+{chr.type}: one of ['auto', 'X', 'Y', 'M']
+{loc.type}: one of ['marker', 'pseudomarker']
+{scanonevar.result}: data_frame with [loc.name, {loc.type}, chr, {chr.type}, (mean|var|joint).LOD, (mean|var|joint).asymp.p, and optionally (mean|var|joint).empir.p]
+{scanonevar.meta: [{cross}, {formulae}, chrs]
+{scanonevar}: [{scanonevar.meta}, {scanonevar.result}]
+{scanonevar.perm.result}: data_frame with [{chr.type}, max.(mean|var|joint).LOD, max.(mean|var|joint).asymp.p]
+{scanonevar.perm}: [{scanonevar.meta}, {scanonevar.perm.result}]
+
+
+Genome Scans
+--------------------------------------------------------------------------
+1. scanonevar: ({cross}, {mean.formula}, {var.formula}) -> {scanonevar} without empir.ps
+2. scanonevar.perm: ({scanonevar} without empir ps) -> {scanonevar.perm}
+3. c.scanonevar.perm: ({scanonevar.perm}, {scanonevar.perm}) -> {scanonevar.perm}
+4. esimate.empirical.p.values: ({scanonevar}, {scanonevar.perm}) -> {scanonevar} with empir.ps
+        note: warn if empir.ps already in {scanonevar}, they are being overwritten
+5. plot.scanonevar: ({scanonevar}) -> plot
+
+
+Plots for Interpreting Results
+--------------------------------------------------------------------------
+1. phenotype.by.marker.plot: ({cross}, marker.name) -> plot
+2. mean.var.plot: ({cross}, phenotype.name, {group.by}) -> plot
+3. resid.plot: ({cross}, {formulae}) -> plot

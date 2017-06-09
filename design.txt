@@ -1,0 +1,16 @@
+scanonevar
+	validate.scanonevar.input_
+		is.cross_
+		is.mean.formula_
+		is.var.formula_
+		formulae.is.valid.for.scanonevar_
+		formulae.is.valid.for.cross_
+	wrangle.scanonevar.input_
+		is.cross.w.genoprobs_
+		wrangle.loc.info.df_
+		wrangle.genoprob.df_
+		wrangle.scanonevar.types_
+		wrangle.scanonevar.formulae_
+		wrangle.scanonevar.modeling.df_
+
+	scanonevar_
