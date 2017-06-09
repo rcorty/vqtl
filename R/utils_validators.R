@@ -5,7 +5,7 @@ formulae.is.valid.for.cross_ <- function(cross,
   var.formula <- formulae[['var.formula']]
 
   # the response in 'mean.formula' must be a phenotype in the cross
-  phen.names <- names(qtl::pull.pheno(cross = cross))
+  phen.names <- names(cross$pheno)
   if (!(all.vars(mean.formula[[2]]) %in% phen.names)) {
     return(FALSE)
   }
@@ -44,7 +44,7 @@ formulae.is.valid.for.cross_ <- function(cross,
 #' @rdname utils
 #' @author Robert W. Corty \email{rcorty@@gmail.com}
 #'
-#' @param x The object being tested for whether or not is is a scanonevar.
+#' @description utilities for working with scanonevar objects
 #'
 #' @return TRUE is X is a scanonevar object, FALSE otherwise.
 #' @export
@@ -102,7 +102,7 @@ is.scanonevar <- function(x) {
 #' @title is.scanonevar.w.perms
 #' @rdname utils
 #'
-#' @param x object being tested whether it is a scanonevar with perms
+#' @param x object being tested
 #'
 #' @return TRUE if x is a scanone var with perms (typically,
 #' outputted from scanonevar.perm), and FALSE otherwise.
@@ -127,8 +127,6 @@ is.scanonevar.w.perms <- function(x) {
 #' @title is.cross
 #' @rdname utils
 #' @author Robert W. Corty \email{rcorty@@gmail.com}
-#'
-#' @param x The object being tested for whether or not is is a cross.
 #'
 #' @return TRUE if x is a cross object, FALSE otherwise.
 #' @export
@@ -183,7 +181,7 @@ is.cross <- function(x) {
 
 
 #' @title is.f2.cross
-#' @name is.f2.cross
+#' @rdname utils
 #' @author Robert W. Corty \email{rcorty@@gmail.com}
 #'
 #' @inheritParams is.cross
@@ -204,10 +202,31 @@ is.f2.cross <- function(x) {
 }
 
 
+#' @title is.bc.cross
+#' @rdname utils
+#' @author Robert W. Corty \email{rcorty@@gmail.com}
+#'
+#' @inheritParams is.cross
+#'
+#' @return TRUE if x is a cross object of type 'bc' (backcross), FALSE otherwise
+#' @export
+#'
+#' @examples
+#' is.cross(3)
+#' is.cross(qtl::sim.cross(map = qtl::sim.map()))
+#'
+is.f2.cross <- function(x) {
+
+  if (!('bc' %in% class(x)))
+    return(FALSE)
+
+  return(is.cross(x))
+}
+
 
 
 #' @title is.cross.w.genoprobs
-#' @name is.cross.w.genoprobs
+#' @rdname utils
 #' @author Robert W. Corty \email{rcorty@@gmail.com}
 #'
 #' @inheritParams is.cross

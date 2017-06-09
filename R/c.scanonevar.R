@@ -3,6 +3,8 @@
 #'
 #' @param ... the scanonevar objects with permutations to be combined
 #'
+#' @description combines scanonevar objects that have permutations to improve the precision of the p-value estimates.
+#'
 #' @return a scanonevar object that is the concatenation of the inputted
 #' scanonevars
 #'
@@ -11,7 +13,7 @@
 c.scanonevar <- function(...) {
   sovs <- list(...)
 
-  validate.c.scanonevar.input(sovs)
+  validate.c.scanonevar.input_(sovs)
 
   first.sov <- sovs[[1]]
   new.perms <- first.sov[['perms']]
@@ -29,7 +31,7 @@ c.scanonevar <- function(...) {
 }
 
 
-validate.c.scanonevar.input <- function(sovs) {
+validate.c.scanonevar.input_ <- function(sovs) {
 
   stopifnot(all(sapply(X = sovs, FUN = is.scanonevar.w.perms)))
 

@@ -2,7 +2,7 @@
 #'
 #' @author Robert Corty \email{rcorty@@gmail.com}
 #'
-#' @description \code{validate.convert.scanonevar.to.p.values} should not typically be called by a user.
+#' @description \code{validate_convert_lods_to_p_values} should not typically be called by a user.
 #' This function is used by \code{scanonevar.to.emp.ps}
 #'
 #' @param scan the scanonevar to be converted
@@ -10,10 +10,10 @@
 #'
 #' @return Returns TRUE if the two arguments are compatible and FALSE otherwise.
 #'
-#' @seealso  \code{\link{scanonevar.to.p.values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
+#' @seealso  \code{\link{convert_lods_to_p_values}}, \code{\link{scanonevar}}, \code{\link{scanonevar.perm}}
 #'
 #' @details none
-validate.convert.scanonevar.to.p.values <- function(scan, null.scan.maxes) {
+validate_convert_lods_to_p_values <- function(scan, null.scan.maxes) {
 
   if (!identical(unique(scan$chrtype), unique(null.scan.maxes$chrtype))) {
     stop('chrtypes of scan and null.scan.maxes dont match')

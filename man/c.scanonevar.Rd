@@ -13,4 +13,6 @@
 a scanonevar object that is the concatenation of the inputted
 scanonevars
 }
-
+\description{
+combines scanonevar objects that have permutations to improve the precision of the p-value estimates.
+}

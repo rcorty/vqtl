@@ -1,14 +1,9 @@
-#' @title wrangle.loc.info.df_
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
 wrangle.loc.info.df_ <- function (cross, chrs = qtl::chrnames(cross)) {
 
   # NB: names(class(x)) is the notation to get the name of a chromosome
-  loc.info.from.chr <- function(x) {
+  loc.info.from.chr.name <- function(chr.name) {
+    x <- cross[['geno']][[chr.name]]
     chr.type <- class(x)
-    chr.name <- names(class(x))
     prob.map <- attr(x = x[['prob']], which = 'map')
     names.starting.with.loc.idxs <- grep(pattern = '^loc', names(prob.map))
     names(prob.map)[names.starting.with.loc.idxs] <-
@@ -21,20 +16,16 @@ wrangle.loc.info.df_ <- function (cross, chrs = qtl::chrnames(cross)) {
   }
 
   cross[['geno']] <- cross[['geno']][qtl::chrnames(cross = cross) %in% chrs]
-  return(dplyr::bind_rows(lapply(X = cross[['geno']],
-                                 FUN = loc.info.from.chr)))
+  return(dplyr::bind_rows(lapply(X = chrs,
+                                 FUN = loc.info.from.chr.name)))
 }
 
 
 
-#' @title wrangle.genoprob.df_
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
-wrangle.genoprob.df_ <- function(cross) {
+wrangle.genoprob.df_ <- function(cross, chrs = qtl::chrnames(cross)) {
 
-  genoprobs.from.chr <- function(x) {
+  genoprobs.from.chr.name <- function(chr.name) {
+    x <- cross[['geno']][[chr.name]]
     prob.tbl <- x[['prob']]
     num.width <- max(nchar(as.character(1:dim(prob.tbl)[1])))
     if (is.null(dimnames(prob.tbl)[[1]])) {
@@ -45,26 +36,18 @@ wrangle.genoprob.df_ <- function(cross) {
     }
     names.starting.with.loc.idxs <- grep(pattern = '^loc', dimnames(prob.tbl)[[2]])
     dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs] <-
-      paste0('chr', names(class(x)), '_', dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs])
+      paste0('chr', chr.name, '_', dimnames(prob.tbl)[[2]][names.starting.with.loc.idxs])
     return(as.data.frame.table(prob.tbl, stringsAsFactors = FALSE))
   }
 
-  genoprob.df <- dplyr::tbl_df(dplyr::bind_rows(lapply(X = cross[['geno']],
-                                                       FUN = genoprobs.from.chr)))
+  genoprob.df <- dplyr::tbl_df(dplyr::bind_rows(lapply(X = chrs,
+                                                       FUN = genoprobs.from.chr.name)))
   names(genoprob.df) <- c('iid', 'loc.name', 'allele', 'genoprob')
   return(genoprob.df)
 }
 
 
 
-#' @title make.response.model.df_
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
-#' @return a tibble of the response in mean.formua
-#' @export
-#'
 make.response.model.df_ <- function(cross,
                                     formulae = NULL,
                                     response.name = all.vars(formulae[['mean.alt.formula']][[2]])) {
@@ -72,30 +55,27 @@ make.response.model.df_ <- function(cross,
   stopifnot(is.cross(cross))
 
   # not sure if there's a better way to do this
-  df <- dplyr::as_data_frame(stats::setNames(list(qtl::pull.pheno(cross = cross,
-                                                                  pheno.col = response.name)),
-                                             response.name))
+  # df <- dplyr::as_data_frame(stats::setNames(list(qtl::pull.pheno(cross = cross,
+  #                                                                 pheno.col = response.name)),
+  #                                            response.name))
+  #
+  df <- stats::setNames(object = dplyr::tbl_df(qtl::pull.pheno(cross = cross,
+                                                        pheno.col = response.name)),
+                 nm = response.name)
 
   return(df)
 }
 
 
 
-#' @title make.qtl.covar.model.df
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
-#' @return a tibble of the qtl keyword in formulae
-#' @export
 make.qtl.covar.model.df_ <- function(cross,
                                      formulae) {
 
   stopifnot(is.cross(cross))
 
   # get all covariate names
-  mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
-  var.covar.names <- labels(terms(formulae[['var.alt.formula']]))
+  mean.covar.names <- labels(stats::terms(formulae[['mean.alt.formula']]))
+  var.covar.names <- labels(stats::terms(formulae[['var.alt.formula']]))
 
   # get the covariate names that are keywords and add them as NA to l
   mean.keywords <- c('mean.QTL.add', 'mean.QTL.dom')
@@ -122,8 +102,8 @@ make.phen.covar.model.df_ <- function(cross,
 
   if (is.null(phen.names)) {
     # get all covariate names
-    mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
-    var.covar.names <- labels(terms(formulae[['var.alt.formula']]))
+    mean.covar.names <- labels(stats::terms(formulae[['mean.alt.formula']]))
+    var.covar.names <- labels(stats::terms(formulae[['var.alt.formula']]))
 
     # get the phenotype names
     mean.phen.covar.names <- mean.covar.names[mean.covar.names %in% names(cross[['pheno']])]
@@ -134,6 +114,8 @@ make.phen.covar.model.df_ <- function(cross,
 
   df <- dplyr::data_frame(placeholder = rep(NA, qtl::nind(cross)))
   for (phen.covar.name in phen.names) {
+    # df <- cbind(df, model.matrix(object = formula(paste('~', phen.covar.name)),
+    #                              data = cross[['pheno']]))
     df[[phen.covar.name]] <- cross[['pheno']][[phen.covar.name]]
   }
   df[['placeholder']] <- NULL
@@ -150,11 +132,13 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
                                                formulae,
                                                genoprobs) {
 
+  loc.name <- 'fake_global_for_CRAN'
+
   stopifnot(is.cross(cross))
 
   # get all covariate names
-  mean.covar.names <- labels(terms(formulae[['mean.alt.formula']]))
-  var.covar.names <- labels(terms(formulae[['var.alt.formula']]))
+  mean.covar.names <- labels(stats::terms(formulae[['mean.alt.formula']]))
+  var.covar.names <- labels(stats::terms(formulae[['var.alt.formula']]))
 
   # set up the names we're looking for
   marker.names <- colnames(qtl::pull.geno(cross))
@@ -176,7 +160,7 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
                                            loc.name == substr(x = add.marker.covar.name,
                                                               start = 1,
                                                               stop = nchar(add.marker.covar.name) - 4))
-    df[[add.marker.covar.name]] <- additive.component(this.marker.genoprobs)
+    df[[add.marker.covar.name]] <- additive.component_(this.marker.genoprobs)
   }
 
 
@@ -185,7 +169,7 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
                                            loc.name == substr(x = dom.marker.covar.name,
                                                               start = 1,
                                                               stop = nchar(dom.marker.covar.name) - 4))
-    df[[dom.marker.covar.name]] <- dominance.component(this.marker.genoprobs)
+    df[[dom.marker.covar.name]] <- dominance.component_(this.marker.genoprobs)
   }
   df[['placeholder']] <- NULL
 
@@ -197,16 +181,9 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
 
 
 
-#' @title additive.component
-#' @rdname internals
-#'
-#' @param genoprobs.long The genoprobs from which the additive genetic
-#' component should be extracted.  The 'long' format implies that each row
-#' has information on the genoprob of one individual having one allele.
-#'
-#' @return A vector of the additive genetic component at the locus
-#'
-additive.component <- function(genoprobs.long) {
+additive.component_ <- function(genoprobs.long) {
+
+  allele <- genoprob <- 'fake_global_for_CRAN'
 
   alleles <- unique(genoprobs.long[['allele']])
 
@@ -226,16 +203,9 @@ additive.component <- function(genoprobs.long) {
 }
 
 
-#' @title dominance.component
-#' @rdname internals
-#'
-#' @param genoprobs.long The genoprobs from which the additive genetic
-#' component should be extracted.  The 'long' format implies that each row
-#' has information on the genoprob of one individual having one allele.
-#'
-#' @return A vector of the dominance genetic component at the locus
-#'
-dominance.component <- function(genoprobs.long) {
+dominance.component_ <- function(genoprobs.long) {
+
+  allele <- genoprob <- 'fake_global_for_CRAN'
 
   alleles <- unique(genoprobs.long[['allele']])
 
@@ -253,7 +223,6 @@ dominance.component <- function(genoprobs.long) {
     stop(paste("Can't determine additive component of loc with alleles:", alleles))
   }
 }
-
 
 
 

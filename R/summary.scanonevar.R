@@ -1,5 +1,7 @@
 #' @title summary.scannevar
-#' @rdname summary.scanonevar
+#' @rdname scanonevar
+#'
+#'
 #'
 #' @param object the scanonevar to summarize
 #' @param units the units
@@ -11,20 +13,25 @@
 #'
 summary.scanonevar <- function(object, units = c('LOD', 'empir.p'), thresh, ...) {
 
+  chr.type <- chr <- loc.name <- pos <- 'fake_global_for_CRAN'
+  mean.empir.p <- var.empir.p <- joint.empir.p <- 'fake_global_for_CRAN'
+
   stopifnot(is.scanonevar(object))
   units <- match.arg(units)
   if (missing(thresh)) {
-    thresh <- ifelse(test = units == 'LOD',
-                     yes = 4,
-                     no = 3)
+    thresh <- switch(EXPR = units,
+                     'LOD' = 3,
+                     'empir.p' = -log10(0.05))
   }
 
   output <- list()
 
+  phen_name <- object$meta$formulae$mean.alt.formula[[2]]
+
   if ('perms' %in% names(object)) {
-    output[['intro']] <- 'a scanonevar object with permutations'
+    output[['intro']] <- paste('a scanonevar of phenotype', phen_name, 'with permutations')
   } else {
-    output[['intro']] <- 'a scanonevar object with no permutations'
+    output[['intro']] <- paste('a scanonevar of phenotype', phen_name, 'without permutations')
   }
 
   result <- object[['result']]
@@ -43,16 +50,25 @@ summary.scanonevar <- function(object, units = c('LOD', 'empir.p'), thresh, ...)
   }
 
   if (units == 'empir.p') {
-    output[['mean.peaks']] <- result %>%
-      dplyr::slice(get.peak.idxs(v = -log10(result[['mean.empir.p']]), thresh = thresh)) %>%
+    # output[['mean.peaks']] <- result %>%
+    #   dplyr::slice(get.peak.idxs(v = -log10(result[['mean.empir.p']]), thresh = thresh)) %>%
+    #   dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('mean'))
+
+    output[['mean_peaks']] <- result %>% dplyr::filter(-log10(mean.empir.p) > thresh) %>%
       dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('mean'))
 
-    output[['var.peaks']] <- result %>%
-      dplyr::slice(get.peak.idxs(v = -log10(result[['var.empir.p']]), thresh = thresh)) %>%
+    # output[['var.peaks']] <- result %>%
+    #   dplyr::slice(get.peak.idxs(v = -log10(result[['var.empir.p']]), thresh = thresh)) %>%
+    #   dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('var'))
+
+    output[['var_peaks']] <- result %>% dplyr::filter(-log10(var.empir.p) > thresh) %>%
       dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('var'))
 
-    output[['joint.peaks']] <- result %>%
-      dplyr::slice(get.peak.idxs(v = -log10(result[['joint.empir.p']]), thresh = thresh)) %>%
+    # output[['joint.peaks']] <- result %>%
+    #   dplyr::slice(get.peak.idxs(v = -log10(result[['joint.empir.p']]), thresh = thresh)) %>%
+    #   dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('joint'))
+
+    output[['joint_peaks']] <- result %>% dplyr::filter(-log10(joint.empir.p) > thresh) %>%
       dplyr::select(chr.type, chr, loc.name, pos, dplyr::matches('joint'))
   }
 
@@ -64,6 +80,7 @@ summary.scanonevar <- function(object, units = c('LOD', 'empir.p'), thresh, ...)
 
 get.peak.idxs <- function(v, thresh) {
 
+  above.thresh <- prev.above.thresh <- next.above.thresh <- peak.start <- peak.end <- cum.starts <- cum.ends <- idx <- 'fake_global_for_CRAN'
   dplyr::data_frame(idx = 1:length(v), v = v) %>%
     dplyr::mutate(above.thresh = v > thresh,
            prev.above.thresh = dplyr::lag(above.thresh, default = FALSE),
@@ -73,8 +90,9 @@ get.peak.idxs <- function(v, thresh) {
            cum.starts = cumsum(peak.start),
            cum.ends = cumsum(peak.end)) %>%
     dplyr::filter(cum.starts != cum.ends) %>%
-    .[['idx']]
-    # changing interface to simply return idxs
+    dplyr::pull(idx)
+
+  # changed interface to simply return idxs
     # group_by(cum.starts) %>%
     # summarise(peak.start = min(idx),
     #           peak.end = max(idx),

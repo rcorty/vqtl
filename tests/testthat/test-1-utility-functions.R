@@ -149,7 +149,7 @@ test_that(
   desc = 'genetic data utils',
   code = {
     test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5)))
-    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 5)
 
     loc.info <- wrangle.loc.info.df_(cross = test.cross)
     expect_identical(object = names(loc.info), expected = c('chr.type', 'chr', 'loc.name', 'pos'))

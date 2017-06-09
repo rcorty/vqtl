@@ -1,16 +1,21 @@
 #' @title mean_var_plot_model_free
-#' @rdname mean_var_plots
+#' @rdname plotting
 #'
-#' @param cross the cross object from which phenotypes and genotypes are drawn
-#' @param phenotype.name the name of the phenotype
-#' @param grouping.factor.names the factors to group individuals by
+#' @param grouping.factor.names the factors by which the units are grouped
+#'
+#' @description plots with mean along the x axis and standard deviation along the y axis
 #'
 #' @return Nothing, just plot.
 #' @export
 #'
 mean_var_plot_model_free <- function(cross,
                                      phenotype.name,
-                                     grouping.factor.names) {
+                                     grouping.factor.names,
+                                     title = paste(phenotype.name,
+                                                   'by',
+                                                   paste(grouping.factor.names, collapse = ', '))) {
+
+  sd <- 'fake_global_for_CRAN'
 
   validate.mean_var_plot_model_free.input(cross, phenotype.name, grouping.factor.names)
 
@@ -34,10 +39,13 @@ mean_var_plot_model_free <- function(cross,
                       sd = lazyeval::interp(~sd(var, na.rm = TRUE), var = as.name(phenotype.name)),
                       mean.se = quote(sd/sqrt(n())),
                       sd.se = quote(sqrt(2)*sd^2/sqrt(n() - 1))) %>%
+    stats::na.omit() %>%
     ggplot2::ggplot(mapping = ggplot2::aes(x = mean, y = sd)) +
     ggplot2::geom_segment(mapping = ggplot2::aes_string(x = 'mean - mean.se', xend = 'mean + mean.se', yend = 'sd', color = grouping.factor.names[1])) +
     ggplot2::geom_segment(mapping = ggplot2::aes_string(y = 'sd - sd.se', yend = 'sd + sd.se', xend = 'mean', color = grouping.factor.names[1])) +
-    ggplot2::geom_path(size = 3, alpha = 0.5, mapping = ggplot2::aes_string(color = grouping.factor.names[1]))
+    ggplot2::geom_path(size = 3, alpha = 0.5, mapping = ggplot2::aes_string(color = grouping.factor.names[1])) +
+    ggplot2::ggtitle(title) +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   if (length(grouping.factor.names) == 1) {
     p <- p + ggplot2::geom_point(size = 3, ggplot2::aes_string(color = grouping.factor.names[1]))
@@ -68,12 +76,19 @@ validate.mean_var_plot_model_free.input <- function(cross,
 
 
 #' @title mean_var_plot_model_based
-#' @rdname mean_var_plots
+#' @rdname plotting
 #'
 #' @param cross the cross
 #' @param phenotype.name the name of the phenotype of interest
 #' @param focal.groups the focal covariates, whose effects will be plotted.  Markers or phenotypes.
 #' @param nuisance.groups the nuisance covariates, whose effects will be modeled, then marginalized over.  Markers or phenotypes.
+#' @param genotype.names plotting names of genotype groups
+#' @param xlim x axis limits
+#' @param ylim y axis limits
+#' @param title plot title
+#' @param draw_ribbons Should ribbons be drawn connecting the sub-groups of the focal groups?
+#' @param se_line_size thickness of the lines indicating standard error
+#' @param point_size size of the plotted points
 #'
 #' @return nothing, just the plot.
 #' @export
@@ -85,7 +100,15 @@ mean_var_plot_model_based <- function(cross,
                                       genotype.names = c('AA', 'AB', 'BB'),
                                       xlim = NULL,
                                       ylim = NULL,
-                                      title = paste(phenotype.name, 'by', paste(focal.groups, collapse = ', '))) {
+                                      title = paste(phenotype.name, 'by', paste(focal.groups, collapse = ', ')),
+                                      draw_ribbons = TRUE,
+                                      se_line_size = 1,
+                                      point_size = 1) {
+
+  indiv.mean.estim <- indiv.mean.lb <- indiv.mean.ub <- 'fake_global_for_CRAN'
+  indiv.sd.estim <- indiv.sd.lb <- indiv.sd.ub <- 'fake_global_for_CRAN'
+  group.mean.estim <- group.mean.ub <- group.mean.lb <- 'fake_global_for_CRAN'
+  group.sd.estim <- group.sd.ub <- group.sd.lb <- 'fake_global_for_CRAN'
 
   validate.mean_var_plot_model_based.input(cross = cross,
                                                phenotype.name = phenotype.name,
@@ -106,14 +129,9 @@ mean_var_plot_model_based <- function(cross,
     modeling.df[[marker.name]] <- factor(x = qtl::pull.geno(cross = cross)[,marker.name], labels = genotype.names)
   }
   for (phen.name in phen.names) {
-    modeling.df[[phen.name]] <- factor(qtl::pull.pheno(cross = cross)[,phen.name])
+    modeling.df[[phen.name]] <- factor(qtl::pull.pheno(cross = cross)[[phen.name]])
   }
-
   modeling.df[['placeholder']] <- NULL
-
-  # modeling.df <- dplyr::bind_cols(response.df,
-  #                                 marker.df,
-  #                                 phen.df)
 
 
 
@@ -135,19 +153,19 @@ mean_var_plot_model_based <- function(cross,
   #   var.form <- paste(var.form, '+', marker.name)
   # }
 
-  dglm.fit <- dglm::dglm(formula = formula(mean.form),
-                         dformula = formula(var.form),
+  dglm.fit <- dglm::dglm(formula = stats::formula(mean.form),
+                         dformula = stats::formula(var.form),
                          data = modeling.df)
 
-  mean.pred <- predict(dglm.fit, se.fit = TRUE)
+  mean.pred <- stats::predict(dglm.fit, se.fit = TRUE)
   mean.estim <- mean.pred$fit
   mean.se <- mean.pred$se.fit
 
-  sd.pred <- predict(dglm.fit$dispersion.fit, se.fit = TRUE)
+  sd.pred <- stats::predict(dglm.fit$dispersion.fit, se.fit = TRUE)
   sd.estim <- sd.pred$fit/sd.pred$residual.scale
   sd.se <- sd.pred$se.fit
 
-  indiv.prediction.tbl <- dplyr::bind_cols(modeling.df,
+  indiv.prediction.tbl <- dplyr::bind_cols(stats::na.omit(modeling.df),
                                            dplyr::data_frame(indiv.mean.estim = mean.estim,
                                                              indiv.mean.lb = mean.estim - mean.se,
                                                              indiv.mean.ub = mean.estim + mean.se,
@@ -166,19 +184,37 @@ mean_var_plot_model_based <- function(cross,
 
 
   p <- ggplot2::ggplot(data = group.prediction.tbl,
-                       mapping = ggplot2::aes_string(color = focal.groups[1])) +
-    ggplot2::geom_point(mapping = ggplot2::aes(x = group.mean.estim, y = group.sd.estim)) +
-    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim)) +
-    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub)) +
+                       mapping = ggplot2::aes_string(color = focal.groups[1]))
+
+  if (draw_ribbons & length(focal.groups) > 1) {
+    p <- p +
+      ggplot2::geom_line(data = group.prediction.tbl,
+                         mapping = ggplot2::aes_string(x = 'group.mean.estim', y = 'group.sd.estim', color = focal.groups[1]),
+                         size = 4,
+                         alpha = 0.3)
+  }
+
+  p <- p +
+    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.lb, xend = group.mean.ub, y = group.sd.estim, yend = group.sd.estim), size = se_line_size) +
+    ggplot2::geom_segment(mapping = ggplot2::aes(x = group.mean.estim, xend = group.mean.estim, y = group.sd.lb, yend = group.sd.ub), size = se_line_size)
+
+  p <- p +
+    ggplot2::theme_minimal() +
     ggplot2::xlab('mean estimate +/- 1 SE') +
     ggplot2::ylab('SD estimate +/- 1 SE') +
-    ggplot2::ggtitle(title)
+    ggplot2::ggtitle(title) +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::guides(ggplot2::guide_legend(order = 1))
 
+  if (length(focal.groups) == 1) {
+    p <- p + ggplot2::geom_point(mapping = ggplot2::aes(x = group.mean.estim, y = group.sd.estim),
+                                 size = point_size)
+  }
   if (length(focal.groups) > 1) {
     p <- p + ggplot2::geom_point(mapping = ggplot2::aes_string(x = 'group.mean.estim',
                                                                y = 'group.sd.estim',
                                                                shape = focal.groups[2]),
-                                 size = 3)
+                                 size = point_size)
   }
 
   if (!is.null(xlim) & !is.null(ylim)) {

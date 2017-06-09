@@ -5,11 +5,12 @@
 \title{plot.scanonevar}
 \usage{
 \method{plot}{scanonevar}(x, y = NULL,
-  chrs = unique(x[["result"]][["chr"]]), plotting.units = if
-  (any(grepl(pattern = "empir.p", x = names(x[["result"]])))) {     "empir.p" }
-  else {     "LOD" },
+  chrs = unique(x[["result"]][["chr"]]), tests_to_plot = c("mQTL", "vQTL",
+  "mvQTL"), plotting.units = if (any(grepl(pattern = "empir.p", x =
+  names(x[["result"]])))) {     "empir.p" } else {     "LOD" },
   plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
-  marker.rug = TRUE, ylim = NULL)
+  marker.rug = TRUE, ymax = NULL, legend_pos = NULL,
+  alpha_pos = c("left", "right"), ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}
@@ -18,13 +19,24 @@
 
 \item{chrs}{Optionally, the subset of the chromosomes to plot}
 
+\item{tests_to_plot}{which one or ones of the three possible tests to plot ('mQTL', 'vQTL', and 'mvQTL')}
+
 \item{plotting.units}{One of 'LOD', 'asymp.p', or 'empir.p', implying whether
 LOD scores, asymptotic p-values, or empirical p-values should be plotted.
 Defaults to 'LOD'}
 
-\item{incl.markers}{Optionally, whether to draw a rug plot along the bottom indicating where the markers are.  Defaults to TRUE.}
+\item{plot.title}{the title of the plot}
 
-\item{show.equations}{Optionally, whether to write the modeling equations under the title.  Defaults to TRUE.}
+\item{marker.rug}{Should a marker rug be plotted? Defaults to TRUE.}
+
+\item{ymax}{the top of the y axis}
+
+\item{legend_pos}{the position of the legend}
+
+\item{alpha_pos}{the position of the alpha values (false positive rate)
+#@param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE}
+
+\item{...}{additional plotting arguments}
 }
 \value{
 Returns the plot.
@@ -48,13 +60,9 @@ none
 set.seed(27599)
 test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
 test.sov <- scanonevar(cross = test.cross)
-plot(test.sov)
+plot(x = test.sov)
 
 }
 \author{
 Robert Corty \email{rcorty@gmail.com}
 }
-\seealso{
-\code{\link{scanonevar}}, \code{\link{scanonevar.to.p.values}}
-}
-

@@ -13,6 +13,8 @@
 #' @param var.formula The formula to describe the residual variance of the
 #' phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
 #' dominance components of the QTL effect on residual phenotype variance.
+#' @param chrs chromosomes to scan
+#' @param return.covar.effects Should covariate effects estimated at each locus be returned?
 #'
 #' @return 27599
 #' @export
@@ -62,19 +64,6 @@ scanonevar <- function(cross,
 
 
 
-#' @title validate.scanonevar.input_
-#' @name validate.scanonevar.input_
-#' @author Robert W. Corty \email{rcorty@@gmail.com}
-#'
-#' @inheritParams scanonevar
-#'
-#' @return TRUE is parameters are valid for scanonevar, errors with a
-#' helpful error message if parameters are invalid.
-#'
-#' @export
-#' @examples
-#' x <- 27599
-#'
 validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
                                        var.formula,
@@ -89,7 +78,7 @@ validate.scanonevar.input_ <- function(cross,
   formulae <- make.formulae_(mean.formula, var.formula)
 
   # formulae must be valid for use in scanonevar
-  stopifnot(formulae.is.valid.for.scanonevar_(formulae = formulae))
+  stopifnot(formulae_is_valid_(formulae = formulae))
 
   # formulae must be valid for use with cross
   stopifnot(formulae.is.valid.for.cross_(cross = cross,
@@ -100,7 +89,8 @@ validate.scanonevar.input_ <- function(cross,
 
 
 
-formulae.is.valid.for.scanonevar_ <- function(formulae) {
+
+formulae_is_valid_ <- function(formulae) {
 
   if (!is.formulae(formulae)) {
     return(FALSE)
@@ -119,22 +109,7 @@ formulae.is.valid.for.scanonevar_ <- function(formulae) {
 
 
 
-#' @title wrangle.scanonevar.input_
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
-#' @return a list with three elements: 'model.df', the data.frame to be used
-#' at every genetic locus in the upcoming scanonevar_, 'scan.df', the
-#' data.frame that will be picked from, one genetic at a time to fill the
-#' 'QTL' variable in the model and 'scan.types', which indicates which types
-#' of scan to do: mqtl, vqtl, and/or mvqtl.
-#'
-#' @export
-#'
-#' @examples
-#' x <- 27599
-#'
+
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula,
@@ -142,7 +117,7 @@ wrangle.scanonevar.input_ <- function(cross,
 
   if (!is.cross.w.genoprobs(x = cross)) {
     message("calculating genoprobs with stepwidth = 2, off.end = 0, error.prob = 1e-4, map.function = 'haldane'")
-    cross <- qtl::calc.genoprob(cross = cross, step = 2)
+    cross <- qtl::calc.genoprob(cross = cross, step = 5)
   }
 
   loc.info.df <- wrangle.loc.info.df_(cross = cross,
@@ -169,19 +144,11 @@ wrangle.scanonevar.input_ <- function(cross,
 
 
 
-#' @title wrangle.scanonevar.types_
-#' @rdname internals
-#'
-#' @inheritParams scanonevar
-#'
-#' @return either 'mean', 'var', or c('mean', 'var', 'joint'), indicating which
-#' types of scans are implied by mean.formula and var.formula
-#'
 wrangle.scanonevar.types_ <- function(mean.formula,
                                       var.formula) {
 
-  mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = labels(terms(mean.formula)))
-  var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(terms(var.formula)))
+  mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = labels(stats::terms(mean.formula)))
+  var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(stats::terms(var.formula)))
 
   if (all(mean.qtl.idxs, !var.qtl.idxs)) {
     return('mean')
@@ -198,11 +165,6 @@ wrangle.scanonevar.types_ <- function(mean.formula,
 
 
 
-#' @title wrangle.scanonevar.formulae_
-#' @rdname wrangle.scanonevar.input_
-#'
-#' @inheritParams wrangle.scanonevar.input_
-#' @export
 wrangle.scanonevar.formulae_ <- function(cross,
                                          mean.formula,
                                          var.formula) {
@@ -227,11 +189,6 @@ wrangle.scanonevar.formulae_ <- function(cross,
 
 
 
-#' @title wrangle.modeling.df_
-#' @rdname wrangle.scanonevar.input_
-#'
-#' @inheritParams wrangle.scanonevar.input_
-#'
 wrangle.scanonevar.modeling.df_ <- function(cross,
                                             scan.formulae,
                                             genoprobs) {
@@ -260,8 +217,6 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 
-
-
 pull.scanonevar.meta_ <- function(wrangled.inputs,
                                   chrs) {
 
@@ -275,28 +230,8 @@ pull.scanonevar.meta_ <- function(wrangled.inputs,
   return(meta)
 }
 
-#' @title scanonevar_
-#' @name scanonevar_
-#' @author Robert W. Corty
-#'
-#' @param modeling.df the tbl_df that contains the response, all covariates,
-#' and NA columns appropriate for marker effects
-#' @param genoprob.df the tbl_df that contains the probability of each genotype
-#' for each individual at each loc, where a 'loc' is either a marker or a pseudomarker
-#' @param loc.info.df the tbl_df that contains information about the
-#' locs that are being scanned, minimally a 'loc.name', 'chr' (short for
-#' 'chromosome') and 'pos' (short for 'position') for each loc.
-#' @param scan.types Type(s) of scan(s) to be conducted, one of: 'mean',
-#' 'var', or c('mean', 'var', 'joint')
-#'
-#' @inheritParams scanonevar
-#'
-#' @return a scanonevar object
-#' @export
-#'
-#' @examples
-#' x <- 27599
-#'
+
+
 scanonevar_ <- function(modeling.df,
                         genoprob.df,
                         loc.info.df,
@@ -304,13 +239,15 @@ scanonevar_ <- function(modeling.df,
                         scan.formulae,
                         return.covar.effects) {
 
+  loc.name <- 'fake_global_for_CRAN'
+
   result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
                                           scan.types = scan.types,
                                           scan.formulae = scan.formulae,
                                           return.covar.effects = return.covar.effects)
 
-  mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(terms(scan.formulae[['mean.alt.formula']]))))
-  var.df <- sum(grepl(pattern = 'var.QTL', x = labels(terms(scan.formulae[['var.alt.formula']]))))
+  mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(stats::terms(scan.formulae[['mean.alt.formula']]))))
+  var.df <- sum(grepl(pattern = 'var.QTL', x = labels(stats::terms(scan.formulae[['var.alt.formula']]))))
 
   # do this outside the loop because it doesn't change with locus, so only needs to be done once
   if ('joint' %in% scan.types) {
@@ -348,9 +285,44 @@ scanonevar_ <- function(modeling.df,
 
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
-    if (all(return.covar.effects, !identical(alternative.fit, NA))) {
-      result[loc.idx, paste0(c('(Intercept)', labels(terms(scan.formulae[['mean.alt.formula']]))), '_mef')] <- coef(alternative.fit)
-      result[loc.idx, paste0(c('(Intercept)', labels(terms(scan.formulae[['var.alt.formula']]))), '_vef')] <- coef(alternative.fit$dispersion.fit)
+    # all this hullabaloo is because coef(summary()) drops NAs, but coef() doesn't
+    if (all(return.covar.effects)) {
+
+      if (identical(alternative.fit, NA)) {
+
+        if (loc.idx == 1) { stop('Cant fit model on locus 1.  Due to programming weirdness, cant return effect estimates.') }
+        coef_mtx <- rbind(coef_mtx, rep(NA, ncol(coef_mtx)))
+
+      } else {
+
+        mean_coef_mtx <- stats::coef(summary(alternative.fit))
+        mean_ests <- mean_ses <-  rep(NA, length(stats::coef(alternative.fit)))
+
+        mean_ests[!is.na(stats::coef(alternative.fit))] <- mean_coef_mtx[,'Estimate']
+        names(mean_ests) <- paste0('mef_', names(stats::coef(alternative.fit)))
+
+        mean_ses[!is.na(stats::coef(alternative.fit))] <- mean_coef_mtx[,'Std. Error']
+        names(mean_ses) <- paste0('mse_', names(stats::coef(alternative.fit)))
+
+
+        disp_fit <- alternative.fit$dispersion.fit
+        disp_coef_mtx <- stats::coef(summary(disp_fit))
+        disp_ests <- disp_ses <-  rep(NA, length(stats::coef(disp_fit)))
+
+        disp_ests[!is.na(stats::coef(disp_fit))] <- disp_coef_mtx[,'Estimate']
+        names(disp_ests) <- paste0('vef_', names(stats::coef(disp_fit)))
+
+        disp_ses[!is.na(stats::coef(disp_fit))] <- disp_coef_mtx[,'Std. Error']
+        names(disp_ses) <- paste0('vse_', names(stats::coef(disp_fit)))
+
+        # collate ests and ses
+        if (loc.idx == 1) {
+          coef_mtx <- matrix(data = c(mean_ests, mean_ses, disp_ests, disp_ses), nrow = 1)
+        } else {
+          coef_mtx <- rbind(coef_mtx, c(mean_ests, mean_ses, disp_ests, disp_ses))
+        }
+      }
+
     }
 
     # Fit the appropriate null models at this loc
@@ -358,22 +330,25 @@ scanonevar_ <- function(modeling.df,
     if ('mean' %in% scan.types) {
       mean.null.fit <- fit.model.0v_(formulae = scan.formulae, df = this.loc.modeling.df)
       result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
-      result[['mean.asymp.p']][loc.idx] <- pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
+      result[['mean.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
     if ('var' %in% scan.types) {
       var.null.fit <- fit.model.m0_(formulae = scan.formulae, df = this.loc.modeling.df)
       result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
-      result[['var.asymp.p']][loc.idx] <- pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
+      result[['var.asymp.p']][loc.idx] <- stats::pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
 
     if ('joint' %in% scan.types) {
       result[['joint.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
-      result[['joint.asymp.p']][loc.idx] <- pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
+      result[['joint.asymp.p']][loc.idx] <- stats::pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
     }
 
   }
 
+  if (return.covar.effects) {
+    result <- cbind(result, coef_mtx)
+  }
 
   class(result) <- c('scanonevar_result', class(result))
 
@@ -385,27 +360,12 @@ scanonevar_ <- function(modeling.df,
 
 
 
-#' @title initialize.scanonevar.result_
-#' @rdname scanonevar_
-#'
-#' @inheritParams scanonevar_
-#'
-#' @return A tbl_df with the metadata for a scanonevar, once filled in by
-#' the scanonevar function, it will be a scanonevar object.
-#'
-#' @details This internal function should not typically be called by a user.
-#'
-#' @examples
-#' x <- dplyr::data_frame(loc.name = c('m1', 'm2'),
-#'                        chr = c(1, 1),
-#'                        pos = c(5, 10))
-#' initialize.scanonevar.result_(loc.info.df = x,
-#'                               scan.types = 'mean')
-#'
 initialize.scanonevar.result_ <- function(loc.info.df,
                                           scan.types,
                                           scan.formulae,
                                           return.covar.effects = FALSE) {
+
+  chr.type <- chr <- loc.name <- pos <- 'fake_global_for_CRAN'
 
   result <- dplyr::select(.data = loc.info.df,
                           chr.type,
@@ -420,50 +380,41 @@ initialize.scanonevar.result_ <- function(loc.info.df,
   if ('joint' %in% scan.types)
     result[['joint.asymp.p']] <- result[['joint.lod']] <- NA
 
-  if (return.covar.effects) {
-    result[['(Intercept)_mef']] <- NA
-    for (mean.covar.name in labels(terms(scan.formulae[['mean.alt.formula']]))) {
-      result[[paste0(mean.covar.name, '_mef')]] <- NA
-    }
-    result[['(Intercept)_vef']] <- NA
-    for (var.covar.name in labels(terms(scan.formulae[['var.alt.formula']]))) {
-      result[[paste0(var.covar.name, '_vef')]] <- NA
-    }
-  }
+  # if (return.covar.effects) {
+  #   result[['(Intercept)_mef']] <- result[['(Intercept)_mse']] <- NA
+  #   for (mean.covar.name in labels(terms(scan.formulae[['mean.alt.formula']]))) {
+  #     result[[paste0(mean.covar.name, '_mef')]] <- NA
+  #     result[[paste0(mean.covar.name, '_mse')]] <- NA
+  #   }
+  #   result[['(Intercept)_vef']] <- result[['(Intercept)_vse']] <- NA
+  #   for (var.covar.name in labels(terms(scan.formulae[['var.alt.formula']]))) {
+  #     result[[paste0(var.covar.name, '_vef')]] <- NA
+  #     result[[paste0(var.covar.name, '_vse')]] <- NA
+  #   }
+  # }
 
   return(result)
 }
 
 
 
-#' @title make.loc.specific.modeling.df
-#' @rdname scanonevar_
-#'
-#' @param general.modeling.df The modeling df that will be used across the scan,
-#' should have NA for all QTL columns.  These columns will be filled in in the result.
-#' @param loc.genoprobs The genoprobs of all individuals of all allels at this loc.
-#' @param model.formulae The formulae used for the scan.
-#'
-#' @return a modeling df appropriate for modeling at one specific loc
-#' @export
-#'
 make.loc.specific.modeling.df <- function(general.modeling.df,
                                           loc.genoprobs,
                                           model.formulae) {
 
   modeling.df <- general.modeling.df
 
-  if ('mean.QTL.add' %in% labels(terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.add']] <- additive.component(genoprobs.long = loc.genoprobs)
+  if ('mean.QTL.add' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
+    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
   }
-  if ('mean.QTL.dom' %in% labels(terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.dom']] <- dominance.component(genoprobs.long = loc.genoprobs)
+  if ('mean.QTL.dom' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
+    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
   }
-  if ('var.QTL.add' %in% labels(terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.add']] <- additive.component(genoprobs.long = loc.genoprobs)
+  if ('var.QTL.add' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
+    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
   }
-  if ('var.QTL.dom' %in% labels(terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.dom']] <- dominance.component(genoprobs.long = loc.genoprobs)
+  if ('var.QTL.dom' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
+    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
   }
 
   return(modeling.df)

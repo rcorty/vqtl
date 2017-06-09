@@ -5,7 +5,7 @@ tryNA <- function(expr) {
 }
 
 dglm.ml <- function(mf, df, data) {
-  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml')
+  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml')#, family = poisson(link = "log"))
 }
 
 # the alternative model

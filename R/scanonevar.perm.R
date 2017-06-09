@@ -8,6 +8,9 @@
 #'
 #' @param sov the scanonevar whose significance should be assessed empirically in an FWER-controlling method
 #' @param n.perms the number of permutations to do
+#' @param random.seed value to start the random number generator at, for reproducibility
+#' @param n.cores number of cores to use for the permutations
+#' @param silent Should all messaging be suppressed?
 #'
 #' @return 27599
 #' @export
@@ -22,7 +25,8 @@
 scanonevar.perm <- function(sov,
                             n.perms,
                             random.seed = 27599,
-                            n.cores = 1) {
+                            n.cores = 1,
+                            silent = TRUE) {
 
   stopifnot(is.scanonevar(sov))
 
@@ -41,7 +45,8 @@ scanonevar.perm <- function(sov,
                              scan.formulae = wrangled.inputs$scan.formulae,
                              n.perms = n.perms,
                              seed = random.seed,
-                             n.cores = n.cores)
+                             n.cores = n.cores,
+                             silent = silent)
 
   sov <- list(meta = sov[['meta']],
               result = result[['sov']],
@@ -61,7 +66,8 @@ scanonevar.perm_ <- function(sov,
                              scan.formulae,
                              n.perms,
                              seed,
-                             n.cores) {
+                             n.cores,
+                             silent) {
 
   this.context.permutation.max.finder <- function(alt.fitter, null.fitter) {
     permutation.max.finder(alt.fitter = alt.fitter,
@@ -75,36 +81,39 @@ scanonevar.perm_ <- function(sov,
                            n.cores = n.cores)
   }
 
+  if (!is.numeric(n.cores)) {
+    stop('n.cores must be numeric')
+  }
   if (n.cores != 1) {
-    cl <- parallel::makeCluster(n.cores)
+    cl <- parallel::makeCluster(spec = n.cores)
     doParallel::registerDoParallel(cl = cl)
   }
 
   perms <- list()
 
   if ('mean' %in% scan.types) {
-    message('Starting mean permutations...')
+    if (!silent) { message('Starting mean permutations...') }
     mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
                                                           null.fitter = fit.model.0v_)
-    message('Finished mean permutations...')
+    if (!silent) { message('Finished mean permutations...') }
     perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
-                                             mean.lod.maxes)
+                                        mean.lod.maxes)
   }
 
   if ('var' %in% scan.types) {
-    message('Starting variance permutations...')
+    if (!silent) {  message('Starting variance permutations...') }
     var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
                                                          null.fitter = fit.model.m0_)
-    message('Finished variance permutations...')
+    if (!silent) { message('Finished variance permutations...') }
     perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
 
   if ('joint' %in% scan.types) {
-    message('Starting joint mean-variance permutations...')
+    if (!silent) { message('Starting joint mean-variance permutations...') }
     joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
                                                            null.fitter = fit.model.00_)
-    message('Finished joint mean-variance permutations...')
+    if (!silent) {  message('Finished joint mean-variance permutations...') }
     perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
   }
@@ -130,6 +139,8 @@ permutation.max.finder <- function(alt.fitter,
                                    n.perms,
                                    seed,
                                    n.cores) {
+
+  loc.name <- null.ll <- alt.ll <- chr.type <- LOD.score <- 'fake_global_for_CRAN'
 
   result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
                                           scan.types = NA,
@@ -237,13 +248,15 @@ permutation.max.finder <- function(alt.fitter,
 
 calc.empir.ps <- function(sov, perms) {
 
+  test <- chr.type <- fitted <- max.lod <- 'fake_global_for_CRAN'
+
   tests <- unique(perms[['test']])
   chr.types <- unique(perms[['chr.type']])
 
   for (this.test in tests) {
 
     for (this.chr.type in chr.types) {
-      the.evd <- evd::fgev(x = perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% .[['max.lod']], std.err = FALSE)
+      the.evd <- perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% dplyr::pull(max.lod) %>% evd::fgev(std.err = FALSE)
       idxs <- sov[['chr.type']] == this.chr.type
 
       sov[[paste0(this.test, '.empir.p')]][idxs] <- evd::pgev(q = sov[[paste0(this.test, '.lod')]][idxs],
