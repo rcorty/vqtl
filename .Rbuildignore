@@ -4,3 +4,5 @@
 ^\.Rhistory$
 ^notes$
 ^notes/*$
+^README\.Rmd$
+^README-.*\.png$
