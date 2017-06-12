@@ -4,11 +4,13 @@
 \alias{summary.scanonevar}
 \title{summary.scanonevar}
 \usage{
-\method{summary}{scanonevar}(object, units = c("lod", "asymp.p", "emp.p"),
+\method{summary}{scanonevar}(object, units = c("lod", "asymp.p", "empir.p"),
   thresh, ...)
 }
 \arguments{
 \item{object}{the scanonevar object to be summarized}
+
+\item{units}{Which units should be used to summarise?  'lod', 'asymp.p', or 'empir.p'}
 
 \item{thresh}{the threshold over which (for LODs) or under which (for emprirical p values)
 a locus will be printed.}

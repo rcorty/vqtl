@@ -490,6 +490,7 @@ validate.c.scanonevar.input_ <- function(sovs) {
 #' @param object the scanonevar object to be summarized
 #' @param thresh the threshold over which (for LODs) or under which (for emprirical p values)
 #'   a locus will be printed.
+#' @param units Which units should be used to summarise?  'lod', 'asymp.p', or 'empir.p'
 #' @param ... additional arguments controlling the summary
 #'
 #' @return None.  Only prints results to screen.
@@ -499,12 +500,13 @@ validate.c.scanonevar.input_ <- function(sovs) {
 #' @method summary scanonevar
 #' @export
 #'
-summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'emp.p'), thresh, ...) {
+summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'empir.p'), thresh, ...) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
-  full.peak <- full.lod <- matches <- mean.peak <- mean.lod <- var.peak <- var.lod <- 'fake_global_for_CRAN'
-  emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake_global_for_CRAN'
-  chr <- pos <- marker.name <- 'fake_global_for_CRAN'
+  mean.lod <- var.lod <- joint.lod <- 'fake_global_for_CRAN'
+  mean.asymp.p <- var.asymp.p <- joint.asymp.p <- 'fake_global_for_CRAN'
+  mean.empir.p <- var.empir.p <- joint.empir.p <- 'fake_global_for_CRAN'
+  chr <- pos <- loc.name <- 'fake_global_for_CRAN'
 
   units <- match.arg(arg = units)
 
