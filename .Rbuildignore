@@ -6,3 +6,4 @@
 ^notes/*$
 ^README\.Rmd$
 ^README-.*\.png$
+^codecov\.yml$

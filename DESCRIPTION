@@ -31,3 +31,4 @@ Imports: doParallel,
     stringr,
     tidyr,
     testthat
+Suggests: covr
