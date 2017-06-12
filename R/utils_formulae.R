@@ -107,7 +107,7 @@ remove.qtl.terms_ <- function(formulae) {
   var.formula <- formulae[['var.formula']]
 
   mean.covar.name <- all.vars(mean.formula[[3]])
-  var.covar.names <- all.vars(formulae[['var.formula']])
+  var.covar.names <- all.vars(var.formula)
 
   # identify terms that are QTL keywords
   mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = mean.covar.name)
@@ -128,13 +128,13 @@ remove.qtl.terms_ <- function(formulae) {
   # if no qtl terms, 'var.null' is NULL and no var testing will be done
   # if no non-qtl terms, rhs is just 1
   if (length(var.qtl.idxs) == 0) {
-    var.null.formula <- formulae[['var.formula']]
+    var.null.formula <- var.formula
   } else if (length(var.qtl.idxs) == length(labels(var.covar.names))) {
     var.null.formula <- stats::reformulate(termlabels = '1', response = NULL)
   } else {
     var.null.formula <- stats::formula(stats::drop.terms(termobj = stats::terms(var.formula),
-                                           dropx = var.qtl.idxs,
-                                           keep.response = FALSE))
+                                                         dropx = var.qtl.idxs,
+                                                         keep.response = FALSE))
   }
 
   return(list(mean.formula = mean.null.formula,
