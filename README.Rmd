@@ -15,6 +15,8 @@ knitr::opts_chunk$set(
 # vqtl
 
 [![Travis-CI Build Status](https://travis-ci.org/rcorty/vqtl.svg?branch=master)](https://travis-ci.org/rcorty/vqtl)
+[![codecov](https://codecov.io/gh/rcorty/vqtl/branch/master/graph/badge.svg)](https://codecov.io/gh/rcorty/vqtl)
+
 
 The 'vqtl' package conducts QTL mapping using an elaboration of the traditional Haley-Knott model.
 It uses the double generalized linear model (DGLM) to model systematic effects on mean and variance.
