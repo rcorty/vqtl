@@ -424,3 +424,149 @@ make.loc.specific.modeling.df <- function(general.modeling.df,
 
 
 
+#' @title c.scanonevar
+#' @name c.scanonevar
+#'
+#' @param ... the scanonevar objects with permutations to be combined
+#'
+#' @description combines scanonevar objects that have permutations to improve the precision of the p-value estimates.
+#'
+#' @return a scanonevar object that is the concatenation of the inputted
+#' scanonevars
+#'
+#' @export
+#'
+c.scanonevar <- function(...) {
+  sovs <- list(...)
+
+  validate.c.scanonevar.input_(sovs)
+
+  first.sov <- sovs[[1]]
+  new.perms <- first.sov[['perms']]
+  for (sov.idx in 2:(length(sovs))) {
+    new.perms <- dplyr::bind_rows(new.perms,
+                                  sovs[[sov.idx]][['perms']])
+  }
+  first.sov[['perms']] <- new.perms
+
+  first.sov[['result']] <- calc.empir.ps(sov = first.sov[['result']],
+                                         perms = new.perms)
+
+  return(first.sov)
+
+}
+
+
+validate.c.scanonevar.input_ <- function(sovs) {
+
+  stopifnot(all(sapply(X = sovs, FUN = is.scanonevar.w.perms)))
+
+  first.sov <- sovs[[1]]
+  for (sov.idx in 2:(length(sovs))) {
+    # meta has to be the same
+    stopifnot(identical(x = first.sov[['meta']], y = sovs[[sov.idx]][['meta']],
+                        ignore.environment = TRUE))
+
+    # result has to be the same
+    # todo
+
+    # perms have to have the same names...but shouldn't be the same
+    stopifnot(all.equal(names(first.sov[['perms']]),
+                        names(sovs[[sov.idx]][['perms']])))
+  }
+
+
+}
+
+
+#' @title summary.scanonevar
+#'
+#' @author Robert Corty \email{rcorty@@gmail.com}
+#'
+#' @description \code{summary.scanonevar} prints out the loci in a scanonevar object
+#'   that exceed \code{thresh}.  It is an S3 generic for summary().  It handles scanonevar
+#'   objects in both LOD units and empirical p value units.
+#'
+#' @param object the scanonevar object to be summarized
+#' @param thresh the threshold over which (for LODs) or under which (for emprirical p values)
+#'   a locus will be printed.
+#' @param ... additional arguments controlling the summary
+#'
+#' @return None.  Only prints results to screen.
+#'
+#' @details none
+#'
+#' @method summary scanonevar
+#' @export
+#'
+summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'emp.p'), thresh, ...) {
+
+  # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
+  full.peak <- full.lod <- matches <- mean.peak <- mean.lod <- var.peak <- var.lod <- 'fake_global_for_CRAN'
+  emp.p.full.lod <- emp.p.mean.lod <- emp.p.var.lod <- 'fake_global_for_CRAN'
+  chr <- pos <- marker.name <- 'fake_global_for_CRAN'
+
+  units <- match.arg(arg = units)
+
+  if (!any(class(object) == "scanonevar")) {
+    stop("Input should have class \"scanonevar\".")
+  }
+
+  if (missing(thresh)) {
+    thresh <- switch(EXPR = units,
+                     lod = 3,
+                     asymp.p = 0.05,
+                     emp.p = 0.05)
+  }
+
+  return <- list()
+
+  if (units == 'lod') {
+
+    return[['mQTL']] <- object$result %>%
+      dplyr::filter(mean.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mean.lod)
+
+    return[['vQTL']] <- object$result %>%
+      dplyr::filter(var.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, var.lod)
+
+    return[['mvQTL']] <- object$result %>%
+      dplyr::filter(joint.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, joint.lod)
+  }
+
+  if (units == 'asymp.p') {
+
+    return[['mQTL']] <- object$result %>%
+      dplyr::filter(mean.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mean.asymp.p)
+
+    return[['vQTL']] <- object$result %>%
+      dplyr::filter(var.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, var.asymp.p)
+
+    return[['mvQTL']] <- object$result %>%
+      dplyr::filter(joint.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, joint.asymp.p)
+  }
+
+  if (units == 'empir.p') {
+
+    return[['mQTL']] <- object$result %>%
+      dplyr::filter(mean.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mean.empir.p)
+
+    return[['vQTL']] <- object$result %>%
+      dplyr::filter(var.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, var.empir.p)
+
+    return[['mvQTL']] <- object$result %>%
+      dplyr::filter(joint.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, joint.empir.p)
+  }
+
+  return(return)
+}
+
+

@@ -1,4 +1,4 @@
-#' @title Summary of Peaks in Scanonevar
+#' @title summary.scanonevar
 #'
 #' @author Robert Corty \email{rcorty@@gmail.com}
 #'
@@ -15,25 +15,12 @@
 #'
 #' @details none
 #'
-#' @examples
-#'   set.seed(27599)
-#'   my.cross <- sim.cross(map = sim.map(), type = 'f2')
-#'   my.cross$pheno$phenotype <- rnorm(n = 100,
-#'                                     mean = my.cross$geno$`1`$data[,5],
-#'                                     sd = my.cross$geno$`2`$data[,5])
-#'   my.cross$pheno$sex <- rbinom(n = 100, size = 1, prob = 0.5)
-#'   my.cross <- calc.genoprob(my.cross)
-#'
-#'   my.scanonevar <- scanonevar(cross = my.cross,
-#'                               mean.formula = 'phenotype ~ sex + mean.QTL.add + mean.QTL.dom',
-#'                               var.formula = '~sex + var.QTL.add + var.QTL.dom',
-#'                               chrs = 1:3)
-#'
-#'   summary(my.scanonevar)
-#'
-#'   plot(my.scanonevar)
+#' @method summary scanonevar
+#' @export
 #'
 summary.scanonevar <- function(object, thresh, ...) {
+
+  browser()
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
   full.peak <- full.lod <- matches <- mean.peak <- mean.lod <- var.peak <- var.lod <- 'fake.global'
@@ -50,7 +37,7 @@ summary.scanonevar <- function(object, thresh, ...) {
   }
 
 
-  peaks <- get.peaks.from.scanonevar(object, thresh)
+  peaks <- get.peaks.from.scanonevar(x = object$result, thresh)
 
   if (units(object) == 'lods') {
     message('Full Model Peaks:')

@@ -43,7 +43,7 @@ convert_lods_to_p_values <- function(scanonevar, perm.scan.maxes) {
 
   # make new columns to hold empirical ps
   for (lod.column in lod.columns) {
-    new.name <- paste0('emp.p.', lod.column)
+    new.name <- paste0('empir.p.', lod.column)
     scan.as.emp.ps[[new.name]] <- NA
   }
 
@@ -68,7 +68,7 @@ convert_lods_to_p_values <- function(scanonevar, perm.scan.maxes) {
                      shape = fitted(evd)[3],
                      lower.tail = FALSE)
 
-      scan.as.emp.ps[scanonevar$chrtype == chr.type, paste0('emp.p.', lod.column)] <- emp.ps
+      scan.as.emp.ps[scanonevar$chrtype == chr.type, paste0('empir.p.', lod.column)] <- emp.ps
     }
   }
 

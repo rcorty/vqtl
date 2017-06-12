@@ -2,6 +2,7 @@
 
 S3method(c,scanonevar)
 S3method(plot,scanonevar)
+S3method(summary,scanonevar)
 export(effects_over_genome_plot)
 export(is.cross)
 export(is.cross.w.genoprobs)
