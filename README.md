@@ -3,9 +3,9 @@
 vqtl
 ====
 
-[![Travis-CI Build Status](https://travis-ci.org/rcorty/vqtl.svg?branch=master)](https://travis-ci.org/rcorty/vqtl)
+[![Travis-CI Build Status](https://travis-ci.org/rcorty/vqtl.svg?branch=master)](https://travis-ci.org/rcorty/vqtl) [![codecov](https://codecov.io/gh/rcorty/vqtl/branch/master/graph/badge.svg)](https://codecov.io/gh/rcorty/vqtl)
 
-The 'vqtl' package conducts QTL mapping using an elaboration of the traditional Haley-Knott model. It uses the double generalized linear model (DGLM) to model systematic effects on mean and variance. These systematic effects can be both `nuisance effects'' that are uninteresting *per se*, but are valuable to`correct for'' as well as genetic effects which are of immediate interest.
+The 'vqtl' package conducts QTL mapping using an elaboration of the traditional Haley-Knott model. It uses the double generalized linear model (DGLM) to model systematic effects on mean and variance. These systematic effects can be both "nuisance effects" that are uninteresting *per se*, but are valuable to "correct for" as well as genetic effects which are of immediate interest.
 
 Installation
 ------------

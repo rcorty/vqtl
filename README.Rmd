@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 The 'vqtl' package conducts QTL mapping using an elaboration of the traditional Haley-Knott model.
 It uses the double generalized linear model (DGLM) to model systematic effects on mean and variance.
-These systematic effects can be both ``nuisance effects'' that are uninteresting *per se*, but are valuable to ``correct for'' as well as genetic effects which are of immediate interest.
+These systematic effects can be both "nuisance effects" that are uninteresting *per se*, but are valuable to "correct for" as well as genetic effects which are of immediate interest.
 
 ## Installation
 
