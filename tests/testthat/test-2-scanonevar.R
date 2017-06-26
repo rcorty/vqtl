@@ -14,7 +14,7 @@ test_that(
                                                          replace = TRUE))
 
 
-    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 2)
+    test.cross <- qtl::calc.genoprob(cross = test.cross, step = 5)
 
     sov <- scanonevar(cross = test.cross,
                       mean.formula = phenotype ~ sex + D1M2 + mean.QTL.add + mean.QTL.dom,
