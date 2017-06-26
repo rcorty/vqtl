@@ -77,9 +77,9 @@ replace.markers.with.add.dom_ <- function(cross,
                                     collapse = '+'), ')')
 
     mean.formula <- stats::reformulate(termlabels = gsub(pattern = mean.marker.covar,
-                                                  replacement = new.terms,
-                                                  x = labels(stats::terms(mean.formula))),
-                                response = mean.formula[[2]])
+                                                         replacement = new.terms,
+                                                         x = labels(stats::terms(mean.formula))),
+                                       response = mean.formula[[2]])
   }
 
   for (var.marker.covar in var.marker.covars) {
@@ -87,8 +87,8 @@ replace.markers.with.add.dom_ <- function(cross,
                                     c('_add', '_dom'),
                                     collapse = '+'), ')')
     var.formula <- stats::reformulate(termlabels = gsub(pattern = var.marker.covar,
-                                                 replacement = new.terms,
-                                                 x = labels(stats::terms(var.formula))))
+                                                        replacement = new.terms,
+                                                        x = labels(stats::terms(var.formula))))
   }
 
   return(list(mean.formula = mean.formula,
@@ -121,8 +121,8 @@ remove.qtl.terms_ <- function(formulae) {
     mean.null.formula <- stats::reformulate(termlabels = '1', response = mean.formula[[2]])
   } else {
     mean.null.formula <- stats::formula(stats::drop.terms(termobj = stats::terms(mean.formula),
-                                            dropx = mean.qtl.idxs,
-                                            keep.response = TRUE))
+                                                          dropx = mean.qtl.idxs,
+                                                          keep.response = TRUE))
   }
 
   # if no qtl terms, 'var.null' is NULL and no var testing will be done
