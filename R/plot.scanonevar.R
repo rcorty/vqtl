@@ -79,7 +79,9 @@ plot.scanonevar <- function(x,
                                     tests_to_plot = tests_to_plot,
                                     plotting.units = plotting.units)
   to.plot <- dplyr::mutate(.data = to.plot,
-                           chr = factor(x = chr, levels = gtools::mixedsort(unique(chr))))
+                           chr = factor(x = chr, levels = gtools::mixedsort(unique(chr)))) %>%
+    dplyr::group_by(chr) %>%
+    dplyr::mutate(pos = pos - min(pos))
 
   p <- ggplot2::ggplot(data = to.plot)
 
@@ -105,7 +107,7 @@ plot.scanonevar <- function(x,
                          hjust = switch(EXPR = alpha_pos,
                                         left = 0,
                                         right = 1),
-                         parse = TRUE)
+                         parse = TRUE) +
       ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_blank(),
                      axis.ticks.y = ggplot2::element_blank())
@@ -147,7 +149,9 @@ plot.scanonevar <- function(x,
     # true.markers <- result %>% dplyr::filter(pos != round(pos))
     true.markers <- result %>%
       dplyr::filter(!grepl(pattern = '^chr[0-9]*_loc[0-9]*$', x = loc.name)) %>%
-      dplyr::mutate(chr = factor(x = chr, levels = gtools::mixedsort(unique(chr))))
+      dplyr::mutate(chr = factor(x = chr, levels = gtools::mixedsort(unique(chr)))) %>%
+      dplyr::group_by(chr) %>%
+      dplyr::mutate(pos = pos - min(pos))
       #dplyr::mutate(chr = stringr::str_pad(string = chr, width = 2, pad = '0'))
     p <- p + ggplot2::geom_rug(mapping = ggplot2::aes(x = pos),
                                data = true.markers)
