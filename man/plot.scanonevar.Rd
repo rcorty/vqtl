@@ -10,7 +10,7 @@
   names(x[["result"]])))) {     "empir.p" } else {     "LOD" },
   plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
   marker.rug = TRUE, ymax = NULL, legend_pos = NULL,
-  alpha_pos = c("left", "right"), ...)
+  alpha_pos = c("left", "right", "none"), ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}

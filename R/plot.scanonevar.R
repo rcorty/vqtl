@@ -54,7 +54,7 @@ plot.scanonevar <- function(x,
                             marker.rug = TRUE,
                             ymax = NULL,
                             legend_pos = NULL,
-                            alpha_pos = c('left', 'right'),
+                            alpha_pos = c('left', 'right', 'none'),
                             ...) {
 
   chr <- lab <- pos <- val <- test <- loc.name <- 'fake_global_for_CRAN'
@@ -92,22 +92,28 @@ plot.scanonevar <- function(x,
   } else {
     p <- p +
       ggplot2::ylab(label = '-log10(p)') +
-      ggplot2::geom_hline(yintercept = -log10(c(0.05, 0.01)), color = 'gray') +
-      ggplot2::geom_text(mapping = ggplot2::aes(x = x,
-                                                y = y,
-                                                label = lab),
-                         data = data.frame(x = switch(EXPR = alpha_pos,
-                                                      left = 0,
-                                                      right = max(to.plot$pos[to.plot$chr == chrs[1]])),
-                                           y = -log10(c(0.05, 0.01)),
-                                           lab = c("alpha == 0.05",
-                                                   "alpha == 0.01"),
-                                           chr = chrs[1]),
-                         vjust = 0,
-                         hjust = switch(EXPR = alpha_pos,
-                                        left = 0,
-                                        right = 1),
-                         parse = TRUE) +
+      ggplot2::geom_hline(yintercept = -log10(c(0.05, 0.01)), color = 'gray')
+
+    if (alpha_pos != 'none') {
+      p <- p +
+        ggplot2::geom_text(mapping = ggplot2::aes(x = x,
+                                                  y = y,
+                                                  label = lab),
+                           data = data.frame(x = switch(EXPR = alpha_pos,
+                                                        left = 0,
+                                                        right = max(to.plot$pos[to.plot$chr == chrs[1]])),
+                                             y = -log10(c(0.05, 0.01)),
+                                             lab = c("alpha == 0.05",
+                                                     "alpha == 0.01"),
+                                             chr = chrs[1]),
+                           vjust = 0,
+                           hjust = switch(EXPR = alpha_pos,
+                                          left = 0,
+                                          right = 1),
+                           parse = TRUE)
+    }
+
+    p <- p +
       ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_blank(),
                      axis.ticks.y = ggplot2::element_blank())
