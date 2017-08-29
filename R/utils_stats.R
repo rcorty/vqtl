@@ -1,10 +1,23 @@
 LOD <- function(alt, null) {
 
-  if(any(identical(x = alt, NA), identical(x = null, NA)))
+  if (any(identical(alt, NA), identical(null, NA))) {
     return(NA)
+  }
 
-  stopifnot('dglm' %in% class(alt))
-  stopifnot('dglm' %in% class(null))
+  if (!identical(class(alt), class(null))) {
+    stop('Can only calculate LOD on models of the same class.')
+  }
 
-  return(0.5*(null$m2loglik - alt$m2loglik )/log(10))
+  if (!inherits(x = alt, what = c('dglm', 'hglm'))) {
+    stop('Can only calcualte LOD on models of class dglm or hglm.')
+  }
+
+  if (inherits(x = alt, what = 'dglm')) {
+    return(0.5*(null$m2loglik - alt$m2loglik )/log(10))
+  }
+
+  if (inherits(x = alt, what = 'hglm')) {
+    return(0.5*(null$likelihood$hlik - alt$likelihood$hlik)/log(10))
+  }
+
 }

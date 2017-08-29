@@ -97,8 +97,6 @@ replace.markers.with.add.dom_ <- function(cross,
 
 
 
-
-
 remove.qtl.terms_ <- function(formulae) {
 
   stopifnot(is.formulae(formulae))
@@ -142,5 +140,7 @@ remove.qtl.terms_ <- function(formulae) {
 }
 
 
-
+has_a_random_term <- function(f) {
+  any(grepl(pattern = '\\|', x = labels(terms(f))))
+}
 

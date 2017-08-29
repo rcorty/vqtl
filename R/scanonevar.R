@@ -69,15 +69,12 @@ validate.scanonevar.input_ <- function(cross,
                                        var.formula,
                                        chrs) {
 
-  # each argument must be individually valid
+  # check validity of inputs
   stopifnot(is.cross(cross))
-  stopifnot(is.mean.formula(mean.formula))
-  stopifnot(is.var.formula(var.formula))
   stopifnot(all(chrs %in% qtl::chrnames(cross)))
 
+  # make and then check formulae
   formulae <- make.formulae_(mean.formula, var.formula)
-
-  # formulae must be valid for use in scanonevar
   stopifnot(formulae_is_valid_(formulae = formulae))
 
   # formulae must be valid for use with cross
