@@ -17,7 +17,7 @@ LOD <- function(alt, null) {
   }
 
   if (inherits(x = alt, what = 'hglm')) {
-    return(0.5*(null$likelihood$hlik - alt$likelihood$hlik)/log(10))
+    return((alt$likelihood$hlik - null$likelihood$hlik)/log(10))
   }
 
 }
