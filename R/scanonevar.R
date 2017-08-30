@@ -90,26 +90,6 @@ validate.scanonevar.input_ <- function(cross,
 
 
 
-formulae_is_valid_ <- function(formulae) {
-
-  if (!is.formulae(formulae)) {
-    return(FALSE)
-  }
-
-  # must have at least one QTL term used appropriately
-  mean.covars <- all.vars(formulae[['mean.formula']][[3]])
-  var.covars <- all.vars(formulae[['var.formula']])
-  if (all(!any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars),
-          !any(c('var.QTL.add', 'var.QTL.dom') %in% var.covars))) {
-    return(FALSE)
-  }
-
-  return(TRUE)
-}
-
-
-
-
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula,
@@ -358,8 +338,6 @@ scanonevar_ <- function(modeling.df,
 
 
 
-
-
 initialize.scanonevar.result_ <- function(loc.info.df,
                                           scan.types,
                                           scan.formulae,
@@ -395,31 +373,6 @@ initialize.scanonevar.result_ <- function(loc.info.df,
 
   return(result)
 }
-
-
-
-make.loc.specific.modeling.df <- function(general.modeling.df,
-                                          loc.genoprobs,
-                                          model.formulae) {
-
-  modeling.df <- general.modeling.df
-
-  if ('mean.QTL.add' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
-  }
-  if ('mean.QTL.dom' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
-  }
-  if ('var.QTL.add' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
-  }
-  if ('var.QTL.dom' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
-  }
-
-  return(modeling.df)
-}
-
 
 
 

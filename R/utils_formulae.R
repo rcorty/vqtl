@@ -1,3 +1,21 @@
+formulae_is_valid_ <- function(formulae) {
+
+  if (!is.formulae(formulae)) {
+    return(FALSE)
+  }
+
+  # must have at least one QTL term used appropriately
+  mean.covars <- all.vars(formulae[['mean.formula']][[3]])
+  var.covars <- all.vars(formulae[['var.formula']])
+  if (all(!any(c('mean.QTL.add', 'mean.QTL.dom') %in% mean.covars),
+          !any(c('var.QTL.add', 'var.QTL.dom') %in% var.covars))) {
+    return(FALSE)
+  }
+
+  return(TRUE)
+}
+
+
 is.mean.formula <- function(x) {
 
   # mean.formula must have a LHS, operator, and RHS

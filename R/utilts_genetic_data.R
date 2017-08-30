@@ -241,3 +241,28 @@ make.genet.marker.model.df_ <- function(cross,
 
   return(df)
 }
+
+
+make.loc.specific.modeling.df <- function(general.modeling.df,
+                                          loc.genoprobs,
+                                          model.formulae) {
+
+  modeling.df <- general.modeling.df
+
+  if ('mean.QTL.add' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
+    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
+  }
+  if ('mean.QTL.dom' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
+    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
+  }
+  if ('var.QTL.add' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
+    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
+  }
+  if ('var.QTL.dom' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
+    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
+  }
+
+  return(modeling.df)
+}
+
+
