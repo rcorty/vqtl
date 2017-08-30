@@ -115,8 +115,6 @@ replace.markers.with.add.dom_ <- function(cross,
 
 
 
-
-
 remove.qtl.terms_ <- function(formulae) {
 
   stopifnot(is.formulae(formulae))
@@ -124,41 +122,18 @@ remove.qtl.terms_ <- function(formulae) {
   mean.formula <- formulae[['mean.formula']]
   var.formula <- formulae[['var.formula']]
 
-  mean.covar.name <- all.vars(mean.formula[[3]])
-  var.covar.names <- all.vars(var.formula)
+  mean.formula <- update(old = mean.formula, new = ~ . -mean.QTL.add)
+  mean.formula <- update(old = mean.formula, new = ~ . -mean.QTL.dom)
 
-  # identify terms that are QTL keywords
-  mean.qtl.idxs <- grep(pattern = 'mean.QTL', x = mean.covar.name)
-  var.qtl.idxs <- grep(pattern = 'var.QTL', x = var.covar.names)
+  var.formula <- update(old = var.formula, new = ~ . -var.QTL.add)
+  var.formula <- update(old = var.formula, new = ~ . -var.QTL.dom)
 
-  # if no qtl terms, 'mean.null' is NULL and no mean testing will be done
-  # if no non-qtl terms, rhs is just 1
-  if (length(mean.qtl.idxs) == 0) {
-    mean.null.formula <- mean.formula
-  } else if (length(mean.qtl.idxs) == length(labels(mean.covar.name))) {
-    mean.null.formula <- stats::reformulate(termlabels = '1', response = mean.formula[[2]])
-  } else {
-    mean.null.formula <- stats::formula(stats::drop.terms(termobj = stats::terms(mean.formula),
-                                                          dropx = mean.qtl.idxs,
-                                                          keep.response = TRUE))
-  }
-
-  # if no qtl terms, 'var.null' is NULL and no var testing will be done
-  # if no non-qtl terms, rhs is just 1
-  if (length(var.qtl.idxs) == 0) {
-    var.null.formula <- var.formula
-  } else if (length(var.qtl.idxs) == length(labels(var.covar.names))) {
-    var.null.formula <- stats::reformulate(termlabels = '1', response = NULL)
-  } else {
-    var.null.formula <- stats::formula(stats::drop.terms(termobj = stats::terms(var.formula),
-                                                         dropx = var.qtl.idxs,
-                                                         keep.response = FALSE))
-  }
-
-  return(list(mean.formula = mean.null.formula,
-              var.formula = var.null.formula))
+  return(list(mean.formula = mean.formula,
+              var.formula = var.formula))
 }
 
 
-
+has_a_random_term <- function(f) {
+  any(grepl(pattern = '\\|', x = labels(terms(f))))
+}
 

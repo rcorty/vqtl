@@ -28,7 +28,10 @@ scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
                        var.formula = ~ var.QTL.add + var.QTL.dom,
                        chrs = qtl::chrnames(cross = cross),
+                       model = c('dglm', 'hglm'),
                        return.covar.effects = FALSE) {
+
+  model <- match.arg(arg = model)
 
   # give an informative error message if input is invalid
   validate.scanonevar.input_(cross = cross,
@@ -43,8 +46,9 @@ scanonevar <- function(cross,
                                                chrs = chrs)
 
   # save meta-data on this scan
-  meta <- pull.scanonevar.meta_(wrangled.inputs,
-                                chrs)
+  meta <- pull.scanonevar.meta_(wrangled.inputs = wrangled.inputs,
+                                model = model,
+                                chrs = chrs)
 
   # execute the scan
   result <- scanonevar_(modeling.df = wrangled.inputs$modeling.df,
@@ -52,6 +56,7 @@ scanonevar <- function(cross,
                         genoprob.df = wrangled.inputs$genoprob.df,
                         scan.types = wrangled.inputs$scan.types,
                         scan.formulae = wrangled.inputs$scan.formulae,
+                        model = model,
                         return.covar.effects = return.covar.effects)
 
   sov <- list(meta = meta,
@@ -69,15 +74,12 @@ validate.scanonevar.input_ <- function(cross,
                                        var.formula,
                                        chrs) {
 
-  # each argument must be individually valid
+  # check validity of inputs
   stopifnot(is.cross(cross))
-  stopifnot(is.mean.formula(mean.formula))
-  stopifnot(is.var.formula(var.formula))
   stopifnot(all(chrs %in% qtl::chrnames(cross)))
 
+  # make and then check formulae
   formulae <- make.formulae_(mean.formula, var.formula)
-
-  # formulae must be valid for use in scanonevar
   stopifnot(formulae_is_valid_(formulae = formulae))
 
   # formulae must be valid for use with cross
@@ -198,13 +200,16 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 pull.scanonevar.meta_ <- function(wrangled.inputs,
+                                  model,
                                   chrs) {
 
   meta <- list(cross = wrangled.inputs$cross,
                modeling.df = wrangled.inputs$modeling.df,
                formulae = wrangled.inputs$scan.formulae,
                scan.types = wrangled.inputs$scan.types,
+               model = model,
                chrs = chrs)
+
   class(meta) <- c('scanonevar.meta', class(meta))
 
   return(meta)
@@ -217,6 +222,7 @@ scanonevar_ <- function(modeling.df,
                         loc.info.df,
                         scan.types,
                         scan.formulae,
+                        model,
                         return.covar.effects) {
 
   loc.name <- 'fake_global_for_CRAN'
@@ -228,11 +234,6 @@ scanonevar_ <- function(modeling.df,
 
   mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(stats::terms(scan.formulae[['mean.alt.formula']]))))
   var.df <- sum(grepl(pattern = 'var.QTL', x = labels(stats::terms(scan.formulae[['var.alt.formula']]))))
-
-  # do this outside the loop because it doesn't change with locus, so only needs to be done once
-  if ('joint' %in% scan.types) {
-    joint.null.fit <- fit.model.00_(formulae = scan.formulae, df = modeling.df)
-  }
 
   # loop over loci
   for (loc.idx in 1:nrow(result)) {
@@ -261,7 +262,11 @@ scanonevar_ <- function(modeling.df,
     }
 
     # Fit the alternative model at this loc
-    alternative.fit <- fit.model.mv_(formulae = scan.formulae, df = this.loc.modeling.df)
+    alternative.fit <- fit_model(formulae = scan.formulae,
+                                 data = this.loc.modeling.df,
+                                 model = model,
+                                 mean = 'alt',
+                                 var = 'alt')
 
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
@@ -308,18 +313,31 @@ scanonevar_ <- function(modeling.df,
     # Fit the appropriate null models at this loc
     # and save LOD score and asymptotic p-value
     if ('mean' %in% scan.types) {
-      mean.null.fit <- fit.model.0v_(formulae = scan.formulae, df = this.loc.modeling.df)
+      mean.null.fit <- fit_model(formulae = scan.formulae,
+                                 data = this.loc.modeling.df,
+                                 model = model,
+                                 mean = 'null',
+                                 var = 'alt')
       result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
       result[['mean.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
     if ('var' %in% scan.types) {
-      var.null.fit <- fit.model.m0_(formulae = scan.formulae, df = this.loc.modeling.df)
+      var.null.fit <- fit_model(formulae = scan.formulae,
+                                data = this.loc.modeling.df,
+                                model = model,
+                                mean = 'alt',
+                                var = 'null')
       result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
       result[['var.asymp.p']][loc.idx] <- stats::pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
 
     if ('joint' %in% scan.types) {
+      joint.null.fit <- fit_model(formulae = scan.formulae,
+                                  data = this.loc.modeling.df,
+                                  model = model,
+                                  mean = 'null',
+                                  var = 'null')
       result[['joint.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
       result[['joint.asymp.p']][loc.idx] <- stats::pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
     }

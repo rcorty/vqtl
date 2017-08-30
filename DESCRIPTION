@@ -30,5 +30,7 @@ Imports: doParallel,
     lazyeval,
     stringr,
     tidyr,
-    testthat
+    testthat,
+    hglm,
+    purrr
 Suggests: covr

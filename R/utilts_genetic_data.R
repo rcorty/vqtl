@@ -102,8 +102,8 @@ make.phen.covar.model.df_ <- function(cross,
 
   if (is.null(phen.names)) {
     # get all covariate names
-    mean.covar.names <- labels(stats::terms(formulae[['mean.alt.formula']]))
-    var.covar.names <- labels(stats::terms(formulae[['var.alt.formula']]))
+    mean.covar.names <- all.vars(formulae[['mean.alt.formula']])
+    var.covar.names <- all.vars(formulae[['var.alt.formula']])
 
     # get the phenotype names
     mean.phen.covar.names <- mean.covar.names[mean.covar.names %in% names(cross[['pheno']])]
