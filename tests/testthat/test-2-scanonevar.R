@@ -54,8 +54,7 @@ test_that(
 
     sov2 <- scanonevar(cross = test.cross,
                        mean.formula = phenotype ~ sex + (1|sire) + mean.QTL.add + mean.QTL.dom,
-                       var.formula = ~ sire + D2M3 + var.QTL.add + var.QTL.dom,
-                       model = 'hglm')
+                       var.formula = ~ sire + D2M3 + var.QTL.add + var.QTL.dom)
 
     # should be a scanonevar object
     expect_true(is.scanonevar(sov2))

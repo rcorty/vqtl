@@ -6,18 +6,21 @@
 \usage{
 scanonevar(cross, mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
   var.formula = ~var.QTL.add + var.QTL.dom, chrs = qtl::chrnames(cross =
-  cross), model = c("dglm", "hglm"), return.covar.effects = FALSE)
+  cross), return.covar.effects = FALSE)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
 
 \item{mean.formula}{The formula to describe the mean of the phenotype.
 Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
-components of the QTL effect on the mean.}
+components of the QTL effect on the mean.
+dglm model will be fit if mean.formula has only fixed effects.
+hglm model will be fit if mean.formula has one or more random effects.}
 
 \item{var.formula}{The formula to describe the residual variance of the
 phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
-dominance components of the QTL effect on residual phenotype variance.}
+dominance components of the QTL effect on residual phenotype variance.
+var.formula must have only fixed effects.}
 
 \item{chrs}{chromosomes to scan}
 

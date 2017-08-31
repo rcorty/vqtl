@@ -10,9 +10,12 @@
 #' @param mean.formula The formula to describe the mean of the phenotype.
 #' Keywords are mean.QTL.add and mean.QTL.dom for the additive and dominance
 #' components of the QTL effect on the mean.
+#' dglm model will be fit if mean.formula has only fixed effects.
+#' hglm model will be fit if mean.formula has one or more random effects.
 #' @param var.formula The formula to describe the residual variance of the
 #' phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
 #' dominance components of the QTL effect on residual phenotype variance.
+#' var.formula must have only fixed effects.
 #' @param chrs chromosomes to scan
 #' @param return.covar.effects Should covariate effects estimated at each locus be returned?
 #'
@@ -28,10 +31,7 @@ scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
                        var.formula = ~ var.QTL.add + var.QTL.dom,
                        chrs = qtl::chrnames(cross = cross),
-                       model = c('dglm', 'hglm'),
                        return.covar.effects = FALSE) {
-
-  model <- match.arg(arg = model)
 
   # give an informative error message if input is invalid
   validate.scanonevar.input_(cross = cross,
@@ -47,7 +47,6 @@ scanonevar <- function(cross,
 
   # save meta-data on this scan
   meta <- pull.scanonevar.meta_(wrangled.inputs = wrangled.inputs,
-                                model = model,
                                 chrs = chrs)
 
   # execute the scan
@@ -56,7 +55,7 @@ scanonevar <- function(cross,
                         genoprob.df = wrangled.inputs$genoprob.df,
                         scan.types = wrangled.inputs$scan.types,
                         scan.formulae = wrangled.inputs$scan.formulae,
-                        model = model,
+                        model = wrangled.inputs$model,
                         return.covar.effects = return.covar.effects)
 
   sov <- list(meta = meta,
@@ -109,6 +108,10 @@ wrangle.scanonevar.input_ <- function(cross,
 
   scan.types <- wrangle.scanonevar.types_(mean.formula, var.formula)
 
+  model <- ifelse(test = has_a_random_term(mean.formula),
+                  yes = 'hglm',
+                  no = 'dglm')
+
   scan.formulae <- wrangle.scanonevar.formulae_(cross, mean.formula, var.formula)
 
   modeling.df <- wrangle.scanonevar.modeling.df_(cross = cross,
@@ -120,7 +123,8 @@ wrangle.scanonevar.input_ <- function(cross,
               scan.formulae = scan.formulae,
               modeling.df = modeling.df,
               loc.info.df = loc.info.df,
-              genoprob.df = genoprob.df.long))
+              genoprob.df = genoprob.df.long,
+              model = model))
 }
 
 
@@ -200,14 +204,13 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 pull.scanonevar.meta_ <- function(wrangled.inputs,
-                                  model,
                                   chrs) {
 
   meta <- list(cross = wrangled.inputs$cross,
                modeling.df = wrangled.inputs$modeling.df,
                formulae = wrangled.inputs$scan.formulae,
                scan.types = wrangled.inputs$scan.types,
-               model = model,
+               model = wrangled.inputs$model,
                chrs = chrs)
 
   class(meta) <- c('scanonevar.meta', class(meta))
@@ -489,7 +492,7 @@ summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'empir.p'), t
     thresh <- switch(EXPR = units,
                      lod = 3,
                      asymp.p = 0.05,
-                     emp.p = 0.05)
+                     empir.p = 0.05)
   }
 
   return <- list()

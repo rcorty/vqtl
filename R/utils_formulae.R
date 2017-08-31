@@ -122,11 +122,11 @@ remove.qtl.terms_ <- function(formulae) {
   mean.formula <- formulae[['mean.formula']]
   var.formula <- formulae[['var.formula']]
 
-  mean.formula <- update(old = mean.formula, new = ~ . -mean.QTL.add)
-  mean.formula <- update(old = mean.formula, new = ~ . -mean.QTL.dom)
+  mean.formula <- stats::update(old = mean.formula, new = ~ . -mean.QTL.add)
+  mean.formula <- stats::update(old = mean.formula, new = ~ . -mean.QTL.dom)
 
-  var.formula <- update(old = var.formula, new = ~ . -var.QTL.add)
-  var.formula <- update(old = var.formula, new = ~ . -var.QTL.dom)
+  var.formula <- stats::update(old = var.formula, new = ~ . -var.QTL.add)
+  var.formula <- stats::update(old = var.formula, new = ~ . -var.QTL.dom)
 
   return(list(mean.formula = mean.formula,
               var.formula = var.formula))
@@ -134,6 +134,6 @@ remove.qtl.terms_ <- function(formulae) {
 
 
 has_a_random_term <- function(f) {
-  any(grepl(pattern = '\\|', x = labels(terms(f))))
+  any(grepl(pattern = '\\|', x = labels(stats::terms(f))))
 }
 
