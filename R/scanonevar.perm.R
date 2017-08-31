@@ -30,6 +30,9 @@ scanonevar.perm <- function(sov,
 
   stopifnot(is.scanonevar(sov))
 
+  # no way to split perms over cores...so never use more cores than there are perms
+  n.cores <- min(n.cores, n.perms)
+
   # get inputs into a format that is easy for scanonevar_ to use
   wrangled.inputs <- wrangle.scanonevar.input_(cross = sov[['meta']][['cross']],
                                                mean.formula = sov[['meta']][['formulae']][['mean.alt.formula']],
@@ -39,10 +42,11 @@ scanonevar.perm <- function(sov,
   # execute the scan
   result <- scanonevar.perm_(sov = sov[['result']],
                              modeling.df = wrangled.inputs$modeling.df,
-                             loc.info.df = wrangled.inputs$loc.info.df,
                              genoprob.df = wrangled.inputs$genoprob.df,
+                             loc.info.df = wrangled.inputs$loc.info.df,
                              scan.types = wrangled.inputs$scan.types,
                              scan.formulae = wrangled.inputs$scan.formulae,
+                             model = wrangled.inputs$model,
                              n.perms = n.perms,
                              seed = random.seed,
                              n.cores = n.cores,
@@ -64,6 +68,7 @@ scanonevar.perm_ <- function(sov,
                              genoprob.df,
                              scan.types,
                              scan.formulae,
+                             model,
                              n.perms,
                              seed,
                              n.cores,
@@ -76,6 +81,7 @@ scanonevar.perm_ <- function(sov,
                            loc.info.df = loc.info.df,
                            genoprob.df = genoprob.df,
                            scan.formulae = scan.formulae,
+                           model = model,
                            n.perms = n.perms,
                            seed = seed,
                            n.cores = n.cores)
@@ -93,8 +99,25 @@ scanonevar.perm_ <- function(sov,
 
   if ('mean' %in% scan.types) {
     if (!silent) { message('Starting mean permutations...') }
-    mean.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v_,
-                                                          null.fitter = fit.model.0v_)
+
+    mean.lod.maxes <- this.context.permutation.max.finder(
+      alt.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'alt',
+                  var = 'alt',
+                  permute_what = 'mean',
+                  the.perm = the.perm)
+      },
+      null.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'null',
+                  var = 'alt')
+      })
+
     if (!silent) { message('Finished mean permutations...') }
     perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
                                         mean.lod.maxes)
@@ -102,8 +125,25 @@ scanonevar.perm_ <- function(sov,
 
   if ('var' %in% scan.types) {
     if (!silent) {  message('Starting variance permutations...') }
-    var.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.v.star_,
-                                                         null.fitter = fit.model.m0_)
+
+    var.lod.maxes <- this.context.permutation.max.finder(
+      alt.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'alt',
+                  var = 'alt',
+                  permute_what = 'var',
+                  the.perm = the.perm)
+      },
+      null.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'alt',
+                  var = 'null')
+      })
+
     if (!silent) { message('Finished variance permutations...') }
     perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
@@ -111,8 +151,24 @@ scanonevar.perm_ <- function(sov,
 
   if ('joint' %in% scan.types) {
     if (!silent) { message('Starting joint mean-variance permutations...') }
-    joint.lod.maxes <- this.context.permutation.max.finder(alt.fitter = fit.model.m.star.v.star_,
-                                                           null.fitter = fit.model.00_)
+    joint.lod.maxes <- var.lod.maxes <- this.context.permutation.max.finder(
+      alt.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'alt',
+                  var = 'alt',
+                  permute_what = 'both',
+                  the.perm = the.perm)
+      },
+      null.fitter = function(formulae, df, the.perm) {
+        fit_model(formulae = formulae,
+                  data = df,
+                  model = model,
+                  mean = 'null',
+                  var = 'null')
+      })
+
     if (!silent) {  message('Finished joint mean-variance permutations...') }
     perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
@@ -136,6 +192,7 @@ permutation.max.finder <- function(alt.fitter,
                                    loc.info.df,
                                    genoprob.df,
                                    scan.formulae,
+                                   model,
                                    n.perms,
                                    seed,
                                    n.cores) {
@@ -162,7 +219,7 @@ permutation.max.finder <- function(alt.fitter,
 
     null.fit <- null.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
 
-    result[['null.ll']][loc.idx] <- tryNA(null.fit$m2loglik)
+    result[['null.ll']][loc.idx] <- tryNA(log_lik(null.fit))
   }
 
   # n.perms times, fit the alternative model with the focal locus permuted
@@ -194,7 +251,7 @@ permutation.max.finder <- function(alt.fitter,
 
         alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
-        result[['alt.ll']][loc.idx] <- tryNA(alt.fit$m2loglik)
+        result[['alt.ll']][loc.idx] <- tryNA(log_lik(alt.fit))
       }
 
       maxes <- result %>%

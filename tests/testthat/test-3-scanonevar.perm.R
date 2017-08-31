@@ -18,10 +18,10 @@
 #                 mean.formula = phenotype2 ~ sex + D1M2 + mean.QTL.add + mean.QTL.dom,
 #                 var.formula = ~ sex + D2M3 + var.QTL.add + var.QTL.dom)
 #
-# y1a <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599)
-# y1b <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599)
-# y1c <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3)
-# y1d <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3)
+# y1a <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, silent = FALSE)
+# y1b <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, silent = FALSE)
+# y1c <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3, silent = FALSE)
+# y1d <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 3, silent = FALSE)
 #
 #
 # test_that(
@@ -106,17 +106,17 @@
 #     expect_identical(object = d, expected = d)
 #
 #     # components of summary
-#     expect_true(all(c('intro', 'mean_peaks', 'var_peaks', 'joint_peaks') %in% names(a)))
-#     expect_true(all(c('intro', 'mean_peaks', 'var_peaks', 'joint_peaks') %in% names(c)))
+#     expect_true(all(c("mQTL", "vQTL", "mvQTL") %in% names(a)))
+#     expect_true(all(c("mQTL", "vQTL", "mvQTL") %in% names(c)))
 #
 #     # size of summary
-#     expect_true(nrow(a$mean_peaks) <= nrow(y1a$result))
-#     expect_true(nrow(a$var_peaks) <= nrow(y1a$result))
-#     expect_true(nrow(a$joint_peaks) <= nrow(y1a$result))
+#     expect_true(nrow(a$mQTL) <= nrow(y1a$result))
+#     expect_true(nrow(a$vQTL) <= nrow(y1a$result))
+#     expect_true(nrow(a$mvQTL) <= nrow(y1a$result))
 #
-#     expect_true(nrow(c$mean_peaks) <= nrow(y1c$result))
-#     expect_true(nrow(c$var_peaks) <= nrow(y1c$result))
-#     expect_true(nrow(c$joint_peaks) <= nrow(y1c$result))
+#     expect_true(nrow(c$mQTL) <= nrow(y1c$result))
+#     expect_true(nrow(c$vQTL) <= nrow(y1c$result))
+#     expect_true(nrow(c$mvQTL) <= nrow(y1c$result))
 #
 #   }
 # )
