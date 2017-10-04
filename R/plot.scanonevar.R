@@ -46,7 +46,7 @@ plot.scanonevar <- function(x,
                             y = NULL,
                             chrs = unique(x[['result']][['chr']]),
                             tests_to_plot = c('mQTL', 'vQTL', 'mvQTL'),
-                            plotting.units = if(any(grepl(pattern = 'empir.p', x = names(x[['result']])))) {
+                            plotting.units = if (any(grepl(pattern = 'empir.p', x = names(x[['result']])))) {
                               'empir.p'
                             } else {
                               'LOD'
