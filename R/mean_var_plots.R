@@ -161,8 +161,8 @@ mean_var_plot_model_based <- function(cross,
   mean.estim <- mean.pred$fit
   mean.se <- mean.pred$se.fit
 
-  sd.pred <- stats::predict(dglm.fit$dispersion.fit, se.fit = TRUE)
-  sd.estim <- sd.pred$fit/sd.pred$residual.scale
+  sd.pred <- stats::predict(dglm.fit$dispersion.fit, se.fit = TRUE, dispersion = 2)
+  sd.estim <- sd.pred$fit/(sd.pred$residual.scale^2)
   sd.se <- sd.pred$se.fit
 
   indiv.prediction.tbl <- dplyr::bind_cols(stats::na.omit(modeling.df),
@@ -188,7 +188,7 @@ mean_var_plot_model_based <- function(cross,
 
   if (draw_ribbons & length(focal.groups) > 1) {
     p <- p +
-      ggplot2::geom_line(data = group.prediction.tbl,
+      ggplot2::geom_path(data = group.prediction.tbl,
                          mapping = ggplot2::aes_string(x = 'group.mean.estim', y = 'group.sd.estim', color = focal.groups[1]),
                          size = 4,
                          alpha = 0.3)
