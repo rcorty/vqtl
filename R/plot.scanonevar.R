@@ -19,6 +19,7 @@
 #' @param legend_pos the position of the legend
 #' @param alpha_pos the position of the alpha values (false positive rate)
 #' #@param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE
+#' @param alpha_size size of annotations for alpha=0.05 and alpha=0.01 lines
 #' @param ... additional plotting arguments
 #'
 #' @return Returns the plot.
@@ -55,6 +56,7 @@ plot.scanonevar <- function(x,
                             ymax = NULL,
                             legend_pos = NULL,
                             alpha_pos = c('left', 'right', 'none'),
+                            alpha_size = 2,
                             ...) {
 
   chr <- lab <- pos <- val <- test <- loc.name <- 'fake_global_for_CRAN'
@@ -106,6 +108,7 @@ plot.scanonevar <- function(x,
                                              lab = c("alpha == 0.05",
                                                      "alpha == 0.01"),
                                              chr = chrs[1]),
+                           size = alpha_size,
                            vjust = 0,
                            hjust = switch(EXPR = alpha_pos,
                                           left = 0,
