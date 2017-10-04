@@ -261,9 +261,9 @@ permutation.max.finder <- function(alt.fitter,
       }
 
       maxes <- result %>%
-        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)) %>%
+        dplyr::mutate(LOD.score = LOD_from_LLs(null_ll = null.ll, alt_ll = alt.ll)) %>%
         dplyr::group_by(chr.type) %>%
-        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE)/log(10))
+        dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE))
 
       max.lods[[perm.idx]] <- maxes
     }
@@ -291,13 +291,11 @@ permutation.max.finder <- function(alt.fitter,
 
         alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
-        if (!identical(NA, alt.fit)) {
-          result[['alt.ll']][loc.idx] <- alt.fit$m2loglik
-        }
+        result[['alt.ll']][loc.idx] <- tryNA(log_lik(alt.fit))
       }
 
       maxes <- result %>%
-        dplyr::mutate(LOD.score = 0.5*(null.ll - alt.ll)/log(10)) %>%
+        dplyr::mutate(LOD.score = LOD_from_LLs(null_ll = null.ll, alt_ll = alt.ll)) %>%
         dplyr::group_by(chr.type) %>%
         dplyr::summarise(max.lod = max(LOD.score, na.rm = TRUE))
 

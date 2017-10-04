@@ -4,18 +4,21 @@ tryNA <- function(expr) {
                             finally = NA))
 }
 
-dglm.ml <- function(mf, df, data) {
+fit_dglm <- function(mf, df, data) {
   dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml')
 }
 
-hglm_w_ll <- function(mf, df, data) {
+fit_hglm <- function(mf, df, data) {
   hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE)
 }
 
+fit_dhglm <- function(mf, df, data) {
+
+}
 
 fit_model <- function(formulae,
                       data,
-                      model = c('dglm', 'hglm'),
+                      model = c('dglm', 'hglm', 'dhglm'),
                       mean = c('alt', 'null'),
                       var = c('alt', 'null'),
                       permute_what = c('none', 'mean', 'var', 'both'),
@@ -26,7 +29,10 @@ fit_model <- function(formulae,
   var <- match.arg(arg = var)
   permute_what <- match.arg(arg = permute_what)
 
-  fitter <- switch(EXPR = model, dglm = dglm.ml, hglm = hglm_w_ll)
+  fitter <- switch(EXPR = model,
+                   dglm = fit_dglm,
+                   hglm = fit_hglm,
+                   dhglm = fit_dhglm)
 
   mf <- switch(mean, alt = formulae[['mean.alt.formula']], null = formulae[['mean.null.formula']])
   vf <- switch(var, alt = formulae[['var.alt.formula']], null = formulae[['var.null.formula']])
@@ -46,16 +52,17 @@ fit_model <- function(formulae,
 log_lik <- function(f) {
 
   if (inherits(x = f, what = 'dglm')) {
+    if (abs(f$m2loglik) > 1e8) { return(NA) }
     return(-0.5*f$m2loglik)
   }
   if (inherits(x = f, what = 'hglm')) {
+    if (abs(f$likelihood$hlik) > 1e8) { return(NA) }
     return(f$likelihood$hlik)
   }
   return(stats::logLik(object = f))
 }
 
-
-LOD <- function(alt, null) {
+LRT <- function(alt, null) {
 
   if (any(identical(alt, NA), identical(null, NA))) {
     return(NA)
@@ -69,12 +76,20 @@ LOD <- function(alt, null) {
     stop('Can only calcualte LOD on models of class dglm or hglm.')
   }
 
-  if (inherits(x = alt, what = 'dglm')) {
-    return(0.5*(null$m2loglik - alt$m2loglik )/log(10))
-  }
+  LRT <- 2*(log_lik(alt) - log_lik(null))
 
-  if (inherits(x = alt, what = 'hglm')) {
-    return((alt$likelihood$hlik - null$likelihood$hlik)/log(10))
-  }
+}
 
+LOD <- function(alt, null) {
+
+  return(0.5*LRT(alt = alt, null = null)/log(10))
+
+}
+
+LOD_from_LLs <- function(null_ll, alt_ll) {
+  return((alt_ll - null_ll)/log(10))
+}
+
+LRT_from_LLs <- function(null_ll, alt_ll) {
+  return(2*(alt_ll - null_ll))
 }
