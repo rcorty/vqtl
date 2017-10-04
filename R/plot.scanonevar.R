@@ -157,7 +157,7 @@ plot.scanonevar <- function(x,
   if (marker.rug) {
     # true.markers <- result %>% dplyr::filter(pos != round(pos))
     true.markers <- result %>%
-      dplyr::filter(!grepl(pattern = '^chr[0-9]*_loc[0-9]*$', x = loc.name)) %>%
+      dplyr::filter(loc.name %in% qtl::markernames(cross = x[['meta']][['cross']])) %>%
       dplyr::mutate(chr = factor(x = chr, levels = gtools::mixedsort(unique(chr)))) %>%
       dplyr::group_by(chr) %>%
       dplyr::mutate(pos = pos - min(pos))
