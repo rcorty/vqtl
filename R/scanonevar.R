@@ -290,10 +290,10 @@ scanonevar_ <- function(modeling.df,
         mean_ests <- mean_ses <-  rep(NA, length(stats::coef(alternative.fit)))
 
         mean_ests[!is.na(stats::coef(alternative.fit))] <- mean_coef_mtx[,'Estimate']
-        names(mean_ests) <- paste0('mef_', names(stats::coef(alternative.fit)))
+        names(mean_ests) <- paste0('m__est__', names(stats::coef(alternative.fit)))
 
         mean_ses[!is.na(stats::coef(alternative.fit))] <- mean_coef_mtx[,'Std. Error']
-        names(mean_ses) <- paste0('mse_', names(stats::coef(alternative.fit)))
+        names(mean_ses) <- paste0('m__se__', names(stats::coef(alternative.fit)))
 
 
         disp_fit <- alternative.fit$dispersion.fit
@@ -301,10 +301,10 @@ scanonevar_ <- function(modeling.df,
         disp_ests <- disp_ses <-  rep(NA, length(stats::coef(disp_fit)))
 
         disp_ests[!is.na(stats::coef(disp_fit))] <- disp_coef_mtx[,'Estimate']
-        names(disp_ests) <- paste0('vef_', names(stats::coef(disp_fit)))
+        names(disp_ests) <- paste0('v__est__', names(stats::coef(disp_fit)))
 
         disp_ses[!is.na(stats::coef(disp_fit))] <- disp_coef_mtx[,'Std. Error']
-        names(disp_ses) <- paste0('vse_', names(stats::coef(disp_fit)))
+        names(disp_ses) <- paste0('v__se__', names(stats::coef(disp_fit)))
 
         # collate ests and ses
         if (loc.idx == 1) {
