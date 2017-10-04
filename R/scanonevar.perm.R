@@ -320,7 +320,7 @@ calc.empir.ps <- function(sov, perms) {
   for (this.test in tests) {
 
     for (this.chr.type in chr.types) {
-      the.evd <- perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% dplyr::pull(max.lod) %>% evd::fgev(std.err = FALSE)
+      the.evd <- perms %>% dplyr::filter(test == this.test, chr.type == this.chr.type) %>% dplyr::pull(max.lod) %>% na.exclude() %>% evd::fgev(std.err = FALSE)
       idxs <- sov[['chr.type']] == this.chr.type
 
       sov[[paste0(this.test, '.empir.p')]][idxs] <- evd::pgev(q = sov[[paste0(this.test, '.lod')]][idxs],
