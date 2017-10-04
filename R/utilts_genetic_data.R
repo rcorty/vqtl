@@ -181,9 +181,11 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
 
 
 
-additive.component_ <- function(genoprobs.long) {
+additive.component_ <- function(genoprobs.long,
+                                cross_type = c('f2', 'bc')) {
 
   allele <- genoprob <- 'fake_global_for_CRAN'
+  cross_type <- match.arg(arg = cross_type)
 
   alleles <- unique(genoprobs.long[['allele']])
 
@@ -191,21 +193,33 @@ additive.component_ <- function(genoprobs.long) {
                                   key = allele,
                                   value = genoprob)
 
-  # genoprobs.wide2 <- dplyr::select(.data = genoprobs.wide, one_of(alleles))
-
-  if (all(alleles %in% c('AA', 'AB', 'BB'))) {
-    return(genoprobs.wide[['AA']] - genoprobs.wide[['BB']])
-  } else if (all(alleles %in% c('g1', 'g2'))) {
-    return(genoprobs.wide[['g2']])
-  } else {
-    stop(paste("Can't determine additive component of loc with alleles:", alleles))
+  if (cross_type == 'f2') {
+    if (all(alleles %in% c('AA', 'AB', 'BB'))) {
+      return(genoprobs.wide[['AA']] - genoprobs.wide[['BB']])
+    } else if (all(alleles %in% c('g1', 'g2'))) {
+      return(genoprobs.wide[['g2']])
+    } else {
+      stop(paste("Can't determine additive component of loc with alleles:", alleles))
+    }
   }
+
+  if (cross_type == 'bc') {
+    if (all(alleles %in% c('AA', 'AB'))) {
+      return(genoprobs.wide[['AB']])
+    } else if (all(alleles %in% c('g1', 'g2'))) {
+      return(genoprobs.wide[['g2']])
+    } else {
+      stop(paste("Can't determine additive component of loc with alleles:", alleles))
+    }
+  }
+
 }
 
-
-dominance.component_ <- function(genoprobs.long) {
+dominance.component_ <- function(genoprobs.long,
+                                 cross_type = c('f2', 'bc')) {
 
   allele <- genoprob <- 'fake_global_for_CRAN'
+  cross_type <- match.arg(arg = cross_type)
 
   alleles <- unique(genoprobs.long[['allele']])
 
@@ -213,14 +227,18 @@ dominance.component_ <- function(genoprobs.long) {
                                   key = allele,
                                   value = genoprob)
 
-  # genoprobs.wide2 <- dplyr::select(.data = genoprobs.wide, one_of(alleles))
+  if (cross_type == 'f2') {
+    if (all(alleles %in% c('AA', 'AB', 'BB'))) {
+      return(genoprobs.wide[['AB']])
+    } else if (all(alleles %in% c('g1', 'g2'))) {
+      return(0)
+    } else {
+      stop(paste("Can't determine additive component of loc with alleles:", alleles))
+    }
+  }
 
-  if (all(alleles %in% c('AA', 'AB', 'BB'))) {
-    return(genoprobs.wide[['AB']])
-  } else if (all(alleles %in% c('g1', 'g2'))) {
-    return(0)
-  } else {
-    stop(paste("Can't determine additive component of loc with alleles:", alleles))
+  if (cross_type == 'bc') {
+    stop(paste("Can't use dominance component in a backcross."))
   }
 }
 
@@ -245,21 +263,22 @@ make.genet.marker.model.df_ <- function(cross,
 
 make.loc.specific.modeling.df <- function(general.modeling.df,
                                           loc.genoprobs,
-                                          model.formulae) {
+                                          model.formulae,
+                                          cross_type) {
 
   modeling.df <- general.modeling.df
 
   if ('mean.QTL.add' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
+    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
   }
   if ('mean.QTL.dom' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
+    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
   }
   if ('var.QTL.add' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs)
+    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
   }
   if ('var.QTL.dom' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs)
+    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
   }
 
   return(modeling.df)

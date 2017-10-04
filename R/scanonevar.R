@@ -56,7 +56,8 @@ scanonevar <- function(cross,
                         scan.types = wrangled.inputs$scan.types,
                         scan.formulae = wrangled.inputs$scan.formulae,
                         model = wrangled.inputs$model,
-                        return.covar.effects = return.covar.effects)
+                        return.covar.effects = return.covar.effects,
+                        cross_type = class(meta$cross)[1])
 
   sov <- list(meta = meta,
               result = result)
@@ -226,7 +227,8 @@ scanonevar_ <- function(modeling.df,
                         scan.types,
                         scan.formulae,
                         model,
-                        return.covar.effects) {
+                        return.covar.effects,
+                        cross_type) {
 
   loc.name <- 'fake_global_for_CRAN'
 
@@ -250,7 +252,8 @@ scanonevar_ <- function(modeling.df,
     # dglm handles this naturally, ignoring it in model fitting and giving effect estimate of NA
     this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
-                                                          model.formulae = scan.formulae)
+                                                          model.formulae = scan.formulae,
+                                                          cross_type = cross_type)
 
     #  hacky way to adjust the df on the X chr
     if (all(this.loc.modeling.df[['mean.QTL.dom']] == 0)) {

@@ -47,6 +47,7 @@ scanonevar.perm <- function(sov,
                              scan.types = wrangled.inputs$scan.types,
                              scan.formulae = wrangled.inputs$scan.formulae,
                              model = wrangled.inputs$model,
+                             cross_type = class(sov[['meta']][['cross']])[1],
                              n.perms = n.perms,
                              seed = random.seed,
                              n.cores = n.cores,
@@ -69,6 +70,7 @@ scanonevar.perm_ <- function(sov,
                              scan.types,
                              scan.formulae,
                              model,
+                             cross_type,
                              n.perms,
                              seed,
                              n.cores,
@@ -82,6 +84,7 @@ scanonevar.perm_ <- function(sov,
                            genoprob.df = genoprob.df,
                            scan.formulae = scan.formulae,
                            model = model,
+                           cross_type = cross_type,
                            n.perms = n.perms,
                            seed = seed,
                            n.cores = n.cores)
@@ -193,6 +196,7 @@ permutation.max.finder <- function(alt.fitter,
                                    genoprob.df,
                                    scan.formulae,
                                    model,
+                                   cross_type,
                                    n.perms,
                                    seed,
                                    n.cores) {
@@ -215,7 +219,8 @@ permutation.max.finder <- function(alt.fitter,
 
     this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
-                                                          model.formulae = scan.formulae)
+                                                          model.formulae = scan.formulae,
+                                                          cross_type = cross_type)
 
     null.fit <- null.fitter(formulae = scan.formulae, df = this.loc.modeling.df)
 
@@ -247,7 +252,8 @@ permutation.max.finder <- function(alt.fitter,
 
         this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
                                                               loc.genoprobs = loc.genoprobs,
-                                                              model.formulae = scan.formulae)
+                                                              model.formulae = scan.formulae,
+                                                              cross_type = cross_type)
 
         alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
@@ -280,7 +286,8 @@ permutation.max.finder <- function(alt.fitter,
 
         this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
                                                               loc.genoprobs = loc.genoprobs,
-                                                              model.formulae = scan.formulae)
+                                                              model.formulae = scan.formulae,
+                                                              cross_type = cross_type)
 
         alt.fit <- alt.fitter(formulae = scan.formulae, df = this.loc.modeling.df, the.perm = the.perm)
 
