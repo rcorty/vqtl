@@ -93,3 +93,15 @@ LOD_from_LLs <- function(null_ll, alt_ll) {
 LRT_from_LLs <- function(null_ll, alt_ll) {
   return(2*(alt_ll - null_ll))
 }
+
+#' percent variance explained
+#'
+#' @param LOD the log odds between the null and alternative model
+#' @param n the number of observations
+#'
+#' @return pve
+#' @export
+#'
+pve <- function(LOD, n) {
+  1 - 10^(-0.5*LOD/n)
+}
