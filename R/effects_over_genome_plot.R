@@ -18,11 +18,9 @@ effects_over_genome_plot <- function(sov,
                                      transform_var_effects = TRUE,
                                      se_ribbons = TRUE) {
 
-  effect_name <- estimate <- chr.type <- pos <- se <- effect_type <- 'fake_global_for_CRAN'
-
-  validate_effects_over_genome_plot_inputs(sov, effect.names, mean.or.var)
-
-  wrangle_effects_over_genome_plot_inputs(sov, effect.names, mean.or.var)
+  chr <- chr.type <- covar_name <- covar_name_other <- effect_name <- 'fake_global_for_CRAN'
+  effect_type <- est <- est_int  <- est_or_se <- est_other <- 'fake_global_for_CRAN'
+  estimate <- lb <- loc.name <- pos <- se <- se_int <- se_other <- ub <- 'fake_global_for_CRAN'
 
   # get rid of association statistics
   result <- sov[['result']] %>%
@@ -90,17 +88,4 @@ effects_over_genome_plot <- function(sov,
     ggplot2::scale_linetype_manual(breaks = c('mean', 'var'), values = c(1, 2), drop = FALSE)
 
   return(p)
-}
-
-
-validate_effects_over_genome_plot_inputs <- function(sov, effect.names, mean.or.var) {
-
-  return(TRUE)
-}
-
-
-
-wrangle_effects_over_genome_plot_inputs <- function(sov, effect.names, mean.or.var) {
-
-  return(TRUE)
 }

@@ -105,19 +105,19 @@ test_that(
 test_that(
   desc = 'effects_plot',
   code = {
-    effects_over_genome_plot(sov = sov, effect.names = 'sex')
-    effects_over_genome_plot(sov = sov, effect.names = 'mean.QTL')
-    effects_over_genome_plot(sov = sov, effect.names = 'var.QTL')
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL.add', se_ribbons = TRUE)
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL.dom')
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'sex')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'mean.QTL')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'var.QTL')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL.add')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL.dom')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL')
     effects_over_genome_plot(sov = sov)
 
-    effects_over_genome_plot(sov = sov, effect.names = 'sex', mean.or.var = 'mean')
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL.add', mean.or.var = 'var')
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL.dom', mean.or.var = 'mean')
-    effects_over_genome_plot(sov = sov, effect.names = 'QTL', mean.or.var = 'var')
-    effects_over_genome_plot(sov = sov, mean.or.var = 'mean')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'sex', effect_type_regex = 'mean')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL.add', effect_type_regex = 'var')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL.dom', effect_type_regex = 'mean')
+    effects_over_genome_plot(sov = sov, covar_name_regex = 'QTL', effect_type_regex = 'var')
+    effects_over_genome_plot(sov = sov, effect_type_regex = 'mean')
   }
 )
 
