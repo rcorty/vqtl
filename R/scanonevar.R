@@ -97,7 +97,7 @@ wrangle.scanonevar.input_ <- function(cross,
                                       chrs) {
 
   if (!is.cross.w.genoprobs(x = cross)) {
-    message("calculating genoprobs with stepwidth = 2, off.end = 0, error.prob = 1e-4, map.function = 'haldane'")
+    message("calculating genoprobs with stepwidth = 5, off.end = 0, error.prob = 1e-4, map.function = 'haldane'")
     cross <- qtl::calc.genoprob(cross = cross, step = 5)
   }
 
