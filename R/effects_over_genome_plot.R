@@ -2,9 +2,10 @@
 #' @rdname effects_over_genome_plot
 #'
 #' @param sov the scanonevar
-#' @param effect.names the effects to plot
-#' @param mean.or.var mean or variance effects of covariates
 #' @param se_ribbons Should a ribbon from estimate - se to estimate + se be plotted?
+#' @param effect_type_regex regex that matches 'mean', 'var', or both
+#' @param covar_name_regex regex that matches the covars we want to plot
+#' @param transform_var_effects combine variance effects w intercept and exponentiate?
 #'
 #' @description Plots estimated effects and their standard errors at each locus in the genome.
 #'
@@ -12,13 +13,12 @@
 #' @export
 #'
 effects_over_genome_plot <- function(sov,
-                                     effect.names = NULL,
-                                     mean.or.var = c('both', 'mean', 'var'),
+                                     covar_name_regex = '.',
+                                     effect_type_regex = '(mean|var)',
+                                     transform_var_effects = TRUE,
                                      se_ribbons = TRUE) {
 
   effect_name <- estimate <- chr.type <- pos <- se <- effect_type <- 'fake_global_for_CRAN'
-
-  mean.or.var = match.arg(arg = mean.or.var)
 
   validate_effects_over_genome_plot_inputs(sov, effect.names, mean.or.var)
 
@@ -30,72 +30,66 @@ effects_over_genome_plot <- function(sov,
     dplyr::select(-dplyr::matches('asymp.p')) %>%
     dplyr::select(-dplyr::matches('empir.p'))
 
-  ests <- result %>%
-    dplyr::select(-dplyr::matches('mse|vse')) %>%
+  long_result <- result %>%
     tidyr::gather(key = effect_name, value = estimate, -(chr.type:pos)) %>%
-    dplyr::mutate(effect_type = factor(x = ifelse(test = grepl(pattern = 'mef',
-                                                               x = effect_name),
-                                                  yes = 'mean',
-                                                  no = ifelse(test = grepl(pattern = 'vef',
-                                                                           x = effect_name),
-                                                              yes = 'var',
-                                                              no = 'unknown type')),
-                                       levels = c('mean', 'var'))) %>%
-    dplyr::mutate(effect_name = gsub(pattern = 'mef_', replacement = '', x = effect_name),
-                  effect_name = gsub(pattern = 'vef_', replacement = '', x = effect_name))
+    tidyr::separate(col = effect_name, into = c('effect_type', 'est_or_se', 'covar_name'), sep = '__') %>%
+    dplyr::mutate(effect_type = factor(x = effect_type, levels = c('m', 'v'), labels = c('mean', 'var'))) %>%
+    dplyr::mutate(covar_name = gsub(pattern = '(mean|var)\\.QTL', replacement = 'QTL', x = covar_name)) %>%
+    tidyr::spread(key = est_or_se, value = estimate) %>%
+    dplyr::filter(grepl(pattern = effect_type_regex, x = effect_type))
 
 
+  mean_to_plot <- long_result %>%
+    dplyr::filter(effect_type == 'mean') %>%
+    dplyr::mutate(lb = est - se,
+                  ub = est + se) %>%
+    dplyr::select(-se)
 
-  ses <- result %>%
-    dplyr::select(-dplyr::matches('mef|vef')) %>%
-    tidyr::gather(key = effect_name, value = se, -(chr.type:pos)) %>%
-    dplyr::mutate(effect_type = factor(x = ifelse(test = grepl(pattern = 'mse',
-                                                               x = effect_name),
-                                                  yes = 'mean',
-                                                  no = ifelse(test = grepl(pattern = 'vse',
-                                                                           x = effect_name),
-                                                              yes = 'var',
-                                                              no = 'unknown type')),
-                                       levels = c('mean', 'var'))) %>%
-    dplyr::mutate(effect_name = gsub(pattern = 'mse_', replacement = '', x = effect_name),
-                  effect_name = gsub(pattern = 'vse_', replacement = '', x = effect_name))
+  if (transform_var_effects) {
 
-  to_plot <- dplyr::inner_join(x = ests, y = ses, by = c("chr.type", "chr", "loc.name", "pos", "effect_name", "effect_type"))
+    intercepts <- long_result %>% dplyr::filter(effect_type == 'var', covar_name == '(Intercept)')
+    the_rest <- long_result %>% dplyr::filter(effect_type == 'var', covar_name != '(Intercept)')
 
+    var_to_plot <- dplyr::inner_join(x = intercepts, y = the_rest,
+                                     by = c('chr.type', 'chr', 'loc.name', 'pos', 'effect_type'),
+                                     suffix = c('_int', '_other')) %>%
+      dplyr::mutate(est = exp(est_int + est_other),
+                    lb = exp(est_int - se_int + est_other - se_other),
+                    ub = exp(est_int + se_int + est_other + se_other)) %>%
+      dplyr::select(chr.type, chr, loc.name, pos, effect_type, covar_name_other, est, lb, ub) %>%
+      dplyr::rename(covar_name = covar_name_other)
 
-  # sort levels of effect_name so that mean effects come first
-  # dplyr::mutate(effect_name = factor(x = effect_name),
-  #               effect_name = factor(x = effect_name,
-  #                                    levels = c(grep(pattern = 'mef', x = levels(effect_name), value = TRUE),
-  #                                               grep(pattern = 'vef', x = levels(effect_name), value = TRUE)))) %>%
+  } else {
 
-  if (!is.null(effect.names)) {
-    to_plot <- to_plot %>%
-      dplyr::filter(grepl(pattern = paste0(effect.names, collapse = '|'), x = effect_name))
-  }
-  to_plot <- to_plot %>%
-    dplyr::mutate(effect_name = gsub(pattern = 'mean.QTL.', replacement = 'QTL.', x = effect_name),
-                  effect_name = gsub(pattern = 'var.QTL.', replacement = 'QTL.', x = effect_name),
-                  effect_name = factor(effect_name))
+    var_to_plot <- long_result %>%
+      dplyr::filter(effect_type == 'var') %>%
+      dplyr::mutate(lb = est - se,
+                    ub = est + se) %>%
+      dplyr::select(-se)
 
-  if (!(mean.or.var == 'both')) {
-    to_plot <- to_plot %>%
-      dplyr::filter(effect_type == mean.or.var)
   }
 
-  # make sure no crap got through
-  stopifnot(!any(to_plot$effect_type == 'unknown type'))
+  to_plot <- dplyr::bind_rows(mean_to_plot, var_to_plot) %>%
+    dplyr::filter(grepl(pattern = covar_name_regex, x = covar_name))
 
-  ggplot2::ggplot(data = to_plot,
-                  mapping = ggplot2::aes(x = pos, y = estimate, group = interaction(effect_name, effect_type))) +
+  p <- ggplot2::ggplot(data = to_plot,
+                  mapping = ggplot2::aes(x = pos, group = interaction(covar_name, effect_type))) +
     ggplot2::geom_abline(slope = 0, intercept = 0) +
     ggplot2::facet_grid(~chr,
-                        scales = 'free_x', space = 'free_x', switch = 'x') +
-    ggplot2::geom_ribbon(mapping = ggplot2::aes(ymin = estimate - se, ymax = estimate + se, fill = effect_name), alpha = 0.3) +
-    ggplot2::geom_line(mapping = ggplot2::aes(color = effect_name, linetype = effect_type), size = 1) +
+                        scales = 'free_x', space = 'free_x', switch = 'x')
+
+  if (se_ribbons) {
+    p <- p +
+      ggplot2::geom_ribbon(mapping = ggplot2::aes(ymin = lb, ymax = ub, fill = covar_name), alpha = 0.3)
+  }
+
+  p <- p +
+    ggplot2::geom_line(mapping = ggplot2::aes(y = est, color = covar_name, linetype = effect_type), size = 1) +
     ggplot2::scale_color_brewer(type = 'qual', palette = 2) +
     ggplot2::scale_fill_brewer(type = 'qual', palette = 2) +
     ggplot2::scale_linetype_manual(breaks = c('mean', 'var'), values = c(1, 2), drop = FALSE)
+
+  return(p)
 }
 
 

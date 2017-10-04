@@ -4,15 +4,18 @@
 \alias{effects_over_genome_plot}
 \title{effects_over_genome_plot}
 \usage{
-effects_over_genome_plot(sov, effect.names = NULL, mean.or.var = c("both",
-  "mean", "var"), se_ribbons = TRUE)
+effects_over_genome_plot(sov, covar_name_regex = ".",
+  effect_type_regex = "(mean|var)", transform_var_effects = TRUE,
+  se_ribbons = TRUE)
 }
 \arguments{
 \item{sov}{the scanonevar}
 
-\item{effect.names}{the effects to plot}
+\item{covar_name_regex}{regex that matches the covars we want to plot}
 
-\item{mean.or.var}{mean or variance effects of covariates}
+\item{effect_type_regex}{regex that matches 'mean', 'var', or both}
+
+\item{transform_var_effects}{combine variance effects w intercept and exponentiate?}
 
 \item{se_ribbons}{Should a ribbon from estimate - se to estimate + se be plotted?}
 }
