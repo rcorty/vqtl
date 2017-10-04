@@ -10,7 +10,8 @@
   names(x[["result"]])))) {     "empir.p" } else {     "LOD" },
   plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
   marker.rug = TRUE, ymax = NULL, legend_pos = NULL,
-  alpha_pos = c("left", "right", "none"), alpha_size = 2, ...)
+  alpha_pos = c("left", "right", "none"), alpha_chr = 1, alpha_size = 2,
+  ...)
 }
 \arguments{
 \item{x}{the \code{scanonevar} object to be plotted}
@@ -33,8 +34,9 @@ Defaults to 'LOD'}
 
 \item{legend_pos}{the position of the legend}
 
-\item{alpha_pos}{the position of the alpha values (false positive rate)
-#@param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE}
+\item{alpha_pos}{the position of the alpha values (false positive rate)}
+
+\item{alpha_chr}{which chromosome to put the alphas (FPRs) on}
 
 \item{alpha_size}{size of annotations for alpha=0.05 and alpha=0.01 lines}
 

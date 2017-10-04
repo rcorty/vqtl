@@ -18,8 +18,8 @@
 #' @param ymax the top of the y axis
 #' @param legend_pos the position of the legend
 #' @param alpha_pos the position of the alpha values (false positive rate)
-#' #@param show.equations Optionally, whether to write the modeling equations under the title.  Defaults to TRUE
 #' @param alpha_size size of annotations for alpha=0.05 and alpha=0.01 lines
+#' @param alpha_chr which chromosome to put the alphas (FPRs) on
 #' @param ... additional plotting arguments
 #'
 #' @return Returns the plot.
@@ -56,6 +56,7 @@ plot.scanonevar <- function(x,
                             ymax = NULL,
                             legend_pos = NULL,
                             alpha_pos = c('left', 'right', 'none'),
+                            alpha_chr = 1,
                             alpha_size = 2,
                             ...) {
 
@@ -107,7 +108,7 @@ plot.scanonevar <- function(x,
                                              y = -log10(c(0.05, 0.01)),
                                              lab = c("alpha == 0.05",
                                                      "alpha == 0.01"),
-                                             chr = chrs[1]),
+                                             chr = as.character(alpha_chr)),
                            size = alpha_size,
                            vjust = 0,
                            hjust = switch(EXPR = alpha_pos,
