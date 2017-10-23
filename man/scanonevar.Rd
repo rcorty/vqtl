@@ -5,8 +5,8 @@
 \title{scanonevar}
 \usage{
 scanonevar(cross, mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-  var.formula = ~var.QTL.add + var.QTL.dom, chrs = qtl::chrnames(cross =
-  cross), return.covar.effects = FALSE)
+  var.formula = ~var.QTL.add + var.QTL.dom, family = stats::gaussian,
+  chrs = qtl::chrnames(cross = cross), return.covar.effects = FALSE)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
@@ -21,6 +21,8 @@ hglm model will be fit if mean.formula has one or more random effects.}
 phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
 dominance components of the QTL effect on residual phenotype variance.
 var.formula must have only fixed effects.}
+
+\item{family}{family of GLM for mean formula}
 
 \item{chrs}{chromosomes to scan}
 

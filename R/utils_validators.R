@@ -72,10 +72,10 @@ is.scanonevar <- function(x) {
   result <- x[['result']]
 
   # valid meta
-  if (!any(identical(names(meta), c('cross', 'modeling.df', 'formulae', 'scan.types', 'model' ,'chrs')),
-           identical(names(meta), c('cross', 'modeling.df', 'formulae', 'scan.types','chrs')))) {
-    return(FALSE)
-  }
+  # if (!any(identical(names(meta), c('cross', 'modeling.df', 'formulae', 'scan.types', 'model' ,'chrs')),
+  #          identical(names(meta), c('cross', 'modeling.df', 'formulae', 'scan.types','chrs')))) {
+  #   return(FALSE)
+  # }
 
   if (!(is.cross(meta[['cross']]))) {
     return(FALSE)

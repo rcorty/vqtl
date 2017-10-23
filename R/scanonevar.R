@@ -18,6 +18,7 @@
 #' var.formula must have only fixed effects.
 #' @param chrs chromosomes to scan
 #' @param return.covar.effects Should covariate effects estimated at each locus be returned?
+#' @param family family of GLM for mean formula
 #'
 #' @return 27599
 #' @export
@@ -30,6 +31,7 @@
 scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
                        var.formula = ~ var.QTL.add + var.QTL.dom,
+                       family = stats::gaussian,
                        chrs = qtl::chrnames(cross = cross),
                        return.covar.effects = FALSE) {
 
@@ -37,27 +39,20 @@ scanonevar <- function(cross,
   validate.scanonevar.input_(cross = cross,
                              mean.formula = mean.formula,
                              var.formula = var.formula,
+                             family = family,
                              chrs = chrs)
 
   # get inputs into a format that is easy for scanonevar_ to use
-  wrangled.inputs <- wrangle.scanonevar.input_(cross = cross,
-                                               mean.formula = mean.formula,
-                                               var.formula = var.formula,
-                                               chrs = chrs)
-
-  # save meta-data on this scan
-  meta <- pull.scanonevar.meta_(wrangled.inputs = wrangled.inputs,
-                                chrs = chrs)
+  meta <- wrangle.scanonevar.input_(cross = cross,
+                                    mean.formula = mean.formula,
+                                    var.formula = var.formula,
+                                    family = family,
+                                    model = model,
+                                    chrs = chrs)
 
   # execute the scan
-  result <- scanonevar_(modeling.df = wrangled.inputs$modeling.df,
-                        loc.info.df = wrangled.inputs$loc.info.df,
-                        genoprob.df = wrangled.inputs$genoprob.df,
-                        scan.types = wrangled.inputs$scan.types,
-                        scan.formulae = wrangled.inputs$scan.formulae,
-                        model = wrangled.inputs$model,
-                        return.covar.effects = return.covar.effects,
-                        cross_type = class(meta$cross)[1])
+  result <- scanonevar_(meta = meta,
+                        return.covar.effects = return.covar.effects)
 
   sov <- list(meta = meta,
               result = result)
@@ -72,11 +67,14 @@ scanonevar <- function(cross,
 validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
                                        var.formula,
+                                       family,
                                        chrs) {
 
   # check validity of inputs
   stopifnot(is.cross(cross))
   stopifnot(all(chrs %in% qtl::chrnames(cross)))
+  stopifnot(is.function(family))
+
 
   # make and then check formulae
   formulae <- make.formulae_(mean.formula, var.formula)
@@ -95,6 +93,8 @@ validate.scanonevar.input_ <- function(cross,
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula,
+                                      family,
+                                      model,
                                       chrs) {
 
   if (!is.cross.w.genoprobs(x = cross)) {
@@ -119,13 +119,18 @@ wrangle.scanonevar.input_ <- function(cross,
                                                  genoprobs = genoprob.df.long,
                                                  scan.formulae = scan.formulae)
 
-  return(list(cross = cross,
-              scan.types = scan.types,
-              scan.formulae = scan.formulae,
-              modeling.df = modeling.df,
-              loc.info.df = loc.info.df,
-              genoprob.df = genoprob.df.long,
-              model = model))
+  meta <- list(cross = cross,
+               scan.types = scan.types,
+               scan.formulae = scan.formulae,
+               modeling.df = modeling.df,
+               loc.info.df = loc.info.df,
+               genoprob.df = genoprob.df.long,
+               family = family,
+               model = model,
+               cross_type = class(cross)[1])
+
+  class(meta) <- c('scanonevar.meta', class(meta))
+  return(meta)
 }
 
 
@@ -204,56 +209,33 @@ wrangle.scanonevar.modeling.df_ <- function(cross,
 
 
 
-pull.scanonevar.meta_ <- function(wrangled.inputs,
-                                  chrs) {
-
-  meta <- list(cross = wrangled.inputs$cross,
-               modeling.df = wrangled.inputs$modeling.df,
-               formulae = wrangled.inputs$scan.formulae,
-               scan.types = wrangled.inputs$scan.types,
-               model = wrangled.inputs$model,
-               chrs = chrs)
-
-  class(meta) <- c('scanonevar.meta', class(meta))
-
-  return(meta)
-}
-
-
-
-scanonevar_ <- function(modeling.df,
-                        genoprob.df,
-                        loc.info.df,
-                        scan.types,
-                        scan.formulae,
-                        model,
-                        return.covar.effects,
-                        cross_type) {
+scanonevar_ <- function(meta,
+                        return.covar.effects) {
 
   loc.name <- 'fake_global_for_CRAN'
 
-  result <- initialize.scanonevar.result_(loc.info.df = loc.info.df,
-                                          scan.types = scan.types,
-                                          scan.formulae = scan.formulae,
-                                          return.covar.effects = return.covar.effects)
+  result <- initialize.scanonevar.result_(loc.info.df = meta$loc.info.df,
+                                          scan.types = meta$scan.types,
+                                          scan.formulae = meta$scan.formulae,
+                                          return.covar.effects = meta$return.covar.effects)
 
-  mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(stats::terms(scan.formulae[['mean.alt.formula']]))))
-  var.df <- sum(grepl(pattern = 'var.QTL', x = labels(stats::terms(scan.formulae[['var.alt.formula']]))))
+  mean.df <- sum(grepl(pattern = 'mean.QTL', x = labels(stats::terms(meta$scan.formulae[['mean.alt.formula']]))))
+  var.df <- sum(grepl(pattern = 'var.QTL', x = labels(stats::terms(meta$scan.formulae[['var.alt.formula']]))))
 
   # loop over loci
   for (loc.idx in 1:nrow(result)) {
 
     # fill modeling.df with the genoprobs at the focal loc
     this.loc.name <- result[['loc.name']][loc.idx]
-    loc.genoprobs <- dplyr::filter(.data = genoprob.df,
+    loc.genoprobs <- dplyr::filter(.data = meta$genoprob.df,
                                    loc.name == this.loc.name)
 
     # puts a column of 0's for any dominance components if we are on X chromosome
     # dglm handles this naturally, ignoring it in model fitting and giving effect estimate of NA
-    this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = modeling.df,
+    this.loc.modeling.df <- make.loc.specific.modeling.df(general.modeling.df = meta$modeling.df,
                                                           loc.genoprobs = loc.genoprobs,
-                                                          model.formulae = scan.formulae,
-                                                          cross_type = cross_type)
+                                                          model.formulae = meta$scan.formulae,
+                                                          cross_type = meta$cross_type)
 
     #  hacky way to adjust the df on the X chr
     if (all(this.loc.modeling.df[['mean.QTL.dom']] == 0)) {
@@ -268,11 +250,12 @@ scanonevar_ <- function(modeling.df,
     }
 
     # Fit the alternative model at this loc
-    alternative.fit <- fit_model(formulae = scan.formulae,
+    alternative.fit <- fit_model(formulae = meta$scan.formulae,
                                  data = this.loc.modeling.df,
-                                 model = model,
+                                 model = meta$model,
                                  mean = 'alt',
-                                 var = 'alt')
+                                 var = 'alt',
+                                 family = meta$family)
 
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
@@ -281,7 +264,9 @@ scanonevar_ <- function(modeling.df,
 
       if (identical(alternative.fit, NA)) {
 
-        if (loc.idx == 1) { stop('Cant fit model on locus 1.  Due to programming weirdness, cant return effect estimates.') }
+        if (loc.idx == 1) {
+          stop('Cant fit model on locus 1.  Due to programming weirdness, cant return effect estimates.')
+        }
         coef_mtx <- rbind(coef_mtx, rep(NA, ncol(coef_mtx)))
 
       } else {
@@ -318,32 +303,35 @@ scanonevar_ <- function(modeling.df,
 
     # Fit the appropriate null models at this loc
     # and save LOD score and asymptotic p-value
-    if ('mean' %in% scan.types) {
-      mean.null.fit <- fit_model(formulae = scan.formulae,
+    if ('mean' %in% meta$scan.types) {
+      mean.null.fit <- fit_model(formulae = meta$scan.formulae,
                                  data = this.loc.modeling.df,
-                                 model = model,
+                                 model = meta$model,
                                  mean = 'null',
-                                 var = 'alt')
+                                 var = 'alt',
+                                 family = meta$family)
       result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
       result[['mean.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
-    if ('var' %in% scan.types) {
-      var.null.fit <- fit_model(formulae = scan.formulae,
+    if ('var' %in% meta$scan.types) {
+      var.null.fit <- fit_model(formulae = meta$scan.formulae,
                                 data = this.loc.modeling.df,
-                                model = model,
+                                model = meta$model,
                                 mean = 'alt',
-                                var = 'null')
+                                var = 'null',
+                                family = meta$family)
       result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
       result[['var.asymp.p']][loc.idx] <- stats::pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
 
-    if ('joint' %in% scan.types) {
-      joint.null.fit <- fit_model(formulae = scan.formulae,
+    if ('joint' %in% meta$scan.types) {
+      joint.null.fit <- fit_model(formulae = meta$scan.formulae,
                                   data = this.loc.modeling.df,
-                                  model = model,
+                                  model = meta$model,
                                   mean = 'null',
-                                  var = 'null')
+                                  var = 'null',
+                                  family = meta$family)
       result[['joint.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
       result[['joint.asymp.p']][loc.idx] <- stats::pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
     }

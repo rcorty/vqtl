@@ -4,12 +4,12 @@ tryNA <- function(expr) {
                             finally = NA))
 }
 
-fit_dglm <- function(mf, df, data) {
-  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml')
+fit_dglm <- function(mf, df, data, family) {
+  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml', family = family)
 }
 
-fit_hglm <- function(mf, df, data) {
-  hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE)
+fit_hglm <- function(mf, df, data, family) {
+  hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE, family = family)
 }
 
 fit_dhglm <- function(mf, df, data) {
@@ -22,7 +22,8 @@ fit_model <- function(formulae,
                       mean = c('alt', 'null'),
                       var = c('alt', 'null'),
                       permute_what = c('none', 'mean', 'var', 'both'),
-                      the.perm) {
+                      the.perm,
+                      family) {
 
   model <- match.arg(arg = model)
   mean <- match.arg(arg = mean)
@@ -44,7 +45,7 @@ fit_model <- function(formulae,
                  both = permute.QTL.terms_(df = data, the.perm = the.perm))
 
   tryNA(do.call(what = fitter,
-                args = list(mf = mf, df =  vf, data = data)))
+                args = list(mf = mf, df =  vf, data = data, family = family)))
 }
 
 
