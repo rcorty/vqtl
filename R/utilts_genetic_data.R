@@ -60,8 +60,8 @@ make.response.model.df_ <- function(cross,
   #                                            response.name))
   #
   df <- stats::setNames(object = dplyr::tbl_df(qtl::pull.pheno(cross = cross,
-                                                        pheno.col = response.name)),
-                 nm = response.name)
+                                                               pheno.col = response.name)),
+                        nm = response.name)
 
   return(df)
 }
@@ -160,18 +160,23 @@ make.genet.covar.add.dom.model.df_ <- function(cross,
                                            loc.name == substr(x = add.marker.covar.name,
                                                               start = 1,
                                                               stop = nchar(add.marker.covar.name) - 4))
-    df[[add.marker.covar.name]] <- additive.component_(this.marker.genoprobs)
-  }
-
-
-  for (dom.marker.covar.name in unique(c(mean.dom.marker.covar.names, var.dom.marker.covar.names))) {
-    this.marker.genoprobs <- dplyr::filter(.data = genoprobs,
-                                           loc.name == substr(x = dom.marker.covar.name,
-                                                              start = 1,
-                                                              stop = nchar(dom.marker.covar.name) - 4))
-    df[[dom.marker.covar.name]] <- dominance.component_(this.marker.genoprobs)
+    df[[add.marker.covar.name]] <- additive.component_(genoprobs.long = this.marker.genoprobs,
+                                                       cross_type = class(cross)[1])
   }
   df[['placeholder']] <- NULL
+
+  if (class(cross)[1] %in% 'f2') {
+
+    for (dom.marker.covar.name in unique(c(mean.dom.marker.covar.names, var.dom.marker.covar.names))) {
+      this.marker.genoprobs <- dplyr::filter(.data = genoprobs,
+                                             loc.name == substr(x = dom.marker.covar.name,
+                                                                start = 1,
+                                                                stop = nchar(dom.marker.covar.name) - 4))
+      df[[dom.marker.covar.name]] <- dominance.component_(genoprobs.long = this.marker.genoprobs,
+                                                          cross_type = class(cross)[1])
+    }
+
+  }
 
   return(df)
 }

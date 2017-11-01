@@ -89,9 +89,16 @@ replace.markers.with.add.dom_ <- function(cross,
   mean.marker.covars <- mean.covar.names[mean.covar.names %in% marker.names]
   var.marker.covars <- var.covar.names[var.covar.names %in% marker.names]
 
+  if (class(cross)[1] %in% 'f2') {
+    add_dom <- c('_add', '_dom')
+  }
+  if (class(cross)[1] %in% 'bc') {
+    add_dom <- '_add'
+  }
+
   for (mean.marker.covar in mean.marker.covars) {
     new.terms <- paste0('(', paste0(mean.marker.covar,
-                                    c('_add', '_dom'),
+                                    add_dom,
                                     collapse = '+'), ')')
 
     mean.formula <- stats::reformulate(termlabels = gsub(pattern = mean.marker.covar,
@@ -102,7 +109,7 @@ replace.markers.with.add.dom_ <- function(cross,
 
   for (var.marker.covar in var.marker.covars) {
     new.terms <- paste0('(', paste0(var.marker.covar,
-                                    c('_add', '_dom'),
+                                    add_dom,
                                     collapse = '+'), ')')
     var.formula <- stats::reformulate(termlabels = gsub(pattern = var.marker.covar,
                                                         replacement = new.terms,
