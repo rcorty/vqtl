@@ -50,7 +50,6 @@ scanonevar <- function(cross,
                                     var.formula = var.formula,
                                     glm_family = glm_family,
                                     scan_types = scan_types,
-                                    model = model,
                                     chrs = chrs)
 
   # execute the scan
@@ -98,7 +97,6 @@ wrangle.scanonevar.input_ <- function(cross,
                                       var.formula,
                                       glm_family,
                                       scan_types,
-                                      model,
                                       chrs) {
 
   if (!is.cross.w.genoprobs(x = cross)) {

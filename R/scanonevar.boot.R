@@ -86,7 +86,7 @@ scanonevar.boot_ <- function(sov,
     bs_scan <- scanonevar(cross = qtl:::subset.cross(x = c, ind = sample(x = 1:qtl::nind(c), replace = TRUE)),
                           mean.formula = meta$scan.formulae$mean.alt.formula,
                           var.formula = meta$scan.formulae$var.alt.formula,
-                          chr = chr,
+                          chrs = chr,
                           scan_types = qtl_type)
 
     max_positions[resample_idx] <- bs_scan$result$pos[which.max(x = bs_scan$resul[[paste0(qtl_type, '.lod')]])]
