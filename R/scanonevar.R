@@ -18,7 +18,8 @@
 #' var.formula must have only fixed effects.
 #' @param chrs chromosomes to scan
 #' @param return.covar.effects Should covariate effects estimated at each locus be returned?
-#' @param family family of GLM for mean formula
+#' @param glm_family a character vector indicating the GLM family -- either 'gaussian' or 'poisson'
+#' @param scan_types a vector containing at least one of 'mQTL', 'vQTL', and 'mvQTL', or up to all three.
 #'
 #' @return 27599
 #' @export
@@ -31,22 +32,24 @@
 scanonevar <- function(cross,
                        mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
                        var.formula = ~ var.QTL.add + var.QTL.dom,
-                       family = stats::gaussian,
                        chrs = qtl::chrnames(cross = cross),
+                       scan_types = c('mQTL', 'vQTL', 'mvQTL'),
+                       glm_family = 'gaussian',
                        return.covar.effects = FALSE) {
 
   # give an informative error message if input is invalid
   validate.scanonevar.input_(cross = cross,
                              mean.formula = mean.formula,
                              var.formula = var.formula,
-                             family = family,
+                             glm_family = glm_family,
                              chrs = chrs)
 
   # get inputs into a format that is easy for scanonevar_ to use
   meta <- wrangle.scanonevar.input_(cross = cross,
                                     mean.formula = mean.formula,
                                     var.formula = var.formula,
-                                    family = family,
+                                    glm_family = glm_family,
+                                    scan_types = scan_types,
                                     model = model,
                                     chrs = chrs)
 
@@ -67,13 +70,13 @@ scanonevar <- function(cross,
 validate.scanonevar.input_ <- function(cross,
                                        mean.formula,
                                        var.formula,
-                                       family,
+                                       glm_family,
                                        chrs) {
 
   # check validity of inputs
   stopifnot(is.cross(cross))
   stopifnot(all(chrs %in% qtl::chrnames(cross)))
-  stopifnot(is.function(family))
+  stopifnot(glm_family %in% c('gaussian', 'poisson'))
 
 
   # make and then check formulae
@@ -93,7 +96,8 @@ validate.scanonevar.input_ <- function(cross,
 wrangle.scanonevar.input_ <- function(cross,
                                       mean.formula,
                                       var.formula,
-                                      family,
+                                      glm_family,
+                                      scan_types,
                                       model,
                                       chrs) {
 
@@ -107,7 +111,11 @@ wrangle.scanonevar.input_ <- function(cross,
 
   genoprob.df.long <- wrangle.genoprob.df_(cross = cross)
 
-  scan.types <- wrangle.scanonevar.types_(mean.formula, var.formula)
+  if (is.null(scan_types)) {
+    scan.types <- wrangle.scanonevar.types_(mean.formula, var.formula)
+  } else {
+    scan.types <- scan_types
+  }
 
   model <- ifelse(test = has_a_random_term(mean.formula),
                   yes = 'hglm',
@@ -125,7 +133,7 @@ wrangle.scanonevar.input_ <- function(cross,
                modeling.df = modeling.df,
                loc.info.df = loc.info.df,
                genoprob.df = genoprob.df.long,
-               family = family,
+               glm_family = glm_family,
                model = model,
                cross_type = class(cross)[1])
 
@@ -143,13 +151,13 @@ wrangle.scanonevar.types_ <- function(mean.formula,
   var.qtl.idxs <- grep(pattern = 'var.QTL', x = labels(stats::terms(var.formula)))
 
   if (all(mean.qtl.idxs, !var.qtl.idxs)) {
-    return('mean')
+    return('mQTL')
   }
   if (all(!mean.qtl.idxs, var.qtl.idxs)) {
-    return('var')
+    return('vQTL')
   }
   if (all(mean.qtl.idxs, var.qtl.idxs)) {
-    return(c('mean', 'var', 'joint'))
+    return(c('mQTL', 'vQTL', 'mvQTL'))
   }
 
   stop('Should never get here.')
@@ -255,7 +263,7 @@ scanonevar_ <- function(meta,
                                  model = meta$model,
                                  mean = 'alt',
                                  var = 'alt',
-                                 family = meta$family)
+                                 glm_family = meta$glm_family)
 
     # if requested, save effect estimates
     # may be safer to do with with name-matching, but this seems to work for now
@@ -303,37 +311,37 @@ scanonevar_ <- function(meta,
 
     # Fit the appropriate null models at this loc
     # and save LOD score and asymptotic p-value
-    if ('mean' %in% meta$scan.types) {
+    if ('mQTL' %in% meta$scan.types) {
       mean.null.fit <- fit_model(formulae = meta$scan.formulae,
                                  data = this.loc.modeling.df,
                                  model = meta$model,
                                  mean = 'null',
                                  var = 'alt',
-                                 family = meta$family)
-      result[['mean.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
-      result[['mean.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mean.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
+                                 glm_family = meta$glm_family)
+      result[['mQTL.lod']][loc.idx] <- LOD(alt = alternative.fit, null = mean.null.fit)
+      result[['mQTL.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mQTL.lod']][loc.idx], df = this.loc.mean.df, lower.tail = FALSE)
     }
 
-    if ('var' %in% meta$scan.types) {
+    if ('vQTL' %in% meta$scan.types) {
       var.null.fit <- fit_model(formulae = meta$scan.formulae,
                                 data = this.loc.modeling.df,
                                 model = meta$model,
                                 mean = 'alt',
                                 var = 'null',
-                                family = meta$family)
-      result[['var.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
-      result[['var.asymp.p']][loc.idx] <- stats::pchisq(q = result[['var.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
+                                glm_family = meta$glm_family)
+      result[['vQTL.lod']][loc.idx] <- LOD(alt = alternative.fit, null = var.null.fit)
+      result[['vQTL.asymp.p']][loc.idx] <- stats::pchisq(q = result[['vQTL.lod']][loc.idx], df = this.loc.var.df, lower.tail = FALSE)
     }
 
-    if ('joint' %in% meta$scan.types) {
+    if ('mvQTL' %in% meta$scan.types) {
       joint.null.fit <- fit_model(formulae = meta$scan.formulae,
                                   data = this.loc.modeling.df,
                                   model = meta$model,
                                   mean = 'null',
                                   var = 'null',
-                                  family = meta$family)
-      result[['joint.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
-      result[['joint.asymp.p']][loc.idx] <- stats::pchisq(q = result[['joint.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
+                                  glm_family = meta$glm_family)
+      result[['mvQTL.lod']][loc.idx] <- LOD(alt = alternative.fit, null = joint.null.fit)
+      result[['mvQTL.asymp.p']][loc.idx] <- stats::pchisq(q = result[['mvQTL.lod']][loc.idx], df = this.loc.mean.df + this.loc.var.df, lower.tail = FALSE)
     }
 
   }
@@ -363,12 +371,12 @@ initialize.scanonevar.result_ <- function(loc.info.df,
                           loc.name,
                           pos)
 
-  if ('mean' %in% scan.types)
-    result[['mean.asymp.p']] <- result[['mean.lod']] <- NA
-  if ('var' %in% scan.types)
-    result[['var.asymp.p']] <- result[['var.lod']] <- NA
-  if ('joint' %in% scan.types)
-    result[['joint.asymp.p']] <- result[['joint.lod']] <- NA
+  if ('mQTL' %in% scan.types)
+    result[['mQTL.asymp.p']] <- result[['mQTL.lod']] <- NA
+  if ('vQTL' %in% scan.types)
+    result[['vQTL.asymp.p']] <- result[['vQTL.lod']] <- NA
+  if ('mvQTL' %in% scan.types)
+    result[['mvQTL.asymp.p']] <- result[['mvQTL.lod']] <- NA
 
   # if (return.covar.effects) {
   #   result[['(Intercept)_mef']] <- result[['(Intercept)_mse']] <- NA
@@ -468,9 +476,9 @@ validate.c.scanonevar.input_ <- function(sovs) {
 summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'empir.p'), thresh, ...) {
 
   # hack to get R CMD CHECK to run without NOTEs that these globals are undefined
-  mean.lod <- var.lod <- joint.lod <- 'fake_global_for_CRAN'
-  mean.asymp.p <- var.asymp.p <- joint.asymp.p <- 'fake_global_for_CRAN'
-  mean.empir.p <- var.empir.p <- joint.empir.p <- 'fake_global_for_CRAN'
+  mQTL.lod <- vQTL.lod <- mvQTL.lod <- 'fake_global_for_CRAN'
+  mQTL.asymp.p <- vQTL.asymp.p <- mvQTL.asymp.p <- 'fake_global_for_CRAN'
+  mQTL.empir.p <- vQTL.empir.p <- mvQTL.empir.p <- 'fake_global_for_CRAN'
   chr <- pos <- loc.name <- 'fake_global_for_CRAN'
 
   units <- match.arg(arg = units)
@@ -491,46 +499,46 @@ summary.scanonevar <- function(object, units = c('lod', 'asymp.p', 'empir.p'), t
   if (units == 'lod') {
 
     return[['mQTL']] <- object$result %>%
-      dplyr::filter(mean.lod > thresh) %>%
-      dplyr::select(chr, pos, loc.name, mean.lod)
+      dplyr::filter(mQTL.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mQTL.lod)
 
     return[['vQTL']] <- object$result %>%
-      dplyr::filter(var.lod > thresh) %>%
-      dplyr::select(chr, pos, loc.name, var.lod)
+      dplyr::filter(vQTL.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, vQTL.lod)
 
     return[['mvQTL']] <- object$result %>%
-      dplyr::filter(joint.lod > thresh) %>%
-      dplyr::select(chr, pos, loc.name, joint.lod)
+      dplyr::filter(mvQTL.lod > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mvQTL.lod)
   }
 
   if (units == 'asymp.p') {
 
     return[['mQTL']] <- object$result %>%
-      dplyr::filter(mean.asymp.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, mean.asymp.p)
+      dplyr::filter(mQTL.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mQTL.asymp.p)
 
     return[['vQTL']] <- object$result %>%
-      dplyr::filter(var.asymp.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, var.asymp.p)
+      dplyr::filter(vQTL.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, vQTL.asymp.p)
 
     return[['mvQTL']] <- object$result %>%
-      dplyr::filter(joint.asymp.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, joint.asymp.p)
+      dplyr::filter(mvQTL.asymp.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mvQTL.asymp.p)
   }
 
   if (units == 'empir.p') {
 
     return[['mQTL']] <- object$result %>%
-      dplyr::filter(mean.empir.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, mean.empir.p)
+      dplyr::filter(mQTL.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mQTL.empir.p)
 
     return[['vQTL']] <- object$result %>%
-      dplyr::filter(var.empir.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, var.empir.p)
+      dplyr::filter(vQTL.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, vQTL.empir.p)
 
     return[['mvQTL']] <- object$result %>%
-      dplyr::filter(joint.empir.p > thresh) %>%
-      dplyr::select(chr, pos, loc.name, joint.empir.p)
+      dplyr::filter(mvQTL.empir.p > thresh) %>%
+      dplyr::select(chr, pos, loc.name, mvQTL.empir.p)
   }
 
   return(return)

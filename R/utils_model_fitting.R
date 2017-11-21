@@ -4,39 +4,45 @@ tryNA <- function(expr) {
                             finally = NA))
 }
 
-fit_dglm <- function(mf, df, data, family) {
-  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml', family = family)
+fit_dglm <- function(mf, df, data, glm_family) {#, obs_weights) {
+  dglm::dglm(formula = mf, dformula = df, data = data, method = 'ml', family = glm_family)#, weights = obs_weights)
 }
 
-fit_hglm <- function(mf, df, data, family) {
-  hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE, family = family)
+fit_hglm <- function(mf, df, data, glm_family) {#, obs_weights) {
+  hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE, family = glm_family)#, weights = obs_weights)
 }
 
 fit_dhglm <- function(mf, df, data) {
-
+  stop('dhglm not yet implemented.')
 }
 
 fit_model <- function(formulae,
                       data,
-                      model = c('dglm', 'hglm', 'dhglm'),
                       mean = c('alt', 'null'),
                       var = c('alt', 'null'),
+                      model = c('dglm', 'hglm', 'dhglm'),
+                      glm_family = c('gaussian', 'poisson'),
                       permute_what = c('none', 'mean', 'var', 'both'),
-                      the.perm,
-                      family) {
+                      the.perm = seq(from = 1, to = nrow(data)),
+                      obs_weights = rep(1, nrow(data))) {
 
-  model <- match.arg(arg = model)
   mean <- match.arg(arg = mean)
   var <- match.arg(arg = var)
+  model <- match.arg(arg = model)
+  glm_family <- match.arg(arg = glm_family)
   permute_what <- match.arg(arg = permute_what)
-
-  fitter <- switch(EXPR = model,
-                   dglm = fit_dglm,
-                   hglm = fit_hglm,
-                   dhglm = fit_dhglm)
 
   mf <- switch(mean, alt = formulae[['mean.alt.formula']], null = formulae[['mean.null.formula']])
   vf <- switch(var, alt = formulae[['var.alt.formula']], null = formulae[['var.null.formula']])
+
+  fit_model <- switch(EXPR = model,
+                      dglm = fit_dglm,
+                      hglm = fit_hglm,
+                      dhglm = fit_dhglm)
+
+  glm_family <- switch(EXPR = glm_family,
+                       gaussian = stats::gaussian,
+                       poisson = stats::poisson)
 
   data <- switch(EXPR = permute_what,
                  none = data,
@@ -44,8 +50,9 @@ fit_model <- function(formulae,
                  var = permute.var.QTL.terms_(df = data, the.perm = the.perm),
                  both = permute.QTL.terms_(df = data, the.perm = the.perm))
 
-  tryNA(do.call(what = fitter,
-                args = list(mf = mf, df =  vf, data = data, family = family)))
+  tryNA(fit_model(mf = mf, df =  vf, data = data, glm_family = glm_family))#, obs_weights = obs_weights)
+  # tryNA(do.call(what = fit_model,
+                # args = list(mf = mf, df =  vf, data = data, glm_family = glm_family, weights = obs_weights)))
 }
 
 

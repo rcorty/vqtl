@@ -88,8 +88,8 @@ is.scanonevar <- function(x) {
   if (!all(c('loc.name', 'chr', 'pos') %in% names(result)))
     return(FALSE)
 
-  if (all(!all(c('mean.lod', 'mean.asymp.p') %in% names(result)),
-          !all(c('var.lod', 'var.asymp.p') %in% names(result))))
+  if (all(!all(c('mQTL.lod', 'mQTL.asymp.p') %in% names(result)),
+          !all(c('vQTL.lod', 'vQTL.asymp.p') %in% names(result))))
     return(FALSE)
 
   # check that LOD scores are greater than 0

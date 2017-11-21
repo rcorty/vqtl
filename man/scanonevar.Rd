@@ -5,8 +5,9 @@
 \title{scanonevar}
 \usage{
 scanonevar(cross, mean.formula = phenotype ~ mean.QTL.add + mean.QTL.dom,
-  var.formula = ~var.QTL.add + var.QTL.dom, family = stats::gaussian,
-  chrs = qtl::chrnames(cross = cross), return.covar.effects = FALSE)
+  var.formula = ~var.QTL.add + var.QTL.dom, chrs = qtl::chrnames(cross =
+  cross), scan_types = c("mQTL", "vQTL", "mvQTL"), glm_family = "gaussian",
+  return.covar.effects = FALSE)
 }
 \arguments{
 \item{cross}{The \code{cross}, built by \pkg{qtl} to be used in mapping}
@@ -22,9 +23,11 @@ phenotype.  Keywords are var.QTL.add and var.QTL.dom for the additive and
 dominance components of the QTL effect on residual phenotype variance.
 var.formula must have only fixed effects.}
 
-\item{family}{family of GLM for mean formula}
-
 \item{chrs}{chromosomes to scan}
+
+\item{scan_types}{a vector containing at least one of 'mQTL', 'vQTL', and 'mvQTL', or up to all three.}
+
+\item{glm_family}{a character vector indicating the GLM family -- either 'gaussian' or 'poisson'}
 
 \item{return.covar.effects}{Should covariate effects estimated at each locus be returned?}
 }

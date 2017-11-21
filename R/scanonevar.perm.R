@@ -87,7 +87,7 @@ scanonevar.perm_ <- function(sov,
 
   perms <- list()
 
-  if ('mean' %in% meta$scan.types) {
+  if ('mQTL' %in% meta$scan.types) {
     if (!silent) { message('Starting mean permutations...') }
 
     mean.lod.maxes <- this.context.permutation.max.finder(
@@ -105,11 +105,11 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) { message('Finished mean permutations...') }
-    perms[['mean']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
+    perms[['mQTL']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
                                         mean.lod.maxes)
   }
 
-  if ('var' %in% meta$scan.types) {
+  if ('vQTL' %in% meta$scan.types) {
     if (!silent) {  message('Starting variance permutations...') }
 
     var.lod.maxes <- this.context.permutation.max.finder(
@@ -127,11 +127,11 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) { message('Finished variance permutations...') }
-    perms[['var']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
+    perms[['vQTL']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
 
-  if ('joint' %in% meta$scan.types) {
+  if ('mvQTL' %in% meta$scan.types) {
     if (!silent) { message('Starting joint mean-variance permutations...') }
     joint.lod.maxes <- this.context.permutation.max.finder(
       alt.fitter = function(data, the.perm) {
@@ -148,7 +148,7 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) {  message('Finished joint mean-variance permutations...') }
-    perms[['joint']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
+    perms[['mvQTL']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
   }
 

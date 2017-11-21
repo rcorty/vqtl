@@ -192,25 +192,25 @@ pull.plotting.columns_ <- function(sov, so, tests_to_plot, plotting.units) {
   # pull appropriate data into plotting columns
   if (plotting.units == 'LOD') {
 
-    if (!is.null(sov[['mean.lod']]) & 'mQTL' %in% tests_to_plot) {
+    if (!is.null(sov[['mQTL.lod']]) & 'mQTL' %in% tests_to_plot) {
       to.plot <- dplyr::bind_rows(to.plot,
                                   dplyr::mutate(.data = base.to.plot,
                                                 test = 'mQTL',
-                                                val = sov[['mean.lod']]))
+                                                val = sov[['mQTL.lod']]))
     }
 
-    if (!is.null(sov[['var.lod']]) & 'vQTL' %in% tests_to_plot) {
+    if (!is.null(sov[['vQTL.lod']]) & 'vQTL' %in% tests_to_plot) {
       to.plot <- dplyr::bind_rows(to.plot,
                                   dplyr::mutate(.data = base.to.plot,
                                                 test = 'vQTL',
-                                                val = sov[['var.lod']]))
+                                                val = sov[['vQTL.lod']]))
     }
 
-    if (!is.null(sov[['joint.lod']]) & 'mvQTL' %in% tests_to_plot) {
+    if (!is.null(sov[['mvQTL.lod']]) & 'mvQTL' %in% tests_to_plot) {
       to.plot <- dplyr::bind_rows(to.plot,
                                   dplyr::mutate(.data = base.to.plot,
                                                 test = 'mvQTL',
-                                                val = sov[['joint.lod']]))
+                                                val = sov[['mvQTL.lod']]))
     }
 
     if (!is.null(so)) {
@@ -225,13 +225,13 @@ pull.plotting.columns_ <- function(sov, so, tests_to_plot, plotting.units) {
 
     to.plot <- dplyr::bind_rows(dplyr::mutate(.data = base.to.plot,
                                               test = 'mQTL',
-                                              val = -log10(sov[['mean.asymp.p']])),
+                                              val = -log10(sov[['mQTL.asymp.p']])),
                                 dplyr::mutate(.data = base.to.plot,
                                               test = 'vQTL',
-                                              val = -log10(sov[['var.asymp.p']])),
+                                              val = -log10(sov[['vQTL.asymp.p']])),
                                 dplyr::mutate(.data = base.to.plot,
                                               test = 'mvQTL',
-                                              val = -log10(sov[['joint.asymp.p']])))
+                                              val = -log10(sov[['mvQTL.asymp.p']])))
     if (!is.null(so)) {
       to.plot <- dplyr::bind_rows(to.plot,
                                   dplyr::mutate(.data = base.to.plot,
@@ -244,13 +244,13 @@ pull.plotting.columns_ <- function(sov, so, tests_to_plot, plotting.units) {
 
     to.plot <- dplyr::bind_rows(dplyr::mutate(.data = base.to.plot,
                                               test = 'mQTL',
-                                              val = -log10(sov[['mean.empir.p']])),
+                                              val = -log10(sov[['mQTL.empir.p']])),
                                 dplyr::mutate(.data = base.to.plot,
                                               test = 'vQTL',
-                                              val = -log10(sov[['var.empir.p']])),
+                                              val = -log10(sov[['vQTL.empir.p']])),
                                 dplyr::mutate(.data = base.to.plot,
                                               test = 'mvQTL',
-                                              val = -log10(sov[['joint.empir.p']])))
+                                              val = -log10(sov[['mvQTL.empir.p']])))
 
     if (!is.null(so)) {
       if ('empir.p' %in% names(so)) {
