@@ -88,7 +88,7 @@ scanonevar.boot_ <- function(sov,
                           chr = chr,
                           scan_types = qtl_type)
 
-    max_positions[resample_idx] <- bs_scan$result$pos[which.max(bs_scan$result$mQTL.lod)]
+    max_positions[resample_idx] <- bs_scan$result$pos[which.max(x = bs_scan$resul[[paste0(qtl_type, '.lod')]])]
 
   }
 
