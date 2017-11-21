@@ -14,6 +14,8 @@ scanonevar.boot(sov, n.resamples, chr, qtl_type = c("mQTL", "vQTL", "mvQTL"),
 
 \item{chr}{which chromosome to focus on}
 
+\item{qtl_type}{which type of QTL did you detect and want a CI for?  mQTL, vQTL, or mvQTL.}
+
 \item{random.seed}{value to start the random number generator at, for reproducibility}
 
 \item{n.cores}{number of cores to use for the permutations}

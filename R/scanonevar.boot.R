@@ -11,6 +11,7 @@
 #' @param random.seed value to start the random number generator at, for reproducibility
 #' @param n.cores number of cores to use for the permutations
 #' @param silent Should all messaging be suppressed?
+#' @param qtl_type which type of QTL did you detect and want a CI for?  mQTL, vQTL, or mvQTL.
 #'
 #' @return 27599
 #' @export
