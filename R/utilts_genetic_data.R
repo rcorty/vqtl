@@ -200,7 +200,7 @@ additive.component_ <- function(genoprobs.long,
 
   if (cross_type == 'f2') {
     if (all(alleles %in% c('AA', 'AB', 'BB'))) {
-      return(genoprobs.wide[['AA']] - genoprobs.wide[['BB']])
+      return(2*genoprobs.wide[['AA']] + genoprobs.wide[['AB']])
     } else if (all(alleles %in% c('g1', 'g2'))) {
       return(genoprobs.wide[['g2']])
     } else {
@@ -238,7 +238,7 @@ dominance.component_ <- function(genoprobs.long,
     } else if (all(alleles %in% c('g1', 'g2'))) {
       return(0)
     } else {
-      stop(paste("Can't determine additive component of loc with alleles:", alleles))
+      stop(paste("Can't determine dominance component of loc with alleles:", alleles))
     }
   }
 
