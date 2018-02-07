@@ -85,12 +85,14 @@ is.scanonevar <- function(x) {
 
 
   # valid result
-  if (!all(c('loc.name', 'chr', 'pos') %in% names(result)))
-    return(FALSE)
+  if (!all(c('loc.name', 'chr', 'pos') %in% names(result))) {
+    stop('loc.name, chr, and pos must be in result')
+  }
 
   if (all(!all(c('mQTL.lod', 'mQTL.asymp.p') %in% names(result)),
-          !all(c('vQTL.lod', 'vQTL.asymp.p') %in% names(result))))
-    return(FALSE)
+          !all(c('vQTL.lod', 'vQTL.asymp.p') %in% names(result)))) {
+    stop('mQTL.lod and mQTL.asymp.p  OR  vQTL.lod and vQTL.asymp.p must be in result')
+  }
 
   # check that LOD scores are greater than 0
 
