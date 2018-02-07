@@ -10,6 +10,8 @@
 #' @param Ibars Should I bars be plotted showing the standard deviation of each group?
 #' @param connectIbars Should the Ibars be connected horizontally?
 #' @param genotype_labels plotting labels for genotype groups
+#' @param cross the cross
+#' @param shape_by a discrete phenotype to map to the shape aesthetic of the points
 #'
 #' @return nothing.  Just plots.
 #' @export
@@ -18,7 +20,9 @@ phenotype_at_marker_plot <- function(cross,
                                      phenotype_name,
                                      marker_name,
                                      color_by = NULL,
+                                     shape_by = NULL,
                                      point_alpha = 1,
+                                     point_size = 1,
                                      Ibars = TRUE,
                                      connectIbars = TRUE,
                                      genotype_labels = NULL) {
@@ -50,22 +54,58 @@ phenotype_at_marker_plot <- function(cross,
       stop('color_by argument, ', color_by, ', not found in phenotypes or genotypes')
     }
 
-
     to_add <- stats::setNames(object = dplyr::data_frame(placeholder_name = to_add), nm = color_by)
-    to_plot <- dplyr::bind_cols(to_plot, to_add) %>% stats::na.omit()
+    to_plot <- dplyr::bind_cols(to_plot, to_add)
+  }
+
+  if (!is.null(shape_by)) {
+    to_add <- NULL
+    if (shape_by %in% names(qtl::pull.pheno(cross = cross))) {
+      to_add <- qtl::pull.pheno(cross = cross)[[shape_by]]
+      if (length(unique(to_add)) < 10) { to_add <- factor(to_add) }
+    }
+
+    if (is.null(to_add)) {
+      stop('shape_by argument, ', shape_by, ', not found in phenotypes')
+    }
+
+    to_add <- stats::setNames(object = dplyr::data_frame(placeholder_name = to_add), nm = shape_by)
+    to_plot <- dplyr::bind_cols(to_plot, to_add)
+  }
+
+  if (is.character(point_size)) {
+
+    to_add <- NULL
+    if (point_size %in% names(qtl::pull.pheno(cross = cross))) {
+      to_add <- qtl::pull.pheno(cross = cross)[[point_size]]
+      if (length(unique(to_add)) < 10) { to_add <- factor(to_add) }
+    }
+
+    if (is.null(to_add)) {
+      stop('point_size argument, ', point_size, ', not found in phenotypes')
+    }
+
+    to_add <- stats::setNames(object = dplyr::data_frame(placeholder_name = to_add), nm = point_size)
+    to_plot <- dplyr::bind_cols(to_plot, to_add)
 
     the_plot <- the_plot +
-      ggplot2::geom_jitter(data = to_plot,
-                           mapping = ggplot2::aes_string(color = color_by),
+      ggplot2::geom_jitter(data = na.omit(to_plot),
+                           mapping = ggplot2::aes_string(color = color_by, shape = shape_by, size = point_size),
                            width = 0.3,
                            alpha = point_alpha)
-
   } else {
+
     the_plot <- the_plot +
-      ggplot2::geom_jitter(data = stats::na.omit(to_plot),
+      ggplot2::geom_jitter(data = na.omit(to_plot),
+                           mapping = ggplot2::aes_string(color = color_by, shape = shape_by),
                            width = 0.3,
+                           size = point_size,
                            alpha = point_alpha)
   }
+
+
+
+
 
   if (Ibars) {
 
@@ -111,7 +151,8 @@ phenotype_at_marker_plot <- function(cross,
 
   the_plot <- the_plot +
     ggplot2::xlab(label = marker_name) +
-    ggplot2::ylab(label = phenotype_name)
+    ggplot2::ylab(label = phenotype_name) +
+    ggplot2::theme_minimal()
 
   return(the_plot)
 }
