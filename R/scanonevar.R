@@ -244,12 +244,12 @@ scanonevar_ <- function(meta,
                                                           cross_type = meta$cross_type)
 
     #  hacky way to adjust the df on the X chr
-    if (all(this.loc.modeling.df[['mean.QTL.dom']] == 0)) {
+    if ('mean.QTL.dom' %in% names(this.loc.modeling.df) & all(this.loc.modeling.df[['mean.QTL.dom']] == 0)) {
       this.loc.mean.df <- mean.df - 1
     } else {
       this.loc.mean.df <- mean.df
     }
-    if (all(this.loc.modeling.df[['var.QTL.dom']] == 0)) {
+    if ('var.QTL.dom' %in% names(this.loc.modeling.df) & all(this.loc.modeling.df[['var.QTL.dom']] == 0)) {
       this.loc.var.df <- var.df - 1
     } else {
       this.loc.var.df <- var.df
