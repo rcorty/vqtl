@@ -60,8 +60,6 @@ phenotype_at_marker_plot(cross, phenotype_name, marker_name, color_by = NULL,
 \item{connectIbars}{Should the Ibars be connected horizontally?}
 
 \item{genotype_labels}{plotting labels for genotype groups}
-
-\item{cross}{the cross}
 }
 \value{
 Nothing, just plot.

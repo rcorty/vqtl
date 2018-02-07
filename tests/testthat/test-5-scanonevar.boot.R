@@ -18,6 +18,8 @@ test_that(
   desc = 'testing scanonevar.boot with dglm with gaussian model',
   code = {
 
+    skip_on_cran()
+
     sov <- vqtl::scanonevar(cross = test.cross,
                             mean.formula = phenotype ~ sex + mean.QTL.add + mean.QTL.dom,
                             var.formula = ~ sex + var.QTL.add + var.QTL.dom)

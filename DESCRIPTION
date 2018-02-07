@@ -1,7 +1,7 @@
 Package: vqtl
 Title: Genome Scans to Accommodate and Target Genetic and Non-Genetic Effects on
     Trait Variance in Test Crosses
-Version: 1.9.1
+Version: 2.0.0
 Authors@R: person("Robert", "Corty", email = "rcorty@gmail.com", role = c("aut", "cre"))
 Description: In recognition that there are many factors (genetic loci, macro-
     genetic factors such as sex, and environmental factors) that influence the

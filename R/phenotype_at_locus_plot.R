@@ -10,7 +10,6 @@
 #' @param Ibars Should I bars be plotted showing the standard deviation of each group?
 #' @param connectIbars Should the Ibars be connected horizontally?
 #' @param genotype_labels plotting labels for genotype groups
-#' @param cross the cross
 #' @param shape_by a discrete phenotype to map to the shape aesthetic of the points
 #'
 #' @return nothing.  Just plots.
@@ -89,14 +88,14 @@ phenotype_at_marker_plot <- function(cross,
     to_plot <- dplyr::bind_cols(to_plot, to_add)
 
     the_plot <- the_plot +
-      ggplot2::geom_jitter(data = na.omit(to_plot),
+      ggplot2::geom_jitter(data = stats::na.omit(to_plot),
                            mapping = ggplot2::aes_string(color = color_by, shape = shape_by, size = point_size),
                            width = 0.3,
                            alpha = point_alpha)
   } else {
 
     the_plot <- the_plot +
-      ggplot2::geom_jitter(data = na.omit(to_plot),
+      ggplot2::geom_jitter(data = stats::na.omit(to_plot),
                            mapping = ggplot2::aes_string(color = color_by, shape = shape_by),
                            width = 0.3,
                            size = point_size,

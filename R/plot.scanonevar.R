@@ -38,7 +38,7 @@
 #'
 #' @examples
 #' set.seed(27599)
-#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), n.mar = 5), n.ind = 50)
+#' test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 3), n.mar = 5), n.ind = 50)
 #' test.sov <- scanonevar(cross = test.cross)
 #' plot(x = test.sov)
 #'
