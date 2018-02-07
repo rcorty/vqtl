@@ -51,7 +51,7 @@ plot.scanonevar <- function(x,
                             } else {
                               'LOD'
                             },
-                            plot.title = x[['meta']][['formulae']][['mean.alt.formula']][[2]],
+                            plot.title = x[['meta']][['scan.formulae']][['mean.alt.formula']][[2]],
                             marker.rug = TRUE,
                             ymax = NULL,
                             legend_pos = NULL,

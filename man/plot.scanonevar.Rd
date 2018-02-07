@@ -8,7 +8,7 @@
   chrs = unique(x[["result"]][["chr"]]), tests_to_plot = c("mQTL", "vQTL",
   "mvQTL"), plotting.units = if (any(grepl(pattern = "empir.p", x =
   names(x[["result"]])))) {     "empir.p" } else {     "LOD" },
-  plot.title = x[["meta"]][["formulae"]][["mean.alt.formula"]][[2]],
+  plot.title = x[["meta"]][["scan.formulae"]][["mean.alt.formula"]][[2]],
   marker.rug = TRUE, ymax = NULL, legend_pos = NULL,
   alpha_pos = c("left", "right", "none"), alpha_chr = 1, alpha_size = 2,
   ...)
