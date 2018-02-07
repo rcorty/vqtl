@@ -105,7 +105,7 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) { message('Finished mean permutations...') }
-    perms[['mQTL']] <- dplyr::bind_cols(list(test = rep('mean', nrow(mean.lod.maxes))),
+    perms[['mQTL']] <- dplyr::bind_cols(list(test = rep('mQTL', nrow(mean.lod.maxes))),
                                         mean.lod.maxes)
   }
 
@@ -127,7 +127,7 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) { message('Finished variance permutations...') }
-    perms[['vQTL']] <- dplyr::bind_cols(list(test = rep('var', nrow(var.lod.maxes))),
+    perms[['vQTL']] <- dplyr::bind_cols(list(test = rep('vQTL', nrow(var.lod.maxes))),
                                        var.lod.maxes)
   }
 
@@ -148,7 +148,7 @@ scanonevar.perm_ <- function(sov,
       })
 
     if (!silent) {  message('Finished joint mean-variance permutations...') }
-    perms[['mvQTL']] <- dplyr::bind_cols(list(test = rep('joint', nrow(joint.lod.maxes))),
+    perms[['mvQTL']] <- dplyr::bind_cols(list(test = rep('mvQTL', nrow(joint.lod.maxes))),
                                          joint.lod.maxes)
   }
 
