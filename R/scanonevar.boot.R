@@ -38,7 +38,7 @@ scanonevar.boot <- function(sov,
   qtl_type <- match.arg(arg = qtl_type)
   # bootstrap_type <- match.arg(arg = bootstrap_type)
 
-  # no way to split perms over cores...so never use more cores than there are perms
+  # no way to split resamples over cores...so never use more cores than there are resamples
   n.cores <- min(n.cores, n.resamples)
 
   # execute the scan
@@ -73,35 +73,49 @@ scanonevar.boot_ <- function(sov,
 
 
 
-  # if (n.cores != 1) {
-  #   cl <- parallel::makeCluster(spec = n.cores)
-  #   doParallel::registerDoParallel(cl = cl)
-  # }
-
-  max_positions <- rep(NA, n.resamples)
-  c <- qtl:::subset.cross(x = meta$cross, chr = chr)
-
-  for (resample_idx in 1:n.resamples) {
-
-    bs_scan <- scanonevar(cross = qtl:::subset.cross(x = c, ind = sample(x = 1:qtl::nind(c), replace = TRUE)),
-                          mean.formula = meta$scan.formulae$mean.alt.formula,
-                          var.formula = meta$scan.formulae$var.alt.formula,
-                          chrs = chr,
-                          scan_types = qtl_type)
-
-    max_positions[resample_idx] <- bs_scan$result$pos[which.max(x = bs_scan$resul[[paste0(qtl_type, '.lod')]])]
-
+  if (n.cores != 1) {
+    cl <- parallel::makeCluster(spec = n.cores, outfile = 'temp')
+    doParallel::registerDoParallel(cl = cl)
   }
 
-  # if (n.cores != 1) {
-  #   parallel::stopCluster(cl)
-  # }
+  one_chr_cross <- qtl:::subset.cross(x = meta$cross, chr = chr)
 
-  # perms <- dplyr::bind_rows(perms)
-  # sov <- calc.empir.ps(sov, perms)
+  if (n.cores == 1) {
 
-  # return(list(sov = sov,
-  #             perms = perms))
+    set.seed(seed = seed)
+    max_positions <- rep(NA, n.resamples)
+    for (resample_idx in 1:n.resamples) {
+
+      bs_scan <- scanonevar(cross = qtl:::subset.cross(x = one_chr_cross, ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
+                            mean.formula = meta$scan.formulae$mean.alt.formula,
+                            var.formula = meta$scan.formulae$var.alt.formula,
+                            chrs = chr,
+                            scan_types = qtl_type)
+
+      max_positions[resample_idx] <- bs_scan$result$pos[which.max(x = bs_scan$resul[[paste0(qtl_type, '.lod')]])]
+
+    }
+  }
+
+  if (n.cores > 1) {
+    max_positions <- foreach::foreach(resample_idx = 1:n.resamples, .combine = 'c', .packages = c('vqtl')) %dopar% {
+
+      set.seed(seed = seed + resample_idx)
+
+      bs_scan <- scanonevar(cross = qtl:::subset.cross(x = one_chr_cross, ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
+                            mean.formula = meta$scan.formulae$mean.alt.formula,
+                            var.formula = meta$scan.formulae$var.alt.formula,
+                            chrs = chr,
+                            scan_types = qtl_type)
+
+      bs_scan$result$pos[which.max(x = bs_scan$resul[[paste0(qtl_type, '.lod')]])]
+
+    }
+  }
+
+  if (n.cores != 1) {
+    parallel::stopCluster(cl)
+  }
 
   return(max_positions)
 }
