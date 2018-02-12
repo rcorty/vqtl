@@ -10,7 +10,8 @@ Description: In recognition that there are many factors (genetic loci, macro-
     scanonevar() and scanonevar.perm() take as input a cross object from the popular
     'qtl' package.
 Depends:
-    R (>= 3.3.0)
+    R (>= 3.3.0),
+    qtl
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -22,7 +23,6 @@ Imports: doParallel,
     parallel,
     knitr,
     dplyr,
-    qtl,
     dglm,
     evd,
     ggplot2,
