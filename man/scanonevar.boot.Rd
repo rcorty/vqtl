@@ -5,7 +5,8 @@
 \title{scanonevar.boot}
 \usage{
 scanonevar.boot(sov, n.resamples, chr, qtl_type = c("mQTL", "vQTL", "mvQTL"),
-  random.seed = 27599, n.cores = 1, silent = FALSE)
+  random.seed = 27599, n.cores = parallel::detectCores() - 2,
+  silent = FALSE)
 }
 \arguments{
 \item{sov}{the scanonevar whose significance should be assessed empirically in an FWER-controlling method}

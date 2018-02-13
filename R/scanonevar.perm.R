@@ -25,7 +25,7 @@
 scanonevar.perm <- function(sov,
                             n.perms,
                             random.seed = 27599,
-                            n.cores = parallel::detectCores() - 1,
+                            n.cores = parallel::detectCores() - 2,
                             silent = TRUE) {
 
   stopifnot(is.scanonevar(sov))

@@ -5,7 +5,7 @@
 \title{scanonevar.perm}
 \usage{
 scanonevar.perm(sov, n.perms, random.seed = 27599,
-  n.cores = parallel::detectCores() - 1, silent = TRUE)
+  n.cores = parallel::detectCores() - 2, silent = TRUE)
 }
 \arguments{
 \item{sov}{the scanonevar whose significance should be assessed empirically in an FWER-controlling method}

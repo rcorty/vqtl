@@ -29,7 +29,7 @@ scanonevar.boot <- function(sov,
                             qtl_type = c('mQTL', 'vQTL', 'mvQTL'),
                             # bootstrap_type = c('simple', 'bayesian'),
                             random.seed = 27599,
-                            n.cores = 1,
+                            n.cores = parallel::detectCores() - 2,
                             silent = FALSE) {
 
   stopifnot(is.scanonevar(sov))
