@@ -56,6 +56,9 @@ scanonevar <- function(cross,
   result <- scanonevar_(meta = meta,
                         return.covar.effects = return.covar.effects)
 
+  # remove genoprob data.frame from meta before returning
+  meta$genoprob.df <- NULL
+
   sov <- list(meta = meta,
               result = result)
 
