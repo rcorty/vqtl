@@ -193,16 +193,18 @@ additive.component_ <- function(genoprobs.long,
   cross_type <- match.arg(arg = cross_type)
 
   alleles <- unique(genoprobs.long[['allele']])
-
-  genoprobs.wide <- tidyr::spread(data = genoprobs.long,
-                                  key = allele,
-                                  value = genoprob)
+  #
+  # genoprobs.wide <- tidyr::spread(data = genoprobs.long,
+  #                                 key = allele,
+  #                                 value = genoprob)
 
   if (cross_type == 'f2') {
+
+    # if we are on an autosome
     if (all(alleles %in% c('AA', 'AB', 'BB'))) {
-      return(2*genoprobs.wide[['AA']] + genoprobs.wide[['AB']])
+      return(2*genoprobs.long$genoprob[genoprobs.long$allele == 'AA'] + genoprobs.long$genoprob[genoprobs.long$allele == 'AB'])
     } else if (all(alleles %in% c('g1', 'g2'))) {
-      return(genoprobs.wide[['g2']])
+      return(genoprobs.long$genoprob[genoprobs.long$allele == 'g2'])
     } else {
       stop(paste("Can't determine additive component of loc with alleles:", alleles))
     }
@@ -210,9 +212,9 @@ additive.component_ <- function(genoprobs.long,
 
   if (cross_type == 'bc') {
     if (all(alleles %in% c('AA', 'AB'))) {
-      return(genoprobs.wide[['AB']])
+      return(genoprobs.long$genoprob[genoprobs.long$allele == 'AB'])
     } else if (all(alleles %in% c('g1', 'g2'))) {
-      return(genoprobs.wide[['g2']])
+      return(genoprobs.long$genoprob[genoprobs.long$allele == 'g2'])
     } else {
       stop(paste("Can't determine additive component of loc with alleles:", alleles))
     }
@@ -227,14 +229,14 @@ dominance.component_ <- function(genoprobs.long,
   cross_type <- match.arg(arg = cross_type)
 
   alleles <- unique(genoprobs.long[['allele']])
-
-  genoprobs.wide <- tidyr::spread(data = genoprobs.long,
-                                  key = allele,
-                                  value = genoprob)
+  #
+  # genoprobs.wide <- tidyr::spread(data = genoprobs.long,
+  #                                 key = allele,
+  #                                 value = genoprob)
 
   if (cross_type == 'f2') {
     if (all(alleles %in% c('AA', 'AB', 'BB'))) {
-      return(genoprobs.wide[['AB']])
+      return(genoprobs.long$genoprob[genoprobs.long$allele == 'AB'])
     } else if (all(alleles %in% c('g1', 'g2'))) {
       return(0)
     } else {
@@ -273,18 +275,12 @@ make.loc.specific.modeling.df <- function(general.modeling.df,
 
   modeling.df <- general.modeling.df
 
-  if ('mean.QTL.add' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
-  }
-  if ('mean.QTL.dom' %in% labels(stats::terms(model.formulae[['mean.alt.formula']]))) {
-    modeling.df[['mean.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
-  }
-  if ('var.QTL.add' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
-  }
-  if ('var.QTL.dom' %in% labels(stats::terms(model.formulae[['var.alt.formula']]))) {
-    modeling.df[['var.QTL.dom']] <- dominance.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
-  }
+
+  # note that we're not actually checking whether these components are used
+  # it's OK if they get put in modeling.df and don't get used
+  modeling.df[['mean.QTL.add']] <- modeling.df[['var.QTL.add']] <- additive.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
+
+  modeling.df[['mean.QTL.dom']] <- modeling.df[['var.QTL.dom']] <-  dominance.component_(genoprobs.long = loc.genoprobs, cross_type = cross_type)
 
   return(modeling.df)
 }
