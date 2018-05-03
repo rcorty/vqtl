@@ -2,7 +2,7 @@ context("Testing scanonevar")
 
 set.seed(27599)
 test.cross <- qtl::sim.cross(map = qtl::sim.map(len = rep(20, 5), eq.spacing = FALSE, include.x = FALSE),
-                             n.ind = 300)
+                             n.ind = 200)
 test.cross[['pheno']][['sex']] <- sample(x = c(0, 1),
                                          size = qtl::nind(test.cross),
                                          replace = TRUE)
