@@ -6,6 +6,7 @@
 #' @description plots with mean along the x axis and standard deviation along the y axis
 #'
 #' @return Nothing, just plot.
+#' @importFrom dplyr n
 #' @export
 #'
 mean_var_plot_model_free <- function(cross,
