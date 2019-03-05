@@ -35,8 +35,8 @@ test_that(
 
     y1a <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, silent = FALSE)
     y1b <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, silent = FALSE)
-    y1c <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 4, silent = FALSE)
-    y1d <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 4, silent = FALSE)
+    y1c <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 2, silent = FALSE)
+    y1d <- scanonevar.perm(sov = x, n.perms = 10, random.seed = 27599, n.cores = 2, silent = FALSE)
 
     # all the results should be scanones
     expect_true(is.scanonevar(y1a))

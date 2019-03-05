@@ -31,7 +31,7 @@ test_that(
                             var.formula = ~ sex + var.QTL.add + var.QTL.dom)
 
     bs <- vqtl::scanonevar.boot(sov = sov, n.resamples = 20, chr = 1, qtl_type = 'mQTL')
-    bs_multicore <- vqtl::scanonevar.boot(sov = sov, n.resamples = 20, chr = 1, qtl_type = 'mQTL', n.cores = 4)
+    bs_multicore <- vqtl::scanonevar.boot(sov = sov, n.resamples = 20, chr = 1, qtl_type = 'mQTL', n.cores = 2)
 
     expect_equal(object = length(bs$bootstrap_maxes), expected = 20)
     expect_true(object = all(bs$bootstrap_maxes >= 0))
