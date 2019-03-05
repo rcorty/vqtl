@@ -6,8 +6,6 @@ cache: packages
 
 warnings_are_errors: false
 
-r_check_args: "--no-manual"
-
 notifications:
   email:
     on_success: change

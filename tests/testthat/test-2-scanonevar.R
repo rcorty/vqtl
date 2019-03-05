@@ -157,35 +157,35 @@ test_that(
 
 
 
-test_that(
-  desc = 'testing scanonevar with hglm',
-  code = {
-
-    sov <- scanonevar(cross = test.cross,
-                      mean.formula = phenotype ~ sex + (1|sire) + mean.QTL.add + mean.QTL.dom,
-                      var.formula = ~ sire + D2M3 + var.QTL.add + var.QTL.dom)
-
-    # should be a scanonevar object
-    expect_true(is.scanonevar(sov))
-
-    # joint lods should be pointwise higher than mean and variance lods
-    expect_true(all(sov$result$mvQTL.lod >= sov$result$mQTL.lod, na.rm = TRUE))
-    expect_true(all(sov$result$mvQTL.lod >= sov$result$vQTL.lod, na.rm = TRUE))
-
-
-    x <- summary(object = sov, units = 'lod')
-
-    # components of summary
-    expect_true(all(c('mQTL', 'vQTL', 'mvQTL') %in% names(x)))
-
-    # absolute maximum size of each component of summary is size of result
-    expect_true(nrow(x$mQTL) <= nrow(sov$result))
-    expect_true(nrow(x$vQTL) <= nrow(sov$result))
-    expect_true(nrow(x$mvQTL) <= nrow(sov$result))
-
-    # should be no randomness in summary -- recalculate it and it's the same
-    expect_identical(object = x, expected = summary(object = sov, units = 'lod'))
-
-  }
-)
-
+# test_that(
+#   desc = 'testing scanonevar with hglm',
+#   code = {
+#
+#     sov <- scanonevar(cross = test.cross,
+#                       mean.formula = phenotype ~ sex + (1|sire) + mean.QTL.add + mean.QTL.dom,
+#                       var.formula = ~ sire + D2M3 + var.QTL.add + var.QTL.dom)
+#
+#     # should be a scanonevar object
+#     expect_true(is.scanonevar(sov))
+#
+#     # joint lods should be pointwise higher than mean and variance lods
+#     expect_true(all(sov$result$mvQTL.lod >= sov$result$mQTL.lod, na.rm = TRUE))
+#     expect_true(all(sov$result$mvQTL.lod >= sov$result$vQTL.lod, na.rm = TRUE))
+#
+#
+#     x <- summary(object = sov, units = 'lod')
+#
+#     # components of summary
+#     expect_true(all(c('mQTL', 'vQTL', 'mvQTL') %in% names(x)))
+#
+#     # absolute maximum size of each component of summary is size of result
+#     expect_true(nrow(x$mQTL) <= nrow(sov$result))
+#     expect_true(nrow(x$vQTL) <= nrow(sov$result))
+#     expect_true(nrow(x$mvQTL) <= nrow(sov$result))
+#
+#     # should be no randomness in summary -- recalculate it and it's the same
+#     expect_identical(object = x, expected = summary(object = sov, units = 'lod'))
+#
+#   }
+# )
+#

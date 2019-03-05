@@ -34,5 +34,4 @@ Imports:
     purrr,
     qtl
 Suggests: 
-    covr,
-    hglm
+    covr

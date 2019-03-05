@@ -9,7 +9,8 @@ fit_dglm <- function(mf, df, data, glm_family) {#, obs_weights) {
 }
 
 fit_hglm <- function(mf, df, data, glm_family) {#, obs_weights) {
-  hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE, family = glm_family)#, weights = obs_weights)
+  stop('commented out because hglm package archived on CRAN')
+  # hglm::hglm2(meanmodel = mf, disp = df, data = data, calc.like = TRUE, family = glm_family)#, weights = obs_weights)
 }
 
 fit_dhglm <- function(mf, df, data) {
