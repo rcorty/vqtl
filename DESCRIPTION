@@ -32,5 +32,4 @@ Imports: doParallel,
     testthat,
     purrr,
     qtl
-Suggests: covr,
-    hglm
+Suggests: covr
