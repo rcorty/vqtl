@@ -7,8 +7,8 @@
 \title{mean_var_plot_model_free}
 \usage{
 mean_var_plot_model_free(cross, phenotype.name, grouping.factor.names,
-  title = paste(phenotype.name, "by", paste(grouping.factor.names, collapse =
-  ", ")))
+  title = paste(phenotype.name, "by", paste(grouping.factor.names,
+  collapse = ", ")))
 
 mean_var_plot_model_based(cross, phenotype.name, focal.groups = NULL,
   nuisance.groups = NULL, genotype.names = c("AA", "AB", "BB"),
@@ -16,9 +16,10 @@ mean_var_plot_model_based(cross, phenotype.name, focal.groups = NULL,
   paste(focal.groups, collapse = ", ")), draw_ribbons = TRUE,
   se_line_size = 1, point_size = 1)
 
-phenotype_at_marker_plot(cross, phenotype_name, marker_name, color_by = NULL,
-  shape_by = NULL, point_alpha = 1, point_size = 1, Ibars = TRUE,
-  connectIbars = TRUE, genotype_labels = NULL)
+phenotype_at_marker_plot(cross, phenotype_name, marker_name,
+  color_by = NULL, shape_by = NULL, point_alpha = 1,
+  point_size = 1, Ibars = TRUE, connectIbars = TRUE,
+  genotype_labels = NULL)
 }
 \arguments{
 \item{cross}{the cross}

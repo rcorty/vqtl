@@ -110,9 +110,7 @@ wrangle.scanonevar.input_ <- function(cross,
   genoprob.df.long <- wrangle.genoprob.df_(cross = cross)
 
   if (is.null(scan_types)) {
-    scan.types <- wrangle.scanonevar.types_(mean.formula, var.formula)
-  } else {
-    scan.types <- scan_types
+    scan_types <- wrangle.scanonevar.types_(mean.formula, var.formula)
   }
 
   model <- ifelse(test = has_a_random_term(mean.formula),
@@ -126,7 +124,7 @@ wrangle.scanonevar.input_ <- function(cross,
                                                  scan.formulae = scan.formulae)
 
   meta <- list(cross = cross,
-               scan.types = scan.types,
+               scan.types = scan_types,
                scan.formulae = scan.formulae,
                modeling.df = modeling.df,
                loc.info.df = loc.info.df,
@@ -235,6 +233,10 @@ scanonevar_ <- function(meta,
     this.loc.name <- result[['loc.name']][loc.idx]
     loc.genoprobs <- dplyr::filter(.data = meta$genoprob.df,
                                    loc.name == this.loc.name)
+
+    if (any(grepl(pattern = this.loc.name, x = names(meta$modeling.df)))) {
+      next
+    }
 
     # puts a column of 0's for any dominance components if we are on X chromosome
     # dglm handles this naturally, ignoring it in model fitting and giving effect estimate of NA

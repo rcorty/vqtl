@@ -71,8 +71,6 @@ scanonevar.boot_ <- function(sov,
                              n.cores,
                              silent) {
 
-
-
   if (n.cores != 1) {
     cl <- parallel::makeCluster(spec = n.cores)
     doParallel::registerDoParallel(cl = cl)
@@ -86,7 +84,8 @@ scanonevar.boot_ <- function(sov,
     max_positions <- rep(NA, n.resamples)
     for (resample_idx in 1:n.resamples) {
 
-      bs_scan <- scanonevar(cross = subset(x = one_chr_cross, ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
+      bs_scan <- scanonevar(cross = subset(x = one_chr_cross,
+                                           ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
                             mean.formula = meta$scan.formulae$mean.alt.formula,
                             var.formula = meta$scan.formulae$var.alt.formula,
                             chrs = chr,
@@ -98,11 +97,14 @@ scanonevar.boot_ <- function(sov,
   }
 
   if (n.cores > 1) {
-    max_positions <- foreach::foreach(resample_idx = 1:n.resamples, .combine = 'c', .packages = c('vqtl')) %dopar% {
+    max_positions <- foreach::foreach(resample_idx = 1:n.resamples,
+                                      .combine = 'c',
+                                      .packages = c('qtl', 'vqtl')) %dopar% {
 
       set.seed(seed = seed + resample_idx)
 
-      bs_scan <- scanonevar(cross = subset(x = one_chr_cross, ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
+      bs_scan <- scanonevar(cross = subset(x = one_chr_cross,
+                                           ind = sample(x = 1:qtl::nind(one_chr_cross), replace = TRUE)),
                             mean.formula = meta$scan.formulae$mean.alt.formula,
                             var.formula = meta$scan.formulae$var.alt.formula,
                             chrs = chr,

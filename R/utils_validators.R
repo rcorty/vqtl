@@ -14,7 +14,7 @@ formulae.is.valid.for.cross_ <- function(cross,
 
 
   # build up list of allowable covar names for mean and variance sub-models
-  marker.names <- colnames(qtl::pull.geno(cross = cross))
+  marker.names <- qtl::markernames(cross = cross)
   allowable.covar.names <- c(phen.names, marker.names, paste0(marker.names, '_add'), paste0(marker.names, '_dom'))
   allowable.mean.covar.names <- c(allowable.covar.names, 'mean.QTL.add', 'mean.QTL.dom')
   allowable.var.covar.names <- c(allowable.covar.names, 'var.QTL.add', 'var.QTL.dom')

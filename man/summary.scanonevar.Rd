@@ -4,8 +4,8 @@
 \alias{summary.scanonevar}
 \title{summary.scanonevar}
 \usage{
-\method{summary}{scanonevar}(object, units = c("lod", "asymp.p", "empir.p"),
-  thresh, ...)
+\method{summary}{scanonevar}(object, units = c("lod", "asymp.p",
+  "empir.p"), thresh, ...)
 }
 \arguments{
 \item{object}{the scanonevar object to be summarized}

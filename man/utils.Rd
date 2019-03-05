@@ -5,7 +5,6 @@
 \alias{is.scanonevar.w.perms}
 \alias{is.cross}
 \alias{is.f2.cross}
-\alias{is.f2.cross}
 \alias{is.cross.w.genoprobs}
 \title{is.scanonevar}
 \usage{

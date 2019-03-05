@@ -246,9 +246,11 @@ permutation.max.finder <- function(alt.fitter,
   }
 
   # multi-core version
-  if (n.cores != 1) {
+  if (n.cores > 1) {
 
-    max.lods <- foreach::foreach(perm.idx = 1:n.perms) %dopar% {
+    max.lods <- foreach::foreach(perm.idx = 1:n.perms,
+                                 # .combine = 'c',
+                                 .packages = c('qtl', 'vqtl')) %dopar% {
 
       set.seed(seed = seed + perm.idx)
       the.perm <- sample(x = nrow(this.loc.modeling.df))
