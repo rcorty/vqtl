@@ -8,7 +8,7 @@ Description: In recognition that there are many factors (genetic loci, macro-
     extent of environmental variation, the 'vqtl' package conducts genome scans
     that accommodate and target these factors. The main functions of this package,
     scanonevar() and scanonevar.perm() take as input a cross object from the popular
-    'qtl' package.
+    'qtl' package, as described in Corty and Valdar (2019) <doi:10.1534/g3.118.200642>.
 Depends:
     R (>= 3.3.0)
 License: GPL-3
@@ -19,9 +19,7 @@ VignetteBuilder: knitr
 Imports: 
     doParallel,
     foreach,
-    iterators,
     parallel,
-    knitr,
     dplyr,
     dglm,
     evd,
@@ -30,8 +28,6 @@ Imports:
     lazyeval,
     stringr,
     tidyr,
-    testthat,
-    purrr,
     qtl
 Suggests: 
     covr
