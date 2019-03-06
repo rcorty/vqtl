@@ -19,7 +19,9 @@ VignetteBuilder: knitr
 Imports: 
     doParallel,
     foreach,
+    iterators,
     parallel,
+    knitr,
     dplyr,
     dglm,
     evd,
@@ -28,7 +30,8 @@ Imports:
     lazyeval,
     stringr,
     tidyr,
-    qtl,
-    knitr
+    testthat,
+    purrr,
+    qtl
 Suggests: 
     covr
